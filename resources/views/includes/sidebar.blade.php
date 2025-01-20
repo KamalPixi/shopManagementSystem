@@ -1,13 +1,13 @@
 <nav class="navbar navbar-dark navbar-theme-primary px-4 col-12 d-lg-none">
-<a class="navbar-brand me-lg-5" href="../../index.html"><img class="navbar-brand-dark" src="../../assets/img/brand/light.svg" alt="Volt logo">
-<img class="navbar-brand-light" src="../../assets/img/brand/dark.svg" alt="Volt logo"></a>
+<a class="navbar-brand me-lg-5" href=""><img class="navbar-brand-dark" src="" alt="Volt logo">
+<img class="navbar-brand-light" src="" alt="Volt logo"></a>
 <div class="d-flex align-items-center"><button class="navbar-toggler d-lg-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div>
 </nav>
 <nav id="sidebarMenu" class="sidebar d-lg-block bg-gray-800 text-white collapse" data-simplebar>
 <div class="sidebar-inner px-4 pt-3">
     <div class="user-card d-flex d-md-none align-items-center justify-content-between justify-content-md-center pb-4">
         <div class="d-flex align-items-center">
-            <div class="avatar-lg me-4"><img src="../../assets/img/team/profile-picture-3.jpg" class="card-img-top rounded-circle border-white" alt="Bonnie Green"></div>
+            <div class="avatar-lg me-4"><img src="" class="card-img-top rounded-circle border-white" alt="Bonnie Green"></div>
             <div class="d-block">
             <h2 class="h5 mb-3">Hi, Jane</h2>
             <a href="{{ route('logout') }}" class="btn btn-secondary btn-sm d-inline-flex align-items-center">
