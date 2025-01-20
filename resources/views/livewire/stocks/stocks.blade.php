@@ -1,0 +1,112 @@
+<div>
+    @include('includes.breadcrumb', ['data' => ['Stock List' => route('stocks')]])
+
+    <div wire:loading.flex>
+        @include('includes.spinner')
+    </div>
+
+    @include('includes.alert')
+
+
+    {{-- Filter --}}
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card border-0 shadow components-section">
+                <div class="card-body">
+                    <h1 class="h5 mb-4">Search Stock</h1>
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="mb-4">
+                                <label for="description">Product name</label>
+                                <input wire:model.live="name" required type="text" class="form-control form-control-sm">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mb-4">
+                                <label for="description">SKU/Bercode</label>
+                                <input wire:model.live="sku" required type="text" class="form-control form-control-sm">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mb-4">
+                                <label for="description">Model No</label>
+                                <input wire:model.live="model_no" required type="text" class="form-control form-control-sm">
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mb-4">
+                                <label for="brand">Category</label>
+                                <select wire:model.live="category_id" class="form-select">
+                                    <option value="" selected="selected" disabled>Select Category</option>
+                                    @foreach ($categories as $category)
+                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    {{-- Product list --}}
+    <div class="card border-0 shadow mb-4">
+        <div class="card-body">
+            <h1 class="h5 mb-4">Stock List</h1>
+
+            <div class="mb-4">
+                <table class="table table-centered table-nowrap mb-0 rounded">
+                    <thead class="thead-light">
+                        <tr>
+                            <th style="width:2%;" class="border-0 rounded-start">#</th>
+                            <th class="border-0">Name</th>
+                            <th class="border-0 text-center">Category</th>
+                            <th class="border-0 text-center">Brand</th>
+                            <th class="border-0 text-center">ModelNo</th>
+                            <th class="border-0 text-center">SN/IMEI</th>
+                            <th class="border-0 text-center">Price</th>
+                            <th class="border-0 text-center">Stock</th>
+                            <th class="border-0 text-center">Warranty</th>
+                            <th class="border-0 text-center">Status</th>
+                            <th style="width: 8%;" class="border-0 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($products as $product)
+                        <tr wire:key="tr_key_{{ $product->id }}">
+                            <td>{{ $products->firstItem() + $loop->index }}</td>
+                            <td class="fw-bold align-items-center lh-1"> {{ $product->name }} <br> <span class="small text-muted">{{$product->sku}}</span></td>
+                            <td class="fw-bold align-items-center text-center"> {{ $product->category?->name }} </td>
+                            <td class="fw-bold align-items-center text-center"> {{ $product->brand?->name }} </td>
+                            <td class="fw-bold align-items-center text-center"> {{ $product->model_no }} </td>
+                            <td class="fw-bold align-items-center text-center"> {{ $product->serial_no }} </td>
+                            <td class="fw-bold align-items-center text-center"> {{ $product->price }} </td>
+                            <td class="fw-bold align-items-center text-center"> {{ $product->quantity }} </td>
+                            <td class="fw-bold align-items-center text-center"> {{ $product->warranty?->name }} </td>
+                            <td class="fw-bold align-items-center text-center"> {{ $product->status }} </td>
+                            <td class="text-end">
+                                <div class="dropdown">
+                                    <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                                        <li><a class="dropdown-item" href="{{ route('stocks.show') }}"><i class="fa-solid fa-eye pe-2"></i>View</a></li>
+                                        <li><a class="dropdown-item" wire:click="edit('{{ $product->id }}')" href="#"><i class="fas fa-edit pe-2"></i> Edit</a></li>
+                                        <li><a class="dropdown-item text-danger" wire:click="delete('{{ $product->id }}')" wire:confirm="Are you sure you want to delete?" href="#"><i class="fas fa-trash pe-2"></i> Delete</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            {{ $products->links() }}
+        </div>
+    </div>
+
+</div>
