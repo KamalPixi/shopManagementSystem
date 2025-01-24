@@ -7,4 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class ProductPurchase extends Model
 {
     protected $guarded = [];
+
+    protected $casts = [
+        'purchase_price' => 'decimal:2',
+        'sale_price' => 'decimal:2',
+        'purchase_date' => 'date',
+        'attributes_and_values' => 'array',
+    ];
 }

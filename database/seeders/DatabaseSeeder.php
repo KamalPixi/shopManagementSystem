@@ -10,6 +10,7 @@ use App\Models\Warranty;
 use App\Models\Category;
 use App\Models\Brand;
 use App\Models\Supplier;
+use App\Models\Shop;
 
 
 class DatabaseSeeder extends Seeder
@@ -40,11 +41,17 @@ class DatabaseSeeder extends Seeder
         }
 
         Category::firstOrCreate(['name' => 'default' , 'description' => 'default category']);
-        Brand::firstOrCreate(['name' => 'default', 'description' => 'default category']);
+        Brand::firstOrCreate(['name' => 'default', 'description' => 'default brand']);
         Supplier::firstOrCreate([
             'name' => 'default',
         ], [
             'email' => 'default@domain.com',
+        ]);
+        Shop::firstOrCreate([
+            'name' => 'GreenPixi', 
+            'country' => 'Malaysia', 
+            'gst_percent' => 6,
+            'currency' => ['code' => 'MYR', 'symbol' => 'RM', 'name' => 'Malaysian Ringgit'],
         ]);
     }
 }

@@ -13,7 +13,7 @@ use App\Models\Attribute;
 class StockAdd extends Component
 {
     public $productAttributes = [
-        ['name' => '','value' => '']
+        ['name' => '','values' => '']
     ];
 
     public $name;
@@ -26,7 +26,7 @@ class StockAdd extends Component
     public $sku;
     public $price;
     public $purchase_price;
-    public $quantity;
+    public $quantity = 1;
     public $remark;
     public $status = 1;
     public $supplier_id = null;
@@ -40,7 +40,7 @@ class StockAdd extends Component
         'warranty_id' => 'nullable|integer|exists:warranties,id',
         'model_no' => 'nullable|string|max:100',
         'serial_no' => 'nullable|string|max:100',
-        'sku' => 'nullable|string|max:100',
+        'sku' => 'required|string|max:100|unique:products,sku',
         'price' => 'required|numeric|min:0',
         'purchase_price' => 'nullable|numeric|min:0',
         'quantity' => 'nullable|numeric|min:0',
@@ -51,7 +51,7 @@ class StockAdd extends Component
         'productAttributes' => 'nullable|array',
         'productAttributes.*' => 'nullable|array',
         'productAttributes.*.name' => 'nullable|string|max:100',
-        'productAttributes.*.value' => 'required_with:productAttributes.*.name|string|max:100',
+        'productAttributes.*.values' => 'required_with:productAttributes.*.name|string|max:255',
     ];
 
     public function mount() {
@@ -61,60 +61,34 @@ class StockAdd extends Component
     public function create() {
         $validated = $this->validate();
 
-        // Normalize and map product attributes
-        $attributeCollect = collect($this->productAttributes)->map(function ($att) {
+        $attributeArray = collect($this->productAttributes)->map(function ($att) {
+            $values = collect(explode(',', strtolower($att['values'])))
+            ->filter(fn($v) => !empty($v))
+            ->toArray();
+
             return [
                 'name' => strtolower($att['name']),
-                'value' => strtolower($att['value']),
+                'values' => $values,
             ];
-        });
-    
-        // Batch process attributes and values
-        $attributeCollect->each(function ($att) {
-            $attribute = Attribute::firstOrCreate(['name' => $att['name']]);
-            $attribute->attributeValues()->firstOrCreate(['value' => $att['value']]);
-        });
-    
-        // Preload attribute models with values
-        $attributeModels = Attribute::with('attributeValues')
-            ->whereIn('name', $attributeCollect->pluck('name')->toArray())
-            ->get();
-    
+        })->toArray();
+        
         // Create the product
+        $validated['attributes_and_values'] = $attributeArray;
         $product = Product::create($validated);
-    
-        // Associate attributes and values with the product
-        $attributeCollect->each(function ($att) use ($product, $attributeModels) {
-            $attribute = $attributeModels->firstWhere('name', $att['name']);
-            $attributeValue = $attribute->attributeValues->firstWhere('value', $att['value']);
-    
-            $product->productAttributes()->create([
-                'attribute_id' => $attribute->id,
-                'attribute_value_id' => $attributeValue->id,
-            ]);
-        });
 
-        // purchase data
+        // create purchase record
         $product->productPurchases()->create([
             'supplier_id' => !empty($validated['supplier_id']) ? $validated['supplier_id'] : null,
             'purchase_date' => !empty($validated['purchase_date']) ? $validated['purchase_date'] : null,
             'purchase_price' => !empty($validated['purchase_price']) ? $validated['purchase_price'] : null,
             'sale_price' => $validated['price'],
             'quantity' => $validated['quantity'],
+            'attributes_and_values' => $attributeArray,
         ]);
-        $attributeCollect->each(function ($att) use ($product, $attributeModels) {
-            $attribute = $attributeModels->firstWhere('name', $att['name']);
-            $attributeValue = $attribute->attributeValues->firstWhere('value', $att['value']);
-    
-            $product->productPurchaseAttributes()->create([
-                'attribute_id' => $attribute->id,
-                'attribute_value_id' => $attributeValue->id,
-            ]);
-        });
 
         $this->reset();
         $this->productAttribute = [
-            ['name' => '','value' => '']
+            ['name' => '','values' => '']
         ];
 
         session()->flash('success', 'Product added.');

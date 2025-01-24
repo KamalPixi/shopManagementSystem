@@ -30,15 +30,15 @@
       </style>
   </head>
   <body>
-    @include('includes.sidebar')
+    <x-sidebar />
 
     <main class="content">
-        @include('includes.navbar')
+        <x-navbar />
         @yield('content')
         @include('includes.footer')
     </main>
-
-    <script src="{{ asset('/vendor/bootstrap/dist/js/bootstrap.min.js') }}"></script><!-- Vendor JS -->
+    <script src="{{ asset('/vendor/@popperjs/core/dist/umd/popper.min.js') }}"></script>
+    <script src="{{ asset('/vendor/bootstrap/dist/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('/assets/js/volt.js') }}"></script>
   </body>
 </html>

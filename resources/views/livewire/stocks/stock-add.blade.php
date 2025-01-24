@@ -48,6 +48,12 @@
     <div class="row">
         <div class="col-12 col-md-4">
             <div class="mb-4">
+                <label>SKU/Barcode*</label>
+                <input wire:model="sku" type="text" class="form-control form-control-sm" required>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="mb-4">
                 <label for="brand">Model No.</label>
                 <input wire:model="model_no" type="text" class="form-control form-control-sm">
             </div>
@@ -56,12 +62,6 @@
             <div class="mb-4">
                 <label>SN/IMEI</label>
                 <input wire:model="serial_no" type="text" class="form-control form-control-sm">
-            </div>
-        </div>
-        <div class="col-12 col-md-4">
-            <div class="mb-4">
-                <label>SKU/Barcode</label>
-                <input wire:model="sku" type="text" class="form-control form-control-sm">
             </div>
         </div>
     </div>
@@ -86,7 +86,7 @@
                                 <i wire:click="deleteAttributeField('{{ $k }}')" role="button" class="fa-solid fa-trash text-danger"></i>
                             @endif
                         </div>
-                        <input wire:model="productAttributes.{{$loop->index}}.value" type="text" class="form-control small form-control-sm" placeholder="Ex: Green">
+                        <input wire:model="productAttributes.{{$loop->index}}.values" type="text" class="form-control small form-control-sm" placeholder="Ex: Green,Blue,White">
                     </div>
                 </div>
             </div>            

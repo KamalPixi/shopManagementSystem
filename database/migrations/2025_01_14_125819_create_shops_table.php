@@ -22,8 +22,7 @@ return new class extends Migration
             $table->string('country')->nullable();
             $table->string('contact_no')->nullable();
             $table->string('email')->nullable();
-            $table->decimal('gst', 10, 2)->default(0);
-            $table->text('description')->nullable();
+            $table->decimal('gst_percent', 10, 2)->default(0);
             $table->json('settings')->nullable();
             $table->json('currency'); // ['code' => 'MYR', 'symbol' => 'RM']
             $table->string('timezone')->default('Asia/Kuala_Lumpur');

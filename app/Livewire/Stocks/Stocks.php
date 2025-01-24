@@ -19,6 +19,8 @@ class Stocks extends Component
     public function render()
     {
         $query = Product::query();
+        $query->orderBy('created_at', 'desc');
+        
         if (!empty($this->name)) {
             $query->where('name', 'like', '%' . $this->name . '%');
         }

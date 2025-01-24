@@ -46,7 +46,7 @@
                             <th style="width: 8%;" class="border-0 rounded-start">#</th>
                             <th class="border-0">Category</th>
                             <th class="border-0">Description</th>
-                            <th style="width: 8%;" class="border-0 text-end">Action</th>
+                            <th style="width: 8%;" class="border-0 text-end rounded-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>

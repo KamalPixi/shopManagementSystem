@@ -22,6 +22,14 @@ class DashboardController extends Controller
         return view('categories');
     }
 
+    public function warranties() {
+        return view('warranties');
+    }
+
+    public function warrantySend() {
+        return view('warranty-send');
+    }
+
     public function stocks() {
         return view('stocks.stocks');
     }
@@ -30,12 +38,20 @@ class DashboardController extends Controller
         return view('stocks.add');
     }
 
+    public function addToStock() {
+        return view('stocks.add-to-stock');
+    }
+
     public function stockEdit() {
         return view('stocks.edit');
     }
 
     public function stockShow() {
         return view('stocks.show');
+    }
+
+    public function sales() {
+        return view('sales.sales');
     }
 
     public function settings() {

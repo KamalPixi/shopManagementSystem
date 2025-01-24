@@ -35,6 +35,7 @@
                         <tr>
                             <th class="border-0 rounded-start">#</th>
                             <th class="border-0 text-start">Product</th>
+                            <th class="border-0 text-center">Attributes</th>
                             <th class="border-0 text-center">Warranty</th>
                             <th class="border-0 text-center">Price <small class="small">Price Per Unit</small></th>
                             <th class="border-0 text-center">Qty</th>
@@ -47,6 +48,25 @@
                         <tr wire:key="tr_key_{{ $product->id }}">
                             <td style="width: 3%;">{{ $loop->index + 1 }}</td>
                             <td class="fw-bold align-items-center lh-1"> {{ $product->name }} <br> <span class="small">{{ $product->sku }}</span> </td>
+                            <td class="fw-bold lh-1 text-center" style="width: 11%;">
+                                @if ($product->attributes_and_values)
+                                <ul class="list-unstyled">
+                                    @foreach ($product->attributes_and_values as $att_and_values)
+                                        <li class="d-flex align-items-center justify-content-between">
+                                            <small class="text-muted pe-1">{{ ucfirst($att_and_values['name']) }}: </small> 
+                                            <select style="width:60%" wire:model="sale_items.{{$product->id}}.attributes_and_values.{{$att_and_values['name']}}" class="form-select form-select-sm">
+                                                <option value="-" selected>-</option>
+                                                @foreach ($att_and_values['values'] as $value)
+                                                    <option wire:key="att_select_{{$value}}" value="{{$value}}">{{ucfirst($value)}}</option>
+                                                @endforeach
+                                            </select>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td class="fw-bold align-items-center" style="width: 9%;">
                                 <select wire:model="sale_items.{{$product->id}}.warranty_id" class="form-select form-select-sm">
                                     <option value="">-</option>
@@ -77,8 +97,10 @@
                         <td class="py-1"><input wire:model.live="discount" type="number" class="fw-bold text-end form-control form-control-sm"></td>
                     </tr>
                     <tr>
-                        <td class="py-1 text-end fw-bold vertical-align-center align-middle" style="width: 80%;">GST:</td>
-                        <td class="py-1"><input wire:model="gst" readonly type="number" class="fw-bold text-end form-control form-control-sm"></td>
+                        <td class="py-1 text-end fw-bold vertical-align-center align-middle" style="width: 80%;">GST <span class="small text-muted">({{ $shop?->gst_percent }}%)</span>:</td>
+                        <td class="py-1">
+                            <input wire:model="gst" readonly type="number" class="fw-bold text-end form-control form-control-sm">
+                        </td>
                     </tr>
                     <tr>
                         <td class="py-1 text-end fw-bold vertical-align-center align-middle" style="width: 80%;">Grand Total:</td>
@@ -89,22 +111,35 @@
 
             <div class="row rounded pt-2 mb-4" style="background-color: rgb(228, 228, 228); margin-left:0.01rem;margin-right:0.01rem;">
                 <div class="col">
-                    <div class="mb-4">
-                        <label>Customer name</label>
-                        <input wire:model="customer_name" type="text" class="form-control form-control-sm" required>
+                    <div class="mb-4 position-relative">
+                        <label>Customer name*</label>
+                        <input wire:model.live="customer_name" type="text" class="form-control form-control-sm" required>
+
+                        @if (!empty($customers))
+                        <div wire:key="customer_div" class="position-absolute rounded w-100 shadow mt-1 border overflow-scroll" style="background-color: rgb(243, 243, 243); max-height: 10rem;">
+                            <ul class="list-unstyled m-0 py-2 w-100">
+                                @foreach ($customers as $customer)
+                                    <li wire:key="customer_li_{{$customer->id}}" class="px-3 w-100"><a wire:click="setCustomer('{{ $customer->id }}')" href="#" class="text-info"> {{ $customer->name }} {{ $customer->phone_no }} </a></li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        @endif
                     </div>
                 </div>
                 <div class="col">
                     <div class="mb-4">
-                        <label>Phone No.</label>
+                        <label>Phone No.*</label>
                         <input wire:model="customer_phone_no" type="text" class="form-control form-control-sm" required>
                     </div>
                 </div>
             </div>
 
+            @if ($products)
             <div class="text-end">
                 <button wire:click="sale" type="button" class="btn btn-primary px-6" type="button">Sale</button>
+                <button wire:click="clearPos" type="button" class="btn btn-danger px-3" type="button">Clear</button>
             </div>
+            @endif
         </div>
     </div>
 

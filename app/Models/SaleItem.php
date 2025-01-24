@@ -7,5 +7,19 @@ use Illuminate\Database\Eloquent\Model;
 class SaleItem extends Model
 {
     protected $guarded = [];
-    protected $timestamps = false;
+    public $timestamps = false;
+
+    public $casts = [
+        'price' => 'decimal:2',
+        'total' => 'decimal:2',
+        'attributes_and_values' => 'array',
+    ];
+
+    public function product() {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    public function warranty() {
+        return $this->belongsTo(Warranty::class, 'warranty_id');
+    }
 }

@@ -6,6 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class Warranty extends Model
 {
-    public $timestamps = false;
     protected $guarded = [];
+    public $timestamps = false;
 }

@@ -22,7 +22,7 @@
                             <div class="col-6">
                                 <div class="mb-4">
                                     <label for="description">Description</label>
-                                    <textarea wire:model="description" id="description" class="form-control form-control-sm" rows="1"></textarea>
+                                    <textarea wire:model="description" class="form-control form-control-sm" rows="1"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -45,7 +45,7 @@
                             <th style="width: 8%;" class="border-0 rounded-start">#</th>
                             <th class="border-0">Brand</th>
                             <th class="border-0">Description</th>
-                            <th style="width: 8%;" class="border-0 text-end">Action</th>
+                            <th style="width: 8%;" class="border-0 text-end rounded-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>

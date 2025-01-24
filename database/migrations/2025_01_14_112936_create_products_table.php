@@ -22,21 +22,12 @@ return new class extends Migration
             $table->string('serial_no', 100)->nullable()->unique(); // imei/serial_no
             $table->string('sku', 100)->nullable()->unique(); // sku/barcode
             $table->decimal('price', 10, 2); // sale price
-            $table->decimal('purchase_price', 10, 2)->nullable(); // purchase price
+            $table->decimal('purchase_price', 10, 2)->nullable(); // will help us calculate profit
             $table->unsignedInteger('quantity')->default(0); // stock count
             $table->text('remark')->nullable();
             $table->boolean('status')->default(0); // 1=Active, 0=Inactive,
+            $table->json('attributes_and_values')->nullable(); // [ ['name' => 'color', 'values' => ['Green', 'Blue', 'Grey']] ]
             $table->timestamps();
-        });
-
-        Schema::create('attributes', function (Blueprint $table) {
-            $table->id();
-            $table->string('name'); // Attribute name (e.g., "Color")
-        });
-        Schema::create('attribute_values', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('attribute_id')->constrained('attributes')->onDelete('cascade');
-            $table->string('value'); // Attribute value (e.g., "Red")
         });
 
         // product_purchases entries
@@ -46,23 +37,10 @@ return new class extends Migration
             $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->onDelete('set null');
             $table->timestamp('purchase_date')->nullable();
             $table->decimal('purchase_price', 10, 2)->nullable(); // per unit
-            $table->decimal('sale_price', 10, 2)->nullable(); // per unit
+            $table->decimal('sale_price', 10, 2)->nullable(); // to update in product sale price later,
             $table->unsignedInteger('quantity')->default(0); // Variation-specific stock
+            $table->json('attributes_and_values')->nullable(); // [ ['name' => 'color', 'values' => ['Green', 'Blue', 'Grey']] ]
             $table->timestamps();
-        });
-
-        Schema::create('product_attributes', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('product_id')->nullable()->constrained('products')->onDelete('cascade');
-            $table->foreignId('attribute_id')->constrained('attributes')->onDelete('set null');
-            $table->foreignId('attribute_value_id')->constrained('attribute_values')->onDelete('set null');
-        });
-
-        Schema::create('product_purchase_attributes', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('product_id')->nullable()->constrained('products')->onDelete('cascade');
-            $table->foreignId('attribute_id')->constrained('attributes')->onDelete('set null');
-            $table->foreignId('attribute_value_id')->constrained('attribute_values')->onDelete('set null');
         });
 
         Schema::create('sales', function (Blueprint $table) {
@@ -79,9 +57,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('sale_id')->constrained('sales')->onDelete('cascade');
             $table->foreignId('product_id')->nullable()->constrained('products')->onDelete('set null');
+            $table->foreignId('warranty_id')->nullable()->constrained('warranties')->onDelete('set null');
             $table->integer('quantity');
             $table->decimal('price', 10, 2); // Price at the time of sale
-            $table->decimal('subtotal', 10, 2); // quantity * price
+            $table->decimal('total', 10, 2); // quantity * price
+            $table->json('attributes_and_values')->nullable(); // [ ['name' => 'Color', 'value' => 'Green'] ]
         });
 
         Schema::create('suppliers', function (Blueprint $table) {

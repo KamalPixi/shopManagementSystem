@@ -9,6 +9,7 @@ class Product extends Model
     protected $casts = [
         'price' => 'decimal:2',
         'purchase_price' => 'decimal:2',
+        'attributes_and_values' => 'array',
     ];
 
     protected $fillable = [
@@ -23,6 +24,7 @@ class Product extends Model
         'price',
         'purchase_price',
         'quantity',
+        'attributes_and_values',
         'remark',
         'status',
     ];
@@ -51,15 +53,12 @@ class Product extends Model
         return $this->belongsTo(Supplier::class);
     }
 
-    public function productAttributes() {
-        return $this->hasMany(ProductAttribute::class);
-    }
-
     public function productPurchases() {
         return $this->hasMany(ProductPurchase::class);
     }
 
-    public function productPurchaseAttributes() {
-        return $this->hasMany(ProductPurchaseAttribute::class);
+    public function getStatusAttribute()
+    {
+        return $this->attributes['status'] ? 'Active' : 'Inactive';
     }
 }

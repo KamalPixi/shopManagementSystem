@@ -1,5 +1,5 @@
 @extends('layouts.default')
 
 @section('content')
-  settings
+  @livewire('settings')
 @endsection

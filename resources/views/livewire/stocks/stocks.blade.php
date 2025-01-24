@@ -61,33 +61,45 @@
                 <table class="table table-centered table-nowrap mb-0 rounded">
                     <thead class="thead-light">
                         <tr>
-                            <th style="width:2%;" class="border-0 rounded-start">#</th>
-                            <th class="border-0">Name</th>
+                            <th style="width:1%;" class="border-0 rounded-start">#</th>
+                            <th class="border-0" style="width: 45%">Name</th>
+                            <th class="border-0 text-center">Attributes</th>
                             <th class="border-0 text-center">Category</th>
                             <th class="border-0 text-center">Brand</th>
                             <th class="border-0 text-center">ModelNo</th>
                             <th class="border-0 text-center">SN/IMEI</th>
+                            <th class="border-0 text-center">Warranty</th>
                             <th class="border-0 text-center">Price</th>
                             <th class="border-0 text-center">Stock</th>
-                            <th class="border-0 text-center">Warranty</th>
                             <th class="border-0 text-center">Status</th>
-                            <th style="width: 8%;" class="border-0 text-end">Action</th>
+                            <th style="width: 8%;" class="border-0 text-end rounded-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($products as $product)
                         <tr wire:key="tr_key_{{ $product->id }}">
                             <td>{{ $products->firstItem() + $loop->index }}</td>
-                            <td class="fw-bold align-items-center lh-1"> {{ $product->name }} <br> <span class="small text-muted">{{$product->sku}}</span></td>
-                            <td class="fw-bold align-items-center text-center"> {{ $product->category?->name }} </td>
-                            <td class="fw-bold align-items-center text-center"> {{ $product->brand?->name }} </td>
-                            <td class="fw-bold align-items-center text-center"> {{ $product->model_no }} </td>
-                            <td class="fw-bold align-items-center text-center"> {{ $product->serial_no }} </td>
-                            <td class="fw-bold align-items-center text-center"> {{ $product->price }} </td>
-                            <td class="fw-bold align-items-center text-center"> {{ $product->quantity }} </td>
-                            <td class="fw-bold align-items-center text-center"> {{ $product->warranty?->name }} </td>
-                            <td class="fw-bold align-items-center text-center"> {{ $product->status }} </td>
-                            <td class="text-end">
+                            <td class="px-0 fw-bold align-items-center lh-1"> {{ $product->name }} <br> <span class="small text-muted">{{$product->sku}}</span></td>
+                            <td class="px-0 fw-bold align-items-center text-center lh-1">
+                                <table class="table table-striped w-100">
+                                    @foreach ($product->attributes_and_values ?? [] as $att_value)
+                                    <tr>
+                                        <td class="text-start" style="padding:0.2rem;"> <small class="text-muted">{{ ucfirst($att_value['name']) }}:</small> </td>
+                                        <td class="text-start" style="padding:0.2rem;"> <small> {{ implode(', ', $att_value['values']) }}</small></td>
+                                    </tr>
+                                    @endforeach
+
+                                </table>
+                            </td>
+                            <td class="px-0 fw-bold align-items-center text-center"> {{ $product->category?->name }} </td>
+                            <td class="px-0 fw-bold align-items-center text-center"> {{ $product->brand?->name }} </td>
+                            <td class="px-0 fw-bold align-items-center text-center"> {{ $product->model_no }} </td>
+                            <td class="px-0 fw-bold align-items-center text-center"> {{ $product->serial_no }} </td>
+                            <td class="px-0 fw-bold align-items-center text-center"> {{ $product->warranty?->name }} </td>
+                            <td class="px-0 fw-bold align-items-center text-center"> {{ $product->price }} </td>
+                            <td class="px-0 fw-bold align-items-center text-center"> {{ $product->quantity }} </td>
+                            <td class="px-0 fw-bold align-items-center text-center"> {{ $product->status }} </td>
+                            <td class="px-0 text-end">
                                 <div class="dropdown">
                                     <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="fas fa-ellipsis-h"></i>
