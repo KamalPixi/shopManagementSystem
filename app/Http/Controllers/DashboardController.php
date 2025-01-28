@@ -30,6 +30,14 @@ class DashboardController extends Controller
         return view('warranty-send');
     }
 
+    public function warrantyReceive() {
+        return view('warranty-receive');
+    }
+
+    public function warrantyCustomerReceive() {
+        return view('warranty-customer-receive');
+    }
+
     public function stocks() {
         return view('stocks.stocks');
     }

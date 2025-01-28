@@ -32,6 +32,11 @@ class WarrantySend extends Component
     public $search_reference_no;
     public $search_customer_name;
 
+    // modal warranty id
+    public $mark_receive_warranty_id;
+    public $receive_date;
+    public $receive_remark;
+
     protected $rules = [
         'reference_no' => 'nullable|string|max:255',
         'sale_item_id' => 'nullable|exists:sale_items,id',
@@ -111,6 +116,25 @@ class WarrantySend extends Component
         $w = WarrantySendModel::findOrFail($id);
         $w->delete();
         session()->flash('success', 'Warranty record deleted.');
+    }
+
+
+    public function markAsReceiveModal($id) {
+        $this->mark_receive_warranty_id = $id;
+        $this->dispatch('open-modal' , ['modal_id' => 'modal-default']);
+    }
+
+    public function markAsReceived() {
+        $w = WarrantySendModel::findOrFail($this->mark_receive_warranty_id);
+
+        $validated = $this->validate([
+            'receive_date' => 'required|date_format:Y-m-d',
+            'receive_remark' => 'required|string|max:2000',
+        ]);
+        $validated['status'] = 'received';
+        $w->update($validated);
+        $this->mark_receive_warranty_id = null;
+        session()->flash('success', 'Marked as received ' . $w->product_name);
     }
 
     public function render()

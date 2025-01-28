@@ -25,6 +25,7 @@ Route::namespace('App\Http\Controllers')->group(function () {
             Route::get('/warranties', 'warranties')->name('warranties');
             Route::get('/warranty-send', 'warrantySend')->name('warrantySend');
             Route::get('/warranty-receive', 'warrantyReceive')->name('warrantyReceive');
+            Route::get('/customer-receive', 'warrantyCustomerReceive')->name('warrantyCustomerReceive');
             Route::get('/stocks', 'stocks')->name('stocks');
             Route::get('/stocks/add', 'stockAdd')->name('stocks.add');
             Route::get('/stocks/add_to_stock', 'addToStock')->name('stocks.addToStock');

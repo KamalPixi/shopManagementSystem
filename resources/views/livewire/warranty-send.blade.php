@@ -167,7 +167,7 @@
                                         <i class="fas fa-ellipsis-h"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                                      <li><a class="dropdown-item" wire:click="edit('{{ $warranty->id }}')" href="#"> <i class="fas fa-hand-holding pe-2"></i> Customer Receive</a></li>
+                                      <li><a class="dropdown-item" wire:click="markAsReceiveModal('{{ $warranty->id }}')" href="#"> <i class="fas fa-hand-holding pe-2"></i> MarkAsReceived</a></li>
                                       <li><a class="dropdown-item" wire:click="edit('{{ $warranty->id }}')" href="#"><i class="fas fa-edit pe-2"></i> Edit</a></li>
                                       <li><a class="dropdown-item text-danger" wire:click="delete('{{ $warranty->id }}')" wire:confirm="Are you sure you want to delete?" href="#"><i class="fas fa-trash pe-2"></i> Delete</a></li>
                                     </ul>
@@ -184,4 +184,39 @@
         </div>
     </div>
 
+
+
+
+<div wire:ignore.self class="modal fade" id="modal-default" tabindex="-1" role="dialog" aria-labelledby="modal-default" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="h6 modal-title">Receive From Repair Shop</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <form wire:submit.prevent="customerReceived">
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <div class="mb-4">
+                            <small class="fw-bold">Receive date</small>
+                            <input wire:model="receive_date" type="date" class="form-control form-control-sm input-date">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="mb-4">
+                            <small class="fw-bold">Receive remark</small>
+                            <textarea wire:model="receive_remark" class="form-control form-control-sm" rows="1"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary" wire:click="markAsReceived">Received from repair shop</button> 
+            <button type="button" class="btn btn-link text-gray-600 ms-auto" data-bs-dismiss="modal">Close</button>
+        </div>
+        </div>
+    </div>
+</div>
+  
 </div>

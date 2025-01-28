@@ -343,3 +343,24 @@ d.addEventListener("DOMContentLoaded", function(event) {
     }
 
 });
+
+
+document.addEventListener('livewire:init', () => {
+
+    // modal 
+    Livewire.on('open-modal', (event) => {
+        var modal_id = event[0]['modal_id'];        
+        var myModal = new bootstrap.Modal(document.getElementById(modal_id));
+        myModal.show();
+    });
+    
+    
+    Livewire.on('print-pdf', (data) => {        
+        const pdfUrl = data[0]['url'];
+        const newWindow = window.open(pdfUrl, '_blank', 'width=800,height=600');    
+        if (newWindow) {
+            newWindow.focus(); // Bring the new window into focus
+        }
+    });
+    
+ });

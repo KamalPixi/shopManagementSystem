@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Pos;
+namespace App\Http\Pos;
 
 use Livewire\Wireable;
 use App\Models\Product;

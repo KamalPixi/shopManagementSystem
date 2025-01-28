@@ -59,10 +59,10 @@
                 </span>
                 <div class="multi-level collapse" role="list" id="stock-app" aria-expanded="false">
                     <ul class="flex-column nav">
-                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks.add') }}"><span class="sidebar-text">New</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks.addToStock') }}"><span class="sidebar-text">Add</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks') }}"><span class="sidebar-text">Stock</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="#"><span class="sidebar-text">Deduct</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks.add') }}"><span class="sidebar-text">New Product</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks.addToStock') }}"><span class="sidebar-text">Add To Stock</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks') }}"><span class="sidebar-text">Stock List</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="#"><span class="sidebar-text">Deduct From Stock</span></a></li>
                     </ul>
                 </div>
             </li>
@@ -103,6 +103,7 @@
                     <ul class="flex-column nav">
                         <li class="nav-item"><a class="nav-link" href="{{ route('warrantySend') }}"><span class="sidebar-text">Warranty Send</span></a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ route('warrantyReceive') }}"><span class="sidebar-text">Warranty Receive</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('warrantyCustomerReceive') }}"><span class="sidebar-text">Customer Receive</span></a></li>
                     </ul>
                 </div>
             </li>
@@ -127,14 +128,6 @@
                         <li class="nav-item"><a class="nav-link" href="{{ route('warranties') }}"><span class="sidebar-text">Warranties</span></a></li>
                     </ul>
                 </div>
-            </li>
-            <li class="nav-item">
-                <a href="../../pages/dashboard/dashboard.html" class="nav-link">
-                    <span class="sidebar-icon">
-                        <i class="fa-solid fa-barcode"></i>
-                    </span>
-                    <span class="sidebar-text">Barcode</span>
-                </a>
             </li>
             <li role="separator" class="dropdown-divider mt-4 mb-3 border-gray-700"></li>
             <li class="nav-item">

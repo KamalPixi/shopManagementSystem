@@ -19,30 +19,36 @@
                         <div class="col">
                             <div class="mb-4">
                                 <label for="description">Product name</label>
-                                <input wire:model.live="name" required type="text" class="form-control form-control-sm">
+                                <input wire:model.live="name" type="text" class="form-control form-control-sm">
                             </div>
                         </div>
                         <div class="col">
                             <div class="mb-4">
                                 <label for="description">SKU/Bercode</label>
-                                <input wire:model.live="sku" required type="text" class="form-control form-control-sm">
+                                <input wire:model.live="sku" type="text" class="form-control form-control-sm">
                             </div>
                         </div>
                         <div class="col">
                             <div class="mb-4">
                                 <label for="description">Model No</label>
-                                <input wire:model.live="model_no" required type="text" class="form-control form-control-sm">
+                                <input wire:model.live="model_no" type="text" class="form-control form-control-sm">
                             </div>
                         </div>
                         <div class="col">
                             <div class="mb-4">
                                 <label for="brand">Category</label>
-                                <select wire:model.live="category_id" class="form-select">
+                                <select wire:model.live="category_id" class="form-select form-select-sm">
                                     <option value="" selected="selected" disabled>Select Category</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                                     @endforeach
                                 </select>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mb-4">
+                                <label for="description">Date</label>
+                                <input wire:model.live="date" type="date" class="form-control form-control-sm input-date">
                             </div>
                         </div>
                     </div>
@@ -55,14 +61,28 @@
     {{-- Product list --}}
     <div class="card border-0 shadow mb-4">
         <div class="card-body">
-            <h1 class="h5 mb-4">Stock List</h1>
+            <div class="d-flex justify-content-between">
+                <h1 class="h5 mb-4">Stock List</h1>
+                <div>
+                    <div class="dropdown">
+                        <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                            <li><a href="#" wire:click="printStocks" class="dropdown-item" type="button"><i class="fa-solid fa-print pe-2"></i>Stocks <small>(Print)</small> </a></li>
+                            <li><a href="#" wire:click="printBarcodes" class="dropdown-item" type="button"><i class="fa-solid fa-print pe-2"></i>Barcodes <small>(Print)</small> </a></li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
 
             <div class="mb-4">
                 <table class="table table-centered table-nowrap mb-0 rounded">
                     <thead class="thead-light">
                         <tr>
                             <th style="width:1%;" class="border-0 rounded-start">#</th>
-                            <th class="border-0" style="width: 45%">Name</th>
+                            <th class="border-0 lh-1" style="width: 45%">Name <br> <small class="text-muted">SKU</small> </th>
                             <th class="border-0 text-center">Attributes</th>
                             <th class="border-0 text-center">Category</th>
                             <th class="border-0 text-center">Brand</th>
@@ -105,6 +125,7 @@
                                         <i class="fas fa-ellipsis-h"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                                        <li><a class="dropdown-item" href="#" wire:click="printBarcode('{{ $product->id }}')"><i class="fa-solid fa-print pe-2"></i>Barcode  <small>(Print)</small></a></li>
                                         <li><a class="dropdown-item" href="{{ route('stocks.show') }}"><i class="fa-solid fa-eye pe-2"></i>View</a></li>
                                         <li><a class="dropdown-item" wire:click="edit('{{ $product->id }}')" href="#"><i class="fas fa-edit pe-2"></i> Edit</a></li>
                                         <li><a class="dropdown-item text-danger" wire:click="delete('{{ $product->id }}')" wire:confirm="Are you sure you want to delete?" href="#"><i class="fas fa-trash pe-2"></i> Delete</a></li>
