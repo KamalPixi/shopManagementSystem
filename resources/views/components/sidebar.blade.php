@@ -62,7 +62,6 @@
                         <li class="nav-item"><a class="nav-link" href="{{ route('stocks.add') }}"><span class="sidebar-text">New Product</span></a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ route('stocks.addToStock') }}"><span class="sidebar-text">Add To Stock</span></a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ route('stocks') }}"><span class="sidebar-text">Stock List</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="#"><span class="sidebar-text">Deduct From Stock</span></a></li>
                     </ul>
                 </div>
             </li>
@@ -80,8 +79,7 @@
                 </span>
                 <div class="multi-level collapse" role="list" id="sales-app" aria-expanded="false">
                     <ul class="flex-column nav">
-                        <li class="nav-item"><a class="nav-link" href="{{ route('sales') }}"><span class="sidebar-text">Sales</span></a>
-                        </li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('sales') }}"><span class="sidebar-text">Sales</span></a></li>
                     </ul>
                 </div>
             </li>

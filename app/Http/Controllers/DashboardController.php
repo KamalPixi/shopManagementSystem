@@ -50,12 +50,12 @@ class DashboardController extends Controller
         return view('stocks.add-to-stock');
     }
 
-    public function stockEdit() {
-        return view('stocks.edit');
+    public function stockEdit($product_id) {
+        return view('stocks.edit', compact('product_id'));
     }
 
-    public function stockShow() {
-        return view('stocks.show');
+    public function stockShow($product_id) {
+        return view('stocks.show', compact('product_id'));
     }
 
     public function sales() {

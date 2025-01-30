@@ -57,7 +57,7 @@ class Product extends Model
     public function productPurchases() {
         return $this->hasMany(ProductPurchase::class);
     }
-
+    
     public function getStatusAttribute()
     {
         return $this->attributes['status'] ? 'Active' : 'Inactive';

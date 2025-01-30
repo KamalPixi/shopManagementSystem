@@ -18,6 +18,8 @@ class Stocks extends Component
     public $sku;
     public $model_no;
     public $category_id = '';
+    public $stock_add_date = '';
+    public $filter_type = 'day';
 
     public function printStocks() {
         $query = $this->buildQuery();
@@ -27,7 +29,8 @@ class Stocks extends Component
         $data = [
             'shop' => Shop::first(),
             'products' => $query->get(),
-            'stock_date' => '-',
+            'stock_date' => $this->stock_add_date,
+            'stock_date_filter_type' => $this->filter_type,
             'stock_print_date' => date('Y-m-d'),
         ];
         
@@ -58,6 +61,17 @@ class Stocks extends Component
         $this->dispatch('print-pdf', ['url' => $url]);
     }
 
+    public function clearFilter() {
+        $this->reset();
+    }
+
+    public function delete($id) {
+        $p = Product::find($id);
+
+        session()->flash('success', 'Product deleted. ' . $p->name);
+        $p->delete();
+    }
+
     private function buildQuery()
     {
         $query = Product::query();
@@ -73,6 +87,22 @@ class Stocks extends Component
         }
         if (!empty($this->category_id)) {
             $query->where('category_id', $this->category_id);
+        }
+        if (!empty($this->stock_add_date)) {
+            $date = \Carbon\Carbon::parse($this->stock_add_date);
+        
+            $query->when($this->filter_type == 'year', function ($q) use ($date) {
+                $q->whereYear('created_at', $date->year);
+            });
+        
+            $query->when($this->filter_type == 'month', function ($q) use ($date) {
+                $q->whereYear('created_at', $date->year)
+                  ->whereMonth('created_at', $date->month);
+            });
+        
+            $query->when($this->filter_type == 'day', function ($q) use ($date) {
+                $q->whereDate('created_at', $date->toDateString());
+            });
         }
 
         return $query;

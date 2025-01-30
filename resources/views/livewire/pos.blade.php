@@ -115,7 +115,7 @@
                         <label>Customer name*</label>
                         <input wire:model.live="customer_name" type="text" class="form-control form-control-sm" required>
 
-                        @if (!empty($customers))
+                        @if (collect($customers)->count())
                         <div wire:key="customer_div" class="position-absolute rounded w-100 shadow mt-1 border overflow-scroll" style="background-color: rgb(243, 243, 243); max-height: 10rem;">
                             <ul class="list-unstyled m-0 py-2 w-100">
                                 @foreach ($customers as $customer)

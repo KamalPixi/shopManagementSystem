@@ -41,14 +41,14 @@
                     </div>
                     <div class="col-4">
                         <div class="mb-4">
-                            <label>State</label>
-                            <input wire:model="state" type="text" class="form-control form-control-sm">
+                            <label>City</label>
+                            <input wire:model="city" type="text" class="form-control form-control-sm">
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="mb-4">
-                            <label>City</label>
-                            <input wire:model="city" type="text" class="form-control form-control-sm">
+                            <label>State</label>
+                            <input wire:model="state" type="text" class="form-control form-control-sm">
                         </div>
                     </div>
                 </div>

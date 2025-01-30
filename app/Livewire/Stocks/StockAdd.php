@@ -94,8 +94,6 @@ class StockAdd extends Component
         session()->flash('success', 'Product added.');
     }
     
-
-
     public function addAttributeField() {
         $this->productAttributes[] = [
             'name' => '',
@@ -105,10 +103,6 @@ class StockAdd extends Component
     public function deleteAttributeField($index) {
         unset($this->productAttributes[$index]);
         $this->productAttributes = array_values($this->productAttributes);
-    }
-
-    public function addAttribute() {
-        
     }
 
     public function render()

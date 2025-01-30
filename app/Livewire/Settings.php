@@ -12,7 +12,7 @@ class Settings extends Component
     use WithFileUploads;
 
     public $name;
-    public $logo;
+    public $logo = '';
     public $address;
     public $state;
     public $city;
@@ -46,7 +46,6 @@ class Settings extends Component
             $this->fill([
                 'name' => $shop->name,
                 'contact_no' => $shop->contact_no,
-                'logo' => $shop->logo,
                 'address' => $shop->address,
                 'state' => $shop->state,
                 'city' => $shop->city,
@@ -65,7 +64,10 @@ class Settings extends Component
         $shop = Shop::first();
 
         // store logo id provided
-        $logo_path = $this->logo?->store('uploads', 'public');
+        $logo_path = null;
+        if($this->logo) {
+            $logo_path = $this->logo?->store('uploads', 'public');
+        }
 
         if (!$shop) {
             $validated['logo'] = $logo_path ?? null;

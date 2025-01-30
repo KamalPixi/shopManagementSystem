@@ -47,10 +47,24 @@
                         </div>
                         <div class="col">
                             <div class="mb-4">
-                                <label for="description">Date</label>
-                                <input wire:model.live="date" type="date" class="form-control form-control-sm input-date">
+                                <label>Stock Added Date</label>
+                                <input wire:model.live="stock_add_date" type="date" class="form-control form-control-sm input-date">
                             </div>
                         </div>
+                        <div class="col">
+                            <div class="mb-4">
+                                <label for="brand">Date Search Type</label>
+                                <select wire:model.live="filter_type" class="form-select form-select-sm">
+                                    <option value="day">Day</option>
+                                    <option value="month">Month</option>
+                                    <option value="year">Year</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="button" wire:click="clearFilter" class="btn btn-danger btn-sm m-0 px-4" type="button">Clear</button>
                     </div>
                 </div>
             </div>
@@ -126,8 +140,8 @@
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
                                         <li><a class="dropdown-item" href="#" wire:click="printBarcode('{{ $product->id }}')"><i class="fa-solid fa-print pe-2"></i>Barcode  <small>(Print)</small></a></li>
-                                        <li><a class="dropdown-item" href="{{ route('stocks.show') }}"><i class="fa-solid fa-eye pe-2"></i>View</a></li>
-                                        <li><a class="dropdown-item" wire:click="edit('{{ $product->id }}')" href="#"><i class="fas fa-edit pe-2"></i> Edit</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('stocks.show', $product->id) }}"><i class="fa-solid fa-eye pe-2"></i>View</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('stocks.edit', $product->id) }}"><i class="fas fa-edit pe-2"></i> Edit</a></li>
                                         <li><a class="dropdown-item text-danger" wire:click="delete('{{ $product->id }}')" wire:confirm="Are you sure you want to delete?" href="#"><i class="fas fa-trash pe-2"></i> Delete</a></li>
                                     </ul>
                                 </div>

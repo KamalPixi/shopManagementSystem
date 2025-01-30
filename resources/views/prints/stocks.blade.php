@@ -56,9 +56,9 @@
 
 <div class="company-info">
     <h1>{{ $shop->name }}</h1>
-    <p>{{ $shop->address }}, {{ $shop->city }} {{ $shop->postal_code }}, {{ $shop->state }} {{ $shop->country }} </p>
+    <p>{{ $shop->address }}, {{ $shop->city }} {{ $shop->postal_code }}, {{ $shop->state }}, {{ $shop->country }} </p>
     <p style="padding-bottom: 0.5rem;">Phone: {{ $shop->contact_no }} | Email: {{ $shop->email }}</p>
-    <p class="print_date"> <strong class="print_date">Stock Date:</strong> <small>{{ $stock_date }}</small> | <strong class="print_date">Print Date:</strong> <small>{{ $stock_print_date }}</small> </p>
+    <p class="print_date"> <strong class="print_date">Stock Date:</strong> <small>{{  $stock_date ? $stock_date : '-' }} @if($stock_date) &#40;{{ $stock_date_filter_type }}&#41; @endif </small> | <strong class="print_date">Print Date:</strong> <small>{{ $stock_print_date }}</small> </p>
 </div>
 
 <table>

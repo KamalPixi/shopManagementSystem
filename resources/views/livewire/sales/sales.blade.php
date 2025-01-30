@@ -108,8 +108,7 @@
                                         <i class="fas fa-ellipsis-h"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                                        <li><a class="dropdown-item" href="{{ route('stocks.show') }}"><i class="fa-solid fa-print pe-2"></i>Print <small class="text-muted">(PDF)</small></a></li>
-                                        <li><a class="dropdown-item" href="{{ route('stocks.show') }}"><i class="fa-solid fa-eye pe-2"></i>View</a></li>
+                                        <li><a class="dropdown-item" href="#" wire:click="printSaleReceipt"><i class="fa-solid fa-print pe-2"></i>Sale Receipt <small class="text-muted">(PDF)</small></a></li>
                                     </ul>
                                 </div>
                             </td>

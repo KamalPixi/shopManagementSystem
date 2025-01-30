@@ -14,4 +14,8 @@ class ProductPurchase extends Model
         'purchase_date' => 'date',
         'attributes_and_values' => 'array',
     ];
+
+    public function supplier() {
+        return $this->belongsTo(Supplier::class);
+    }
 }

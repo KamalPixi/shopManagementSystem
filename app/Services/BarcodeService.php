@@ -62,8 +62,8 @@ final class BarcodeService
 
         }
         
-        $file_path = storage_path('app/public/barcodes/' . $barcode.'.pdf');
+        $file_path = storage_path('app/public/barcodes/barcode.pdf');
         $pdf->Output($file_path, 'F');
-        return asset('storage/barcodes/' . $barcode.'.pdf');
+        return asset('storage/barcodes/barcode.pdf');
     }
 }

@@ -5,6 +5,7 @@ namespace App\Livewire\Sales;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Sale;
+use App\Services\SaleService;
 
 
 class Sales extends Component
@@ -25,6 +26,13 @@ class Sales extends Component
     protected function setFilterToday() {
         $this->sale_date = date('Y-m-d');
         $this->filter_by = 'DAY';
+    }
+
+    public function printSaleReceipt() {
+        $s = new SaleService();
+        $url = $s->generateSaleReceipt(1);
+        
+        $this->dispatch('print-pdf', ['url' => $url]);
     }
 
     public function render()

@@ -169,6 +169,12 @@ class Pos extends Component
         $this->grand_total = number_format($this->grand_total, 2, '.', '');
     }
 
+
+    public function printSaleReceipt($sale_id) {
+        
+    }
+
+
     public function delete($id) {
         $this->sale_items = Collect($this->sale_items)->filter(fn($item) => $item['product_id'] != $id)->toArray();
         $this->products = Collect($this->products)->filter(fn($item) => $item->id != $id);
