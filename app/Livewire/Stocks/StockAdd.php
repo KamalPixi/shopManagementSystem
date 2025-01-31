@@ -107,6 +107,10 @@ class StockAdd extends Component
 
     public function render()
     {
+        if (!auth()->user()->hasPermissionTo('stock:create')) {
+            return view('includes.unauthorized');
+        }
+
         return view('livewire.stocks.stock-add', [
             'categories' => Category::all(),
             'brands' => Brand::all(),

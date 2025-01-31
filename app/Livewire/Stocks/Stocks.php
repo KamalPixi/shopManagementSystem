@@ -66,6 +66,11 @@ class Stocks extends Component
     }
 
     public function delete($id) {
+        if (!auth()->user()->hasPermissionTo('stock:delete')) {
+            session()->flash('failed', 'Access denied!');
+            return;
+        }
+
         $p = Product::find($id);
 
         session()->flash('success', 'Product deleted. ' . $p->name);
@@ -110,6 +115,10 @@ class Stocks extends Component
 
     public function render()
     {
+        if (!auth()->user()->hasPermissionTo('stock:read')) {
+            return view('includes.unauthorized');
+        }
+
         $query = $this->buildQuery();
 
         return view('livewire.stocks.stocks', [

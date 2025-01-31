@@ -65,4 +65,12 @@ class DashboardController extends Controller
     public function settings() {
         return view('settings');
     }
+
+    public function users() {
+        return view('users');
+    }
+
+    public function profile() {
+        return view('profile');
+    }
 }

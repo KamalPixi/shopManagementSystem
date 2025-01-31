@@ -18,13 +18,13 @@
                         <div class="col">
                             <div class="">
                                 <label for="description">Sale Date</label>
-                                <input wire:model.live="sale_date" required type="date" class="form-control form-control-sm">
+                                <input wire:model.live="sale_date" required type="date" class="form-control form-control-sm input-date">
                             </div>
                         </div>
                         <div class="col">
                             <div class="">
                                 <label for="brand">Filter By</label>
-                                <select wire:model.live="filter_by" class="form-select">
+                                <select wire:model.live="filter_by" class="form-select form-select-sm">
                                     <option value="DAY">Day</option>
                                     <option value="MONTH">Month</option>
                                     <option value="YEAR">Year</option>
@@ -45,7 +45,12 @@
     {{-- Product list --}}
     <div class="card border-0 shadow mb-4">
         <div class="card-body">
-            <h1 class="h5 mb-4">Sale List</h1>
+            <div class="d-flex justify-content-between">
+                <h1 class="h5 mb-4">Sale List</h1>
+                <div>
+                    <button type="button" wire:click="printSalesReport" class="btn btn-sm btn-secondary"><i class="fa-solid fa-print pe-2"></i>Sales Report</button>
+                </div>
+            </div>
 
             <div class="mb-4">
                 <table class="table table-centered table-nowrap mb-0 rounded">
@@ -108,7 +113,8 @@
                                         <i class="fas fa-ellipsis-h"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                                        <li><a class="dropdown-item" href="#" wire:click="printSaleReceipt"><i class="fa-solid fa-print pe-2"></i>Sale Receipt <small class="text-muted">(PDF)</small></a></li>
+                                        <li><a class="dropdown-item" href="#" wire:click="printSaleReceipt('{{$sale->id}}')"><i class="fa-solid fa-print pe-2"></i>Sale Receipt <small class="text-muted">(PDF)</small></a></li>
+                                        <li><a class="dropdown-item" href="#" wire:click="printSaleReceiptA4('{{$sale->id}}')"><i class="fa-solid fa-print pe-2"></i>Sale Receipt A4 <small class="text-muted">(PDF)</small></a></li>
                                     </ul>
                                 </div>
                             </td>

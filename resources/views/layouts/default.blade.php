@@ -29,14 +29,14 @@
         }
       </style>
   </head>
-  <body>
+  <body class="d-flex flex-column min-vh-100">
     <x-sidebar />
 
-    <main class="content">
+    <main class="content flex-grow-1">
         <x-navbar />
         @yield('content')
-        @include('includes.footer')
-    </main>
+      </main>
+      @include('includes.footer')
     <script src="{{ asset('/vendor/@popperjs/core/dist/umd/popper.min.js') }}"></script>
     <script src="{{ asset('/vendor/bootstrap/dist/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('/assets/js/volt.js') }}"></script>

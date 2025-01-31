@@ -57,6 +57,11 @@ class Categories extends Component
     }
 
     public function delete($id) {
+        if (!auth()->user()->hasPermissionTo('category:delete')) {
+            session()->flash('failed', 'Access denied!');
+            return;
+        }
+
         $b = Category::findOrFail($id);
         $b->delete();
         session()->flash('success', 'Brand deleted.');
@@ -64,6 +69,10 @@ class Categories extends Component
 
     public function render()
     {
+        if (!auth()->user()->hasPermissionTo('category:read')) {
+            return view('includes.unauthorized');
+        }
+
         return view('livewire.categories', [
             'categories' => Category::paginate(20)
         ]);

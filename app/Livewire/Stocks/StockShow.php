@@ -15,6 +15,10 @@ class StockShow extends Component
 
     public function render()
     {
+        if (!auth()->user()->hasPermissionTo('stock:read')) {
+            return view('includes.unauthorized');
+        }
+
         return view('livewire.stocks.stock-show', [
             'product' => Product::find($this->product_id)
         ]);

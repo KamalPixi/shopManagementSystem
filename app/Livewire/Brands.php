@@ -57,6 +57,11 @@ class Brands extends Component
     }
 
     public function delete($id) {
+        if (!auth()->user()->hasPermissionTo('brand:delete')) {
+            session()->flash('failed', 'Access denied!');
+            return;
+        }
+
         $b = Brand::findOrFail($id);
         $b->delete();
         session()->flash('success', 'Brand deleted.');
@@ -64,6 +69,10 @@ class Brands extends Component
 
     public function render()
     {
+        if (!auth()->user()->hasPermissionTo('brand:read')) {
+            return view('includes.unauthorized');
+        }
+
         return view('livewire.brands', [
             'brands' => Brand::paginate(20)
         ]);

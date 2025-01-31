@@ -12,6 +12,7 @@ class SaleItem extends Model
     public $casts = [
         'price' => 'decimal:2',
         'total' => 'decimal:2',
+        'profit' => 'decimal:2',
         'attributes_and_values' => 'array',
     ];
 

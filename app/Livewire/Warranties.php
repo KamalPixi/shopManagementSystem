@@ -57,6 +57,11 @@ class Warranties extends Component
     }
 
     public function delete($id) {
+        if (!auth()->user()->hasPermissionTo('warranties:delete')) {
+            session()->flash('failed', 'Access denied!');
+            return;
+        }
+
         $b = Warranty::findOrFail($id);
         $b->delete();
         session()->flash('success', 'Warranty deleted.');
@@ -64,6 +69,10 @@ class Warranties extends Component
 
     public function render()
     {
+        if (!auth()->user()->hasPermissionTo('warranties:read')) {
+            return view('includes.unauthorized');
+        }
+
         return view('livewire.warranties', [
             'warranties' => Warranty::paginate(20)
         ]);

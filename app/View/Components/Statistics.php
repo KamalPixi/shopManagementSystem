@@ -5,6 +5,12 @@ namespace App\View\Components;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
+use App\Models\Sale;
+use App\Models\Product;
+use App\Models\Category;
+use App\Models\Brand;
+use App\Models\User;
+use App\Models\WarrantySend;
 
 class Statistics extends Component
 {
@@ -21,6 +27,13 @@ class Statistics extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('components.statistics');
+        return view('components.statistics', [
+            'sales' => Sale::count(),
+            'stocks' => Product::count(),
+            'brands' => Brand::count(),
+            'categories' => Category::count(),
+            'users' => User::count(),
+            'warranty_send' => WarrantySend::count(),
+        ]);
     }
 }

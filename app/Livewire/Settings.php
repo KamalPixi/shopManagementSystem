@@ -84,6 +84,10 @@ class Settings extends Component
 
     public function render()
     {
+        if (!auth()->user()->hasPermissionTo('settings:read')) {
+            return view('includes.unauthorized');
+        }
+
         return view('livewire.settings');
     }
 }

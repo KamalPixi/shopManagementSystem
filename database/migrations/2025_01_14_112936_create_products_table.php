@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('serial_no', 100)->nullable()->unique(); // imei/serial_no
             $table->string('sku', 100)->nullable()->unique(); // sku/barcode
             $table->decimal('price', 10, 2); // sale price
-            $table->decimal('purchase_price', 10, 2)->nullable(); // will help us calculate profit
+            $table->decimal('purchase_price', 10, 2)->default(0); // will help us calculate profit
             $table->unsignedInteger('quantity')->default(0); // stock count
             $table->text('remark')->nullable();
             $table->boolean('status')->default(0); // 1=Active, 0=Inactive,
@@ -36,7 +36,7 @@ return new class extends Migration
             $table->foreignId('product_id')->nullable()->constrained('products')->onDelete('cascade');
             $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->onDelete('set null');
             $table->timestamp('purchase_date')->nullable();
-            $table->decimal('purchase_price', 10, 2)->nullable(); // per unit
+            $table->decimal('purchase_price', 10, 2)->default(0); // per unit
             $table->decimal('sale_price', 10, 2)->nullable(); // to update in product sale price later,
             $table->unsignedInteger('quantity')->default(0); // Variation-specific stock
             $table->json('attributes_and_values')->nullable(); // [ ['name' => 'color', 'values' => ['Green', 'Blue', 'Grey']] ]
@@ -61,6 +61,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->decimal('price', 10, 2); // Price at the time of sale
             $table->decimal('total', 10, 2); // quantity * price
+            $table->decimal('profit', 10, 2);
             $table->json('attributes_and_values')->nullable(); // [ ['name' => 'Color', 'value' => 'Green'] ]
         });
 

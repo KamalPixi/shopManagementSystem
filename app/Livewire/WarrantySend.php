@@ -113,6 +113,11 @@ class WarrantySend extends Component
     }
 
     public function delete($id) {
+        if (!auth()->user()->hasPermissionTo('warranty-send:delete')) {
+            session()->flash('failed', 'Access denied!');
+            return;
+        }
+
         $w = WarrantySendModel::findOrFail($id);
         $w->delete();
         session()->flash('success', 'Warranty record deleted.');
@@ -139,6 +144,10 @@ class WarrantySend extends Component
 
     public function render()
     {
+        if (!auth()->user()->hasPermissionTo('warranty-send:read')) {
+            return view('includes.unauthorized');
+        }
+
         $query = WarrantySendModel::query();
         $query->where('status', 'send');
 

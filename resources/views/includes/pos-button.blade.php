@@ -1,10 +1,8 @@
-<div class="py-4">
-    <div class="dropdown">
-      <a href="{{ route('pos') }}" class="btn btn-gray-800 d-inline-flex align-items-center me-2 px-5">
-          <div class="icon icon-xs me-2">
-            <i class="fa-solid fa-plus icon icon-xs me-2"></i>
-          </div>
-          POS
-      </a>
-    </div>
+<div class="">
+  <a href="{{ route('pos') }}" class="btn btn-info d-inline-flex align-items-center me-2 px-6">
+      <div class="icon icon-xs me-2">
+        <i class="fa-solid fa-cart-plus icon icon-xs me-2"></i>
+      </div>
+      POS
+  </a>
 </div>

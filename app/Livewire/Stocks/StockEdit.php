@@ -126,6 +126,10 @@ class StockEdit extends Component
 
     public function render()
     {
+        if (!auth()->user()->hasPermissionTo('stock:update')) {
+            return view('includes.unauthorized');
+        }
+
         return view('livewire.stocks.stock-edit', [
             'categories' => Category::all(),
             'brands' => Brand::all(),

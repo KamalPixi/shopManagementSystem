@@ -110,7 +110,16 @@ class Pos extends Component
             'sale_items.*.total' => 'required|numeric',
         ]);
 
+        $profit_total = 0;
         foreach ($this->sale_items as $item) {
+            // Calculate the profit for the single item
+            $product = Collect($this->products)->firstWhere('id', $item['product_id']);
+            $profit = $item['price'] - $product->purchase_price; // Assuming $product->cost holds the cost price of the product
+        
+            // Add this item profit to the total sale profit
+            $profit_total += $profit;
+        
+            // Create the sale item entry
             $sale->saleItems()->create([
                 'product_id' => $item['product_id'],
                 'warranty_id' => empty($item['warranty_id']) ? null : $item['warranty_id'],
@@ -118,14 +127,18 @@ class Pos extends Component
                 'quantity' => $item['quantity'],
                 'price' => $item['price'],
                 'total' => $item['total'],
+                'profit' => $profit,
             ]);
-
-            // decrease product qty
-            $product = Collect($this->products)->firstWhere('id', $item['product_id']);
+        
+            // Decrease product quantity in stock
             $product->update([
                 'quantity' => $product->quantity - $item['quantity']
             ]);
         }
+        
+        // Update the sale with the total profit
+        $sale->update(['profit' => $profit_total]);
+        
         
         if(!empty($this->customer_id)) {
             $sale->update(['customer_id' => $this->customer_id]);

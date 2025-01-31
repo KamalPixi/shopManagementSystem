@@ -102,7 +102,7 @@ class AddToStock extends Component
                 'name' => strtolower($att['name']),
                 'values' => $values,
             ];
-        })->toArray();   
+        })->toArray();
 
         // create product purchase record
         $product->productPurchases()->create([
@@ -144,6 +144,7 @@ class AddToStock extends Component
         $product->update([
             'quantity' => $product->quantity + $validated['quantity'],
             'attributes_and_values' => $attributes,
+            'purchase_price' => $validated['purchase_price'],
         ]);
 
         session()->flash('success', 'Added to stock.');
@@ -168,6 +169,10 @@ class AddToStock extends Component
 
     public function render()
     {
+        if (!auth()->user()->hasPermissionTo('stock:create')) {
+            return view('includes.unauthorized');
+        }
+
         return view('livewire.stocks.add-to-stock', [
             'categories' => Category::all(),
             'brands' => Brand::all(),

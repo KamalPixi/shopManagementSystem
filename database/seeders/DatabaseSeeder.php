@@ -11,6 +11,8 @@ use App\Models\Category;
 use App\Models\Brand;
 use App\Models\Supplier;
 use App\Models\Shop;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 
 class DatabaseSeeder extends Seeder
@@ -20,7 +22,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::firstOrCreate([
+        $userAdmin = User::firstOrCreate([
             'username' => 'admin',
         ],[
             'name' => 'Admin',
@@ -53,5 +55,55 @@ class DatabaseSeeder extends Seeder
             'gst_percent' => 6,
             'currency' => ['code' => 'MYR', 'symbol' => 'RM', 'name' => 'Malaysian Ringgit'],
         ]);
+
+        // create role and permissions & assign admin as admin role
+        $roleAdmin = Role::firstOrCreate(['name' => 'admin']);
+        Role::firstOrCreate(['name' => 'staff']);
+        $permissions = [
+            'users:create',
+            'users:read',
+            'users:update',
+            'users:delete',
+
+            'stock:create',
+            'stock:read',
+            'stock:update',
+            'stock:delete',
+
+            'sales:create',
+            'sales:read',
+            'sales:update',
+            'sales:delete',
+
+            'warranty-send:create',
+            'warranty-send:read',
+            'warranty-send:update',
+            'warranty-send:delete',
+
+            'brand:create',
+            'brand:read',
+            'brand:update',
+            'brand:delete',
+
+            'category:create',
+            'category:read',
+            'category:update',
+            'category:delete',
+
+            'warranties:create',
+            'warranties:read',
+            'warranties:update',
+            'warranties:delete',
+
+            'settings:create',
+            'settings:read',
+            'settings:update',
+            'settings:delete',
+        ];
+        foreach ($permissions as $p) {
+            Permission::firstOrCreate(['name' => $p]);
+        }
+        $roleAdmin->syncPermissions(Permission::get());
+        $userAdmin->assignRole($roleAdmin);
     }
 }

@@ -57,6 +57,10 @@ class WarrantyReceive extends Component
 
     public function render()
     {
+        if (!auth()->user()->hasPermissionTo('warranty-send:read')) {
+            return view('includes.unauthorized');
+        }
+
         $query = WarrantySendModel::query();
         $query->where('status', 'received');
         $query->orderBy('updated_at', 'desc');

@@ -5,6 +5,7 @@ namespace App\Livewire\Sales;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Sale;
+use App\Models\Shop;
 use App\Services\SaleService;
 
 
@@ -28,14 +29,38 @@ class Sales extends Component
         $this->filter_by = 'DAY';
     }
 
-    public function printSaleReceipt() {
+    public function printSalesReport() {
+        $query = $this->buildQuery();
+
         $s = new SaleService();
-        $url = $s->generateSaleReceipt(1);
+        
+        $data = [
+            'sales' => $query->get(),
+            'shop' => Shop::first(),
+            'report_date' => $this->sale_date,
+            'report_date_filter_type' => $this->filter_by,
+            'report_print_date' => date('Y-m-d'),
+        ];
+
+        $url = $s->generateSalesReport($data);
+        $this->dispatch('print-pdf', ['url' => $url]);
+    }
+
+    public function printSaleReceipt($id) {
+        $s = new SaleService();
+        $url = $s->generateSaleReceipt($id);
         
         $this->dispatch('print-pdf', ['url' => $url]);
     }
 
-    public function render()
+    public function printSaleReceiptA4($id) {
+        $s = new SaleService();
+        $url = $s->generateSaleReceiptA4($id);
+        
+        $this->dispatch('print-pdf', ['url' => $url]);
+    }
+
+    private function buildQuery()
     {
         $query = Sale::query();
         
@@ -56,6 +81,17 @@ class Sales extends Component
                     break;
             }
         }
+
+        return $query;
+    }
+
+    public function render()
+    {
+        if (!auth()->user()->hasPermissionTo('sales:read')) {
+            return view('includes.unauthorized');
+        }
+
+        $query = $this->buildQuery();
 
         return view('livewire.sales.sales', [
             'sales' => $query->paginate(50)
