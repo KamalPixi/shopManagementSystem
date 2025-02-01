@@ -138,7 +138,7 @@
                     <div class="row">
                         <div class="col-12 col-md-4">
                             <div class="mb-4">
-                                <label for="brand">Purchase Price*</label>
+                                <label for="brand">New Purchase Price*</label>
                                 <input wire:model="purchase_price" type="text" class="form-control form-control-sm">
                             </div>
                         </div>
@@ -150,7 +150,7 @@
                         </div>
                         <div class="col-12 col-md-4">
                             <div class="mb-4">
-                                <label>Purchase Quantity* | <small>Current Qty: {{ $current_quantity }} </small></label>
+                                <label>New Purchase Quantity* | <small>Current Qty: {{ $current_quantity }} </small></label>
                                 <input wire:model="quantity" required type="number" class="input-date form-control form-control-sm">
                             </div>
                         </div>

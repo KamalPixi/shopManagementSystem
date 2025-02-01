@@ -31,9 +31,10 @@ class Product extends Model
 
     public static function findBySkuSerialOrModel(string $value): ?self
     {
-        return self::where('sku', $value)
-            ->orWhere('serial_no', $value)
-            ->orWhere('model_no', $value)
+        $lowerValue = strtolower($value); // Convert search term to lowercase
+        return self::whereRaw('LOWER(sku) = ?', [$lowerValue])
+            ->orWhereRaw('LOWER(serial_no) = ?', [$lowerValue])
+            ->orWhereRaw('LOWER(model_no) = ?', [$lowerValue])
             ->first();
     }
 

@@ -59,6 +59,7 @@ return new class extends Migration
             $table->foreignId('product_id')->nullable()->constrained('products')->onDelete('set null');
             $table->foreignId('warranty_id')->nullable()->constrained('warranties')->onDelete('set null');
             $table->integer('quantity');
+            $table->decimal('purchase_price', 10, 2); // purchase_price at sale time
             $table->decimal('price', 10, 2); // Price at the time of sale
             $table->decimal('total', 10, 2); // quantity * price
             $table->decimal('profit', 10, 2);

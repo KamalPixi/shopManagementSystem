@@ -59,6 +59,11 @@ class Pos extends Component
             return;
         }
 
+        if ($product->quantity < 1) {
+            session()->flash('failed', 'Unable to add, quantity is: 0');
+            return;
+        }
+
         $adyExists = Collect($this->products)->contains(function ($item) use ($product) {
             return $item->id == $product->id;
         });
@@ -112,12 +117,15 @@ class Pos extends Component
 
         $profit_total = 0;
         foreach ($this->sale_items as $item) {
-            // Calculate the profit for the single item
+            // Find the product
             $product = Collect($this->products)->firstWhere('id', $item['product_id']);
-            $profit = $item['price'] - $product->purchase_price; // Assuming $product->cost holds the cost price of the product
         
-            // Add this item profit to the total sale profit
-            $profit_total += $profit;
+            // Calculate the profit for the item (considering quantity)
+            $profit_per_unit = $item['price'] - $product->purchase_price; // Profit per unit
+            $profit_total_for_item = $profit_per_unit * $item['quantity']; // Total profit for this item
+        
+            // Add this item's profit to the total sale profit
+            $profit_total += $profit_total_for_item;
         
             // Create the sale item entry
             $sale->saleItems()->create([
@@ -125,9 +133,10 @@ class Pos extends Component
                 'warranty_id' => empty($item['warranty_id']) ? null : $item['warranty_id'],
                 'attributes_and_values' => $item['attributes_and_values'],
                 'quantity' => $item['quantity'],
-                'price' => $item['price'],
-                'total' => $item['total'],
-                'profit' => $profit,
+                'purchase_price' => $product->purchase_price, // Unit purchase price
+                'price' => $item['price'], // Unit selling price
+                'total' => $item['total'], // Total selling price (quantity * unit price)
+                'profit' => $profit_total_for_item, // Total profit for this item
             ]);
         
             // Decrease product quantity in stock
