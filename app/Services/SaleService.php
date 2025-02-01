@@ -20,14 +20,14 @@ final class SaleService
             'shop' => Shop::first(),
         ]);
         $pdf->setPaper([0, 0, $customWidth, $maxHeight], 'portrait');
-    
-        if (!file_exists(storage_path('app/public/sales'))) {
-            mkdir(storage_path('app/public/sales'), 0755, true);
+
+        if (!is_dir(public_path('sales'))) {
+            mkdir(public_path('sales'), 0755, true);
         }
 
-        $file_path = storage_path('app/public/sales/sale_receipt.pdf');
+        $file_path = public_path('sales/sale_receipt.pdf');
         $pdf->save($file_path);    
-        return asset('storage/sales/sale_receipt.pdf');
+        return asset('sales/sale_receipt.pdf');
     }
 
     public function generateSaleReceiptA4($sale_id): string {   
@@ -38,13 +38,13 @@ final class SaleService
             'shop' => Shop::first(),
         ]);
             
-        if (!file_exists(storage_path('app/public/sales'))) {
-            mkdir(storage_path('app/public/sales'), 0755, true);
+        if (!is_dir(public_path('sales'))) {
+            mkdir(public_path('sales'), 0755, true);
         }
 
-        $file_path = storage_path('app/public/sales/sale_receipt_a4.pdf');
+        $file_path = public_path('sales/sale_receipt_a4.pdf');
         $pdf->save($file_path);    
-        return asset('storage/sales/sale_receipt_a4.pdf');
+        return asset('sales/sale_receipt_a4.pdf');
     }
 
     public function generateSalesReport($data): string {           
@@ -58,15 +58,14 @@ final class SaleService
         $pdf = Pdf::loadView('prints.sales-report', $data)
             ->setPaper('a4', 'portrait')
             ->setOptions($options);
-    
-        if (!file_exists(storage_path('app/public/sales'))) {
-            mkdir(storage_path('app/public/sales'), 0755, true);
+
+        if (!is_dir(public_path('sales'))) {
+            mkdir(public_path('sales'), 0755, true);
         }
 
-        $file_path = storage_path('app/public/sales/sales_report.pdf');
-        $pdf->save($file_path);
-    
-        return asset('storage/sales/sales_report.pdf');
+        $file_path = public_path('sales/sales_report.pdf');
+        $pdf->save($file_path);    
+        return asset('sales/sales_report.pdf');
     }
 }
 

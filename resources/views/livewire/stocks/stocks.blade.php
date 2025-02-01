@@ -1,5 +1,5 @@
 <div>
-    @include('includes.breadcrumb', ['data' => ['Stock List' => route('stocks')]])
+    @include('includes.breadcrumb', ['data' => ['Stock List' => route('stocks.index')]])
 
     <div wire:loading.flex>
         @include('includes.spinner')

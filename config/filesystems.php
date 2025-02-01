@@ -44,6 +44,13 @@ return [
             'visibility' => 'public',
             'throw' => false,
         ],
+        
+        'public_direct' => [
+            'driver' => 'local',
+            'root' => public_path(), // Points to the `public` directory
+            'url' => env('APP_URL'), // Base URL for the `public` directory
+            'visibility' => 'public',
+        ],
 
         's3' => [
             'driver' => 's3',

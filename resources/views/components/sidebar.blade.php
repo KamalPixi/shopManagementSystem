@@ -1,7 +1,7 @@
 <nav class="navbar navbar-dark navbar-theme-primary px-4 col-12 d-lg-none">
     <a class="navbar-brand me-lg-5" href="">
-        <img class="navbar-brand-dark" src="{{ asset('storage/' . $shop?->logo) }}" alt="Volt logo">
-        <img class="navbar-brand-light" src="{{ asset('storage/' . $shop?->logo) }}" alt="Volt logo">
+        <img class="navbar-brand-dark" src="{{ asset($shop?->logo) }}" alt="Volt logo">
+        <img class="navbar-brand-light" src="{{ asset($shop?->logo) }}" alt="Volt logo">
     </a>
     <div class="d-flex align-items-center"><button class="navbar-toggler d-lg-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button></div>
 </nav>
@@ -30,7 +30,7 @@
         </div>
         <ul class="nav flex-column pt-3 pt-md-0">
             <li class="nav-item"><a href="{{ route('dashboard') }}" class="nav-link d-flex align-items-center"><span class="sidebar-icon">
-                        <img class="border border-white border-2" style="width:2rem; border-radius:2px;" src="{{ asset('storage/' . $shop?->logo) }}" alt="logo">
+                        <img class="border border-white border-2" style="width:2rem; border-radius:2px;" src="{{ asset($shop?->logo) }}" alt="logo">
                     </span><span class="mt-1 ms-1 sidebar-text"> {{ $shop?->name }} </span></a>
             </li>
             <li role="separator" class="dropdown-divider mt-4 mb-3 border-gray-700"></li>
@@ -63,7 +63,7 @@
                     <ul class="flex-column nav">
                         <li class="nav-item"><a class="nav-link" href="{{ route('stocks.add') }}"><span class="sidebar-text">New Product</span></a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ route('stocks.addToStock') }}"><span class="sidebar-text">Add To Stock</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks') }}"><span class="sidebar-text">Stock List</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks.index') }}"><span class="sidebar-text">Stock List</span></a></li>
                     </ul>
                 </div>
             </li>
@@ -81,7 +81,7 @@
                 </span>
                 <div class="multi-level collapse" role="list" id="sales-app" aria-expanded="false">
                     <ul class="flex-column nav">
-                        <li class="nav-item"><a class="nav-link" href="{{ route('sales') }}"><span class="sidebar-text">Sales</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('sales.index') }}"><span class="sidebar-text">Sales</span></a></li>
                     </ul>
                 </div>
             </li>

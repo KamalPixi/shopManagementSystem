@@ -41,8 +41,8 @@ final class BarcodeService
         $products = Product::whereIn('sku', $data['sku_array'])->get();
         $s = Shop::first();
 
-        if (!file_exists(storage_path('app/public/barcodes'))) {
-            mkdir(storage_path('app/public/barcodes'), 0755, true);
+        if (!is_dir(public_path('barcodes'))) {
+            mkdir(public_path('barcodes'), 0755, true);
         }
 
         // create barcode
@@ -62,8 +62,8 @@ final class BarcodeService
 
         }
         
-        $file_path = storage_path('app/public/barcodes/barcode.pdf');
+        $file_path = public_path('barcodes/barcode.pdf');
         $pdf->Output($file_path, 'F');
-        return asset('storage/barcodes/barcode.pdf');
+        return asset('barcodes/barcode.pdf');
     }
 }
