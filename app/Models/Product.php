@@ -27,6 +27,7 @@ class Product extends Model
         'attributes_and_values',
         'remark',
         'status',
+        'created_by',
     ];
 
     public static function findBySkuSerialOrModel(string $value): ?self

@@ -74,6 +74,8 @@ class StockAdd extends Component
         
         // Create the product
         $validated['attributes_and_values'] = $attributeArray;
+        $validated['created_by'] = auth()->user()->id;
+
         $product = Product::create($validated);
 
         // create purchase record
@@ -84,6 +86,8 @@ class StockAdd extends Component
             'sale_price' => $validated['price'],
             'quantity' => $validated['quantity'],
             'attributes_and_values' => $attributeArray,
+            'created_by' => auth()->user()->id,
+
         ]);
 
         $this->reset();

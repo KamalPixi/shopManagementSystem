@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignId('category_id')->nullable()->constrained('categories')->onDelete('set null');
             $table->foreignId('brand_id')->nullable()->constrained('brands')->onDelete('set null');
             $table->foreignId('warranty_id')->nullable()->constrained('warranties')->onDelete('set null');
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
             $table->string('model_no', 50)->nullable();
             $table->string('serial_no', 100)->nullable()->unique(); // imei/serial_no
             $table->string('sku', 100)->nullable()->unique(); // sku/barcode
@@ -35,6 +36,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_id')->nullable()->constrained('products')->onDelete('cascade');
             $table->foreignId('supplier_id')->nullable()->constrained('suppliers')->onDelete('set null');
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('purchase_date')->nullable();
             $table->decimal('purchase_price', 10, 2)->default(0); // per unit
             $table->decimal('sale_price', 10, 2)->nullable(); // to update in product sale price later,
@@ -50,6 +52,7 @@ return new class extends Migration
             $table->decimal('discount', 10, 2); // GST amount
             $table->decimal('profit', 10, 2)->nullable();
             $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('set null');
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamps();
         });
 

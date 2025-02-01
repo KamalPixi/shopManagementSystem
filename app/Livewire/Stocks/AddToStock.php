@@ -111,6 +111,7 @@ class AddToStock extends Component
             'purchase_price' => !empty($validated['purchase_price']) ? $validated['purchase_price'] : null,
             'quantity' => $validated['quantity'],
             'attributes_and_values' => $newAttributes,
+            'created_by' => auth()->user()->id,
         ]);
 
         // merge attributes
