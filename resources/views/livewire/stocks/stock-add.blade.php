@@ -1,5 +1,5 @@
 <div>
-    @include('includes.breadcrumb', ['data' => ['Stock' => route('stocks'), 'AddStock' => '']])
+    @include('includes.breadcrumb', ['data' => ['Stock' => route('stocks.index'), 'AddStock' => '']])
 
     <div wire:loading.flex wire:target="create">
         @include('includes.spinner')
@@ -96,7 +96,7 @@
     <div class="row">
         <div class="col-12 col-md-4">
             <div class="mb-4">
-                <label for="brand">Purchase Price</label>
+                <label for="brand">Purchase Price*</label>
                 <input wire:model="purchase_price" type="text" class="form-control form-control-sm">
             </div>
         </div>

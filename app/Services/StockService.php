@@ -19,18 +19,13 @@ final class StockService
             ->setPaper('a4', 'landscape') // Ensure paper size and orientation
             ->setOptions($options);
     
-        if (!file_exists(storage_path('app/public/stocks'))) {
-            mkdir(storage_path('app/public/stocks'), 0755, true);
+        if (!is_dir(public_path('stocks'))) {
+            mkdir(public_path('stocks'), 0755, true);
         }
 
-        // Define the file path where the PDF will be saved
-        $file_path = storage_path('app/public/stocks/stocks.pdf');
-    
-        // Save the generated PDF to the specified file path
-        $pdf->save($file_path);
-    
-        // Return the publicly accessible URL for the PDF
-        return asset('storage/stocks/stocks.pdf');
+        $file_path = public_path('stocks/stocks.pdf');
+        $pdf->save($file_path);    
+        return asset('stocks/stocks.pdf');
     }
 }
 

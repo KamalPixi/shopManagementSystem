@@ -42,7 +42,7 @@ class StockAdd extends Component
         'serial_no' => 'nullable|string|max:100',
         'sku' => 'required|string|max:100|unique:products,sku',
         'price' => 'required|numeric|min:0',
-        'purchase_price' => 'nullable|numeric|min:0',
+        'purchase_price' => 'required|numeric|min:0',
         'quantity' => 'nullable|numeric|min:0',
         'remark' => 'nullable|string|max:255',
         'status' => 'nullable|numeric|in:0,1',

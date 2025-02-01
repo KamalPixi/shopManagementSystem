@@ -5,6 +5,9 @@ namespace App\Livewire;
 use Livewire\Component;
 use App\Models\Shop;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+
 
 
 class Settings extends Component
@@ -65,8 +68,15 @@ class Settings extends Component
 
         // store logo id provided
         $logo_path = null;
+        $directory = 'uploads';
+        
         if($this->logo) {
-            $logo_path = $this->logo?->store('uploads', 'public');
+            if (!is_dir(public_path($directory))) {
+                mkdir(public_path($directory), 0755, true);
+            }
+            $extension = $this->logo->getClientOriginalExtension(); // Get file extension
+            $fileName = Str::random(40) . '.' . $extension;
+            $logo_path = $this->logo->storeAs($directory, $fileName, 'public_direct');
         }
 
         if (!$shop) {

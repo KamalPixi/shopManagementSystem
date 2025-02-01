@@ -5,13 +5,19 @@ namespace App\Livewire;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Shop;
-
+use App\Models\SystemMeta;
+use App\Models\User;
+use Database\Seeders\DatabaseSeeder;
 
 class Login extends Component
 {
     public $username;
     public $password;
     public $remember = false;
+
+    public function mount() {
+        $this->seedDB();
+    }
 
     public function login() {
         $validated = $this->validate([
@@ -29,6 +35,16 @@ class Login extends Component
         }
 
         session()->flash('failed', 'Invalid Credentials!');
+    }
+
+    public function seedDB() {
+        $system = SystemMeta::first();
+        if (!$system) {
+            $seeder = new DatabaseSeeder();
+            $seeder->run();
+            session()->flash('success', 'Database seed completed.');
+            return;
+        }
     }
 
     public function render()
