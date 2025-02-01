@@ -4,8 +4,6 @@ namespace App\Providers;
 
 use Native\Laravel\Facades\Window;
 use Native\Laravel\Contracts\ProvidesPhpIni;
-use App\Models\SystemMeta;
-use Illuminate\Support\Facades\Artisan;
 
 class NativeAppServiceProvider implements ProvidesPhpIni
 {
@@ -15,11 +13,9 @@ class NativeAppServiceProvider implements ProvidesPhpIni
      */
     public function boot(): void
     {
-        Window::open();
-
-        if (SystemMeta::where('is_db_seeded', true)->count() < 1) {
-            Artisan::call('db:seed');
-        }
+        Window::open()
+            ->width(1300)
+            ->height(1000);
     }
 
     /**
