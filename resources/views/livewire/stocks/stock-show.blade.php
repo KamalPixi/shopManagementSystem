@@ -1,5 +1,5 @@
 <div>
-    @include('includes.breadcrumb', ['data' => ['Stock' => route('stocks'), 'View' => '']])
+    @include('includes.breadcrumb', ['data' => ['Stock' => route('stocks.index'), 'View' => '']])
 
     <div class="row">
         <div class="col-12 mb-4">

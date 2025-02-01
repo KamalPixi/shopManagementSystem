@@ -76,7 +76,12 @@
                                 </select>
                             </td>
                             <td class="fw-bold align-items-center" style="width: 11%;"> <input wire:model.live="sale_items.{{$product->id}}.price" type="number" class="form-control form-control-sm text-end"> </td>
-                            <td class="fw-bold align-items-center" style="width: 6%;"> <input wire:model.live="sale_items.{{$product->id}}.quantity" type="number" class="form-control form-control-sm text-center"> </td>
+                            <td class="fw-bold align-items-center" style="width: 6%;">
+                                <div class="d-flex align-items-center">
+                                    <small class="text-muted badge badge-secondary" style="font-size: 0.8rem; padding-right: 2px;">{{ $product->quantity }}:</small>
+                                    <input wire:model.live="sale_items.{{$product->id}}.quantity" type="number" class="form-control form-control-sm text-center"> 
+                                </div>
+                            </td>
                             <td class="fw-bold align-items-center" style="width: 12%;"> <input wire:model="sale_items.{{$product->id}}.total" type="number" readonly class="form-control form-control-sm text-end"> </td>
 
                             <td class="text-center px-0" style="width: 3%;">

@@ -10,6 +10,7 @@ class SaleItem extends Model
     public $timestamps = false;
 
     public $casts = [
+        'purchase_price' => 'decimal:2',
         'price' => 'decimal:2',
         'total' => 'decimal:2',
         'profit' => 'decimal:2',

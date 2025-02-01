@@ -23,6 +23,11 @@ class Users extends Component
     public $editId;
     public $staff_permissions = [];
 
+    public function mount() {
+        $roleStaff = Role::findByName('staff');
+        $this->staff_permissions = $roleStaff->permissions()->pluck('id')->toArray();
+    }
+
     public function create() {
         $validated = $this->validate([
             'name' => 'required|string|max:255',

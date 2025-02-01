@@ -58,10 +58,10 @@
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th style="width:5%;" class="text-center">#</th>
-                <th class="text-start" style="width: 60%">Products</th>
+                <th style="width:3%;" class="text-center">#</th>
+                <th class="text-start" style="width:65%">Products</th>
                 <th class="text-end">Discount</th>
-                <th class="text-end">GST</th>
+                <th class="text-end">GST<small class="text-muted" style="font-size: 0.4rem;">({{ $shop->gst_percent }}%)</small> </th>
                 <th class="text-end">Total</th>
                 <th class="text-end">Profit</th>
             </tr>
@@ -74,12 +74,14 @@
                     <table class="table-product w-100" border="0" cellpadding="1" cellspacing="0">
                         @foreach ($sale->saleItems as $item)
                         <tr>
-                            <td style="width: 45%;"> 
+                            <td style="width: 45%;line-height: 1;"> 
                                 <small>{{ $item?->product->name }}</small><br>
-                                <small class="text-muted">{{ $item?->product->serial_no }}</small> <br>
-                                <small class="text-muted">{{ $item?->product->model_no }}</small>
+                                @if ($item?->product->serial_no)
+                                    <small class="text-muted">SN:{{ $item?->product->serial_no }}</small> <br>
+                                @endif
+                                <small class="text-muted">SKU: {{ $item?->product->sku }} | Model: {{ $item?->product->model_no }}</small>
                             </td>
-                            <td style="width: 15%;"> 
+                            <td style="width: 18%;"> 
                                 <table class="w-100">
                                     @foreach ($item->attributes_and_values ?? [] as $att => $value)
                                     <tr>
@@ -90,10 +92,11 @@
                                 </table>
                             </td>
                             <td class="text-center"><small>Warranty</small><br><b>{{ $item?->warranty?->name ?? '-' }}</b></td>
-                            <td class="text-end"><small>Qty</small><br><b>{{ $item?->quantity }}</b></td>
-                            <td class="text-end"><small>Price</small><br><b>{{ $item?->price }}</b></td>
-                            <td class="text-end"><small>Subtotal</small><br><b>{{ $item?->total }}</b></td>
-                            <td class="text-end"><small>Profit</small><br><b>{{ $item?->profit }}</b></td>
+                            <td class="text-center"><small>Qty</small><br><b>{{ $item?->quantity }}</b></td>
+                            <td class="text-end" style="padding-right:1px;"><small>Price</small><br><b>{{ $item->price }}</b></td>
+                            <td class="text-end" style="padding-right:1px;"><small>Subtotal</small><br><b>{{ $item?->total }}</b></td>
+                            <td class="text-end" style="padding-right:1px;"><small>U.P.Price</small><br><b>{{ $item?->purchase_price }}</b></td>
+                            <td class="text-end" style="padding-right:1px;"><small>Profit</small><br><b>{{ $item?->profit }}</b></td>
                         </tr>
                         @endforeach
                     </table>
@@ -113,11 +116,11 @@
         <thead>
             <tr>
                 <th style="width:5%;"></th>
-                <th class="text-start" style="width:60%;"></th>
-                <th class="text-end">{{ number_format($sales->sum('discount'), 2) }}</th>
-                <th class="text-end">{{ number_format($sales->sum('gst'), 2) }}</th>
-                <th class="text-end">{{ number_format($sales->sum('total_price'), 2) }}</th>
-                <th class="text-end">{{ number_format($sales->sum('profit'), 2) }}</th>
+                <th class="text-start" style="width:65%;"></th>
+                <th class="text-end"> <small class="text-muted">Discount</small> {{ number_format($sales->sum('discount'), 2) }}</th>
+                <th class="text-end"><small class="text-muted">GST</small>  {{ number_format($sales->sum('gst'), 2) }}</th>
+                <th class="text-end"><small class="text-muted">Price</small>  {{ number_format($sales->sum('total_price'), 2) }}</th>
+                <th class="text-end"><small class="text-muted">Profit</small> {{ number_format($sales->sum('profit'), 2) }}</th>
             </tr>
         </thead>
     </table>
