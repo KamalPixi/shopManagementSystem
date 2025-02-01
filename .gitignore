@@ -21,3 +21,5 @@ yarn-error.log
 /.vscode
 /.zed
 /shopManagementFrontEnd
+/dist
+/node_modules
