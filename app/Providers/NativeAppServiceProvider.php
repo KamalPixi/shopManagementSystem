@@ -17,7 +17,7 @@ class NativeAppServiceProvider implements ProvidesPhpIni
     {
         Window::open();
 
-        if (!SystemMeta::where('is_db_seeded', true)->count()) {
+        if (SystemMeta::where('is_db_seeded', true)->count() < 1) {
             Artisan::call('db:seed');
         }
     }
