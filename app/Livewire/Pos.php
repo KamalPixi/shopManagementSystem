@@ -101,6 +101,7 @@ class Pos extends Component
             'total_price' => $this->grand_total,
             'gst' => $this->gst,
             'discount' => $this->discount,
+            'created_by' => auth()->user()->id,
         ]);
 
         // validate sale items

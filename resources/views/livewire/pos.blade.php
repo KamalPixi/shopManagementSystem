@@ -47,7 +47,17 @@
                         @foreach ($products as $product)
                         <tr wire:key="tr_key_{{ $product->id }}">
                             <td style="width: 3%;">{{ $loop->index + 1 }}</td>
-                            <td class="fw-bold align-items-center lh-1"> {{ $product->name }} <br> <span class="small">{{ $product->sku }}</span> </td>
+                            <td class="fw-bold align-items-center lh-1"> 
+                                {{ $product->name }} 
+                                @if ($product->serial_no)
+                                    <br>
+                                    <small class="text-muted">SN:{{ $product->serial_no }}</small>
+                                @endif
+                                @if ($product->sku || $product->model_no)
+                                    <br>
+                                    <small class="text-muted">SKU: {{ $product->sku }} | Model: {{ $product->model_no }}</small>
+                                @endif
+                            </td>
                             <td class="fw-bold lh-1 text-center" style="width: 11%;">
                                 @if ($product->attributes_and_values)
                                 <ul class="list-unstyled">
@@ -76,7 +86,7 @@
                                 </select>
                             </td>
                             <td class="fw-bold align-items-center" style="width: 11%;"> <input wire:model.live="sale_items.{{$product->id}}.price" type="number" class="form-control form-control-sm text-end"> </td>
-                            <td class="fw-bold align-items-center" style="width: 6%;">
+                            <td class="fw-bold align-items-center" style="width: 8%;">
                                 <div class="d-flex align-items-center">
                                     <small class="text-muted badge badge-secondary" style="font-size: 0.8rem; padding-right: 2px;">{{ $product->quantity }}:</small>
                                     <input wire:model.live="sale_items.{{$product->id}}.quantity" type="number" class="form-control form-control-sm text-center"> 
