@@ -105,5 +105,18 @@ class DatabaseSeeder extends Seeder
         }
         $roleAdmin->syncPermissions(Permission::get());
         $userAdmin->assignRole($roleAdmin);
+
+        $s = SystemMeta::first();
+        if ($s) {
+            $s->update([
+                'is_db_seeded' => true
+            ]);
+        }else {
+            SystemMeta::create([
+                'is_installed' => true,
+                'is_db_seeded' => true,
+            ]);
+        }
+
     }
 }
