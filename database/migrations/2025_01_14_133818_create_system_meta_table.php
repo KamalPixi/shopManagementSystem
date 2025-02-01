@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('system_meta', function (Blueprint $table) {
             $table->id();
             $table->boolean('is_installed')->default(false);
+            $table->boolean('is_db_seeded')->default(false);
             $table->timestamps();
         });
     }
