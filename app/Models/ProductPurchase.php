@@ -18,4 +18,8 @@ class ProductPurchase extends Model
     public function supplier() {
         return $this->belongsTo(Supplier::class);
     }
+    
+    public function createdBy() {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

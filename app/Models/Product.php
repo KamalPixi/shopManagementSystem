@@ -35,7 +35,6 @@ class Product extends Model
         $lowerValue = strtolower($value); // Convert search term to lowercase
         return self::whereRaw('LOWER(sku) = ?', [$lowerValue])
             ->orWhereRaw('LOWER(serial_no) = ?', [$lowerValue])
-            ->orWhereRaw('LOWER(model_no) = ?', [$lowerValue])
             ->first();
     }
 
@@ -55,8 +54,16 @@ class Product extends Model
         return $this->belongsTo(Supplier::class);
     }
 
+    public function createdBy() {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     public function productPurchases() {
         return $this->hasMany(ProductPurchase::class);
+    }
+
+    public function saleItems() {
+        return $this->hasMany(SaleItem::class, 'product_id');
     }
     
     public function getStatusAttribute()

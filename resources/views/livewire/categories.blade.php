@@ -39,7 +39,7 @@
     {{-- Brand list --}}
     <div class="card border-0 shadow mb-4">
         <div class="card-body">
-            <div class="mb-4">
+            <div class="mb-4 ">
                 <table class="table table-centered table-nowrap mb-0 rounded">
                     <thead class="thead-light">
                         <tr>

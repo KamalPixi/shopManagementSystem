@@ -110,7 +110,7 @@
 
                     <div class="row rounded py-2 mb-4" style="background-color: rgb(228, 228, 228); margin-left:0.01rem;margin-right:0.01rem;">
                         <div class="d-flex justify-content-between">
-                            <label class="pb-1">Attributes:</label>
+                            <label class="pb-1">Add New Attributes:</label>
                             <button type="button" wire:click="addAttributeField" class="btn btn-white btn-sm m-0" type="button"><i class="fa-solid fa-plus"></i> Add Attribute</button>
                         </div>
                         @foreach ($productAttributes as $k => $productAttribute)

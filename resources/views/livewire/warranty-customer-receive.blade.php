@@ -26,7 +26,7 @@
                 </div>
             </div>
 
-            <div class="mb-4">
+            <div class="mb-4 ">
                 <table class="table table-centered table-nowrap mb-0 rounded">
                     <thead class="thead-light">
                         <tr>

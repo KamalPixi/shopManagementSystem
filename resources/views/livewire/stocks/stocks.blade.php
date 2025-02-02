@@ -91,7 +91,7 @@
                 </div>
             </div>
 
-            <div class="mb-4">
+            <div class="mb-4 ">
                 <table class="table table-centered table-nowrap mb-0 rounded">
                     <thead class="thead-light">
                         <tr>
@@ -106,6 +106,7 @@
                             <th class="border-0 text-center">Price</th>
                             <th class="border-0 text-center">Stock</th>
                             <th class="border-0 text-center">Status</th>
+                            <th class="border-0 text-center">AddedBy</th>
                             <th style="width: 8%;" class="border-0 text-end rounded-end">Action</th>
                         </tr>
                     </thead>
@@ -133,6 +134,7 @@
                             <td class="px-0 fw-bold align-items-center text-center"> {{ $product->price }} </td>
                             <td class="px-0 fw-bold align-items-center text-center"> {{ $product->quantity }} </td>
                             <td class="px-0 fw-bold align-items-center text-center"> {{ $product->status }} </td>
+                            <td class="px-0 fw-bold align-items-center text-center"> {{ $product->createdBy?->name }} </td>
                             <td class="px-0 text-end">
                                 <div class="dropdown">
                                     <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">

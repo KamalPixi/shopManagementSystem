@@ -4,6 +4,7 @@ namespace App\Livewire\Stocks;
 
 use Livewire\Component;
 use App\Models\Product;
+use App\Models\Sale;
 
 class StockShow extends Component
 {
@@ -19,8 +20,12 @@ class StockShow extends Component
             return view('includes.unauthorized');
         }
 
+        $product = Product::find($this->product_id);
+        $sale_ids = $product->saleItems->pluck('sale_id')->unique();
+
         return view('livewire.stocks.stock-show', [
-            'product' => Product::find($this->product_id)
+            'product' => $product,
+            'sales' => Sale::whereIn('id', $sale_ids)->get(),
         ]);
     }
 }

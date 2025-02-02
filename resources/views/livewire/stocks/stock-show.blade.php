@@ -80,44 +80,49 @@
                         </tbody>
                     </table>
 
-                    <h2 class="h5 mb-2">Stock Add History</h2>
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <th>#</th>
-                            <th class="text-center">Purchase Date</th>
-                            <th class="text-center">Attributes & Values</th>
-                            <th class="text-center">Purchase Price</th>
-                            <th class="text-center">Sale Price</th>
-                            <th class="text-center">Purchase Quantity</th>
-                            <th class="text-center">Supplier</th>
-                        </thead>
-                        <tbody>
-                            @foreach ($product->productPurchases as $p)
-                            <tr>
-                                <td> {{ $loop->index + 1 }} </td>
-                                <td class="text-center">{{ $p->purchase_date?->format('Y-m-d') }}</td>
-                                <td class="text-center">
-                                    <div class="d-flex justify-content-center">
-                                        @if (collect($product->attributes_and_values)->filter(fn($p) => !empty($p['name']))->count())
-                                        <table style="margin:0; padding:0;">
-                                            @foreach ($product->attributes_and_values ?? [] as $att_value)
-                                            <tr>
-                                                <td style="padding:0 1px;"> <small class="text-muted">{{ ucfirst($att_value['name']) }}:</small> </td>
-                                                <td style="padding:0 1px;"> <small> {{ implode(', ', $att_value['values']) }}</small></td>
-                                            </tr>
-                                            @endforeach
-                                        </table>
-                                        @endif
-                                    </div>
-                                </td>
-                                <td class="text-center">{{ $p->purchase_price }}</td>
-                                <td class="text-center">{{ $p->sale_price }}</td>
-                                <td class="text-center">{{ $p->quantity }}</td>
-                                <td class="text-center">{{ $p->supplier?->name }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                    <div class="">
+                        <h2 class="h5 mb-2">Stock Add History</h2>
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <th>#</th>
+                                <th class="text-center">Purchase Date</th>
+                                <th class="text-center">Attributes & Values</th>
+                                <th class="text-center">Purchase Price</th>
+                                <th class="text-center">Sale Price</th>
+                                <th class="text-center">Purchase Quantity</th>
+                                <th class="text-center">Supplier</th>
+                                <th class="text-center">AddedBy</th>
+                            </thead>
+                            <tbody>
+                                @foreach ($product->productPurchases as $p)
+                                <tr>
+                                    <td> {{ $loop->index + 1 }} </td>
+                                    <td class="text-center">{{ $p->purchase_date?->format('Y-m-d') }}</td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center">
+                                            @if (collect($product->attributes_and_values)->filter(fn($p) => !empty($p['name']))->count())
+                                            <table style="margin:0; padding:0;">
+                                                @foreach ($product->attributes_and_values ?? [] as $att_value)
+                                                <tr>
+                                                    <td style="padding:0 1px;"> <small class="text-muted">{{ ucfirst($att_value['name']) }}:</small> </td>
+                                                    <td style="padding:0 1px;"> <small> {{ implode(', ', $att_value['values']) }}</small></td>
+                                                </tr>
+                                                @endforeach
+                                            </table>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="text-center">{{ $p->purchase_price }}</td>
+                                    <td class="text-center">{{ $p->sale_price }}</td>
+                                    <td class="text-center">{{ $p->quantity }}</td>
+                                    <td class="text-center">{{ $p->supplier?->name }}</td>
+                                    <td class="text-center">{{ $p->createdBy?->name }}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
                 </div>
                 
             </div>
@@ -125,6 +130,73 @@
     </div>
 
 
+    <div class="card border-0 shadow mb-4">
+        <div class="card-body">
+            <h1 class="h5 mb-4">Sale List</h1>
+
+            <div class="mb-4 ">
+                <table class="table table-centered table-nowrap mb-0 rounded">
+                    <thead class="thead-light">
+                        <tr>
+                            <th style="width:2%;" class="border-0 rounded-start text-start px-2">#</th>
+                            <th class="border-0">Products</th>
+                            <th class="border-0 text-center">Date</th>
+                            <th class="border-0 text-center">Customer</th>
+                            <th class="border-0 text-center">Discount</th>
+                            <th class="border-0 text-center">GST</th>
+                            <th class="border-0 text-center">Total</th>
+                            <th class="border-0 text-center">SoldBy</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($sales as $sale)
+                        <tr wire:key="tr_key_{{ $sale->id }}">
+                            <td class="px-2 py-0 align-middle">{{ $loop->index + 1 }}</td>
+                            <td class="fw-bold align-items-center lh-1 align-middle px-1" style="width: 60%;"> 
+                                <table class="table table-striped table-bordered table-hover w-100">
+                                    @foreach ($sale->saleItems as $item)
+                                        <tr wire:key="sale_items_tr_{{$item->id}}">
+                                            <td class="px-1 py-1" style="width: 45%;"> 
+                                                <small>{{$item?->product->name }}</small> <br>
+                                                <small class="text-muted">{{ $item?->product->sku }} </small>
+                                             </td>
+                                            <td class="px-1 py-1 align-middle lh-1" style="width: 15%;"> 
+                                                <table class="w-100">
+                                                    @foreach ($item->attributes_and_values ?? [] as $att => $value)
+                                                    <tr>
+                                                        <td class="text-muted px-0"> <small>{{ ucfirst($att) }}</small></td>
+                                                        <td class="px-0"><small><b>: {{ ucfirst($value) }}</b></small></td>
+                                                    </tr>
+                                                    @endforeach
+                                                </table>
+                                            </td>
+                                            <td class="px-1 py-1 align-middle text-center"> <small class="text-muted lh-1">Warranty: <br> <b class="text-primary">{{$item?->warranty?->name ?? '-' }}</b></span>  </td>
+                                            <td class="px-1 py-1 align-middle text-center"> <small class="text-muted lh-1">Qty: <br> <b class="text-primary">{{$item?->quantity }}</b></span>  </td>
+                                            <td class="px-1 py-1 align-middle text-center"> <small class="text-muted lh-1">Price: <br> <b class="text-primary">{{$item?->price }}</b></span>  </td>
+                                            <td class="px-1 py-1 align-middle text-center"> <small class="text-muted lh-1">Subtotal: <br> <b class="text-primary">{{$item?->total }}</b></span>  </td>
+                                        </tr>
+                                    @endforeach
+                                </table>
+                            </td>
+                            <td class="fw-bold align-items-center align-middle text-center lh-1"> 
+                                <small>{{ $sale->created_at?->format('Y-m-d') }}</small> <br>
+                                <small class="text-muted">{{ $sale->created_at?->diffForHumans() }}</small>
+                            </td>                            
+                            <td class="fw-bold align-items-center text-center lh-1 align-middle"> 
+                                <small>{{ $sale->customer?->name }}</small>  <br>
+                                 <small>{{ $sale->customer?->phone_no }}</small>
+                            </td>
+                            <td class="fw-bold align-items-center align-middle text-center"> {{ $sale->discount }} </td>
+                            <td class="fw-bold align-items-center align-middle text-center"> {{ $sale->gst }} </td>
+                            <td class="fw-bold align-items-center align-middle text-center fw-bold"> {{ $sale->total_price }} </td>
+                            <td class="fw-bold align-items-center align-middle text-center fw-bold"> {{ $sale->createdBy?->name }} </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
 
 </div>
