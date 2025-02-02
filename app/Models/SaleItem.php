@@ -21,6 +21,10 @@ class SaleItem extends Model
         return $this->belongsTo(Product::class, 'product_id');
     }
 
+    public function sale() {
+        return $this->belongsTo(Sale::class, 'sale_id');
+    }
+
     public function warranty() {
         return $this->belongsTo(Warranty::class, 'warranty_id');
     }

@@ -52,7 +52,7 @@
                 </div>
             </div>
 
-            <div class="mb-4">
+            <div class="mb-4 ">
                 <table class="table table-centered table-nowrap mb-0 rounded">
                     <thead class="thead-light">
                         <tr>
@@ -63,6 +63,7 @@
                             <th class="border-0 text-center">Discount</th>
                             <th class="border-0 text-center">GST</th>
                             <th class="border-0 text-center">Total</th>
+                            <th class="border-0 text-center">SoldBy</th>
                             <th style="width: 8%;" class="border-0 text-end rounded-end">Action</th>
                         </tr>
                     </thead>
@@ -107,6 +108,7 @@
                             <td class="fw-bold align-items-center align-middle text-center"> {{ $sale->discount }} </td>
                             <td class="fw-bold align-items-center align-middle text-center"> {{ $sale->gst }} </td>
                             <td class="fw-bold align-items-center align-middle text-center fw-bold"> {{ $sale->total_price }} </td>
+                            <td class="fw-bold align-items-center align-middle text-center fw-bold"> {{ $sale->createdBy?->name }} </td>
                             <td class="text-end">
                                 <div class="dropdown">
                                     <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">

@@ -8,6 +8,8 @@ use App\Models\Warranty;
 use App\Models\Shop;
 use App\Models\Sale;
 use App\Models\Customer;
+use App\Services\SaleService;
+
 
 class Pos extends Component
 {
@@ -60,7 +62,7 @@ class Pos extends Component
         }
 
         if ($product->quantity < 1) {
-            session()->flash('failed', 'Unable to add, quantity is: 0');
+            session()->flash('failed', 'Out of stock!');
             return;
         }
 
@@ -162,6 +164,8 @@ class Pos extends Component
 
         $this->clearPos();
         session()->flash('success', 'Product sale success.');
+
+        $this->printSaleReceipt($sale->id);
     }
 
     protected function calculate() {
@@ -194,7 +198,10 @@ class Pos extends Component
 
 
     public function printSaleReceipt($sale_id) {
+        $s = new SaleService();
+        $url = $s->generateSaleReceipt($sale_id);
         
+        $this->dispatch('print-pdf', ['url' => $url]);
     }
 
 

@@ -82,7 +82,7 @@
     <div class="card border-0 shadow mb-4">
         <div class="card-body">
             <h1 class="h5 mb-4">User List</h1>
-            <div class="mb-4">
+            <div class="mb-4 ">
                 <table class="table table-centered table-nowrap mb-0 rounded">
                     <thead class="thead-light">
                         <tr>

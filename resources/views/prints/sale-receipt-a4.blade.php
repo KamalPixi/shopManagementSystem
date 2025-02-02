@@ -125,7 +125,7 @@
                     <td style="line-height: 1;">
                         {{ $item->product?->name }} <br>
                         <small style="font-size: 8px;">{{ $item->product?->model_no }}</small> 
-                        <small style="font-size: 8px;">{{ $item->product?->serial_no }}</small> 
+                        <small style="font-size: 8px;">{{ $item->product?->serial_no }}</small> <br>
                         @foreach ($item->attributes_and_values ?? [] as $att => $value)
                         <small style="font-size: 8px;">
                            {{ ucfirst($att) }}:{{ ucfirst($value) }}
