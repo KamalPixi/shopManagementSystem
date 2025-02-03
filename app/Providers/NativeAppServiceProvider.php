@@ -15,12 +15,12 @@ class NativeAppServiceProvider implements ProvidesPhpIni
     public function boot(): void
     {
         Menu::create(
+            Menu::file(),
             Menu::app(),
-            Menu::window(),
             Menu::make(
                 Menu::quit(),
             ),
-        );
+        )->icon(public_path('menuBarIcon.png'));
 
         Window::open()
             ->width(1500)
