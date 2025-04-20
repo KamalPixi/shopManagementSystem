@@ -16,7 +16,7 @@
                     <div class="col-4">
                         <div class="mb-4">
                             <label>Shop Name*</label>
-                            <input wire:model="name" type="text" class="form-control form-control-sm">
+                            <input type="text" value="{{ $name }}" readonly disabled class="form-control form-control-sm">
                         </div>
                     </div>
                     <div class="col-4">
