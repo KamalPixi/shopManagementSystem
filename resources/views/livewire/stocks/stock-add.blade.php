@@ -12,7 +12,7 @@
             <div class="card border-0 shadow components-section">
 
 
-<form  wire:submit.prevent="create" class="card-body">
+<form  wire:submit.prevent class="card-body">
     <h1 class="h5 mb-4">Add New Product</h1>
 
     <div class="row">
@@ -170,7 +170,7 @@
     </div>
 
     <div>
-        <button type="submit" class="btn btn-primary btn-sm" type="button">Add Product</button>
+        <button type="button" wire:click="create" class="btn btn-primary btn-sm" type="button">Add Product</button>
     </div>
 </form>
 
