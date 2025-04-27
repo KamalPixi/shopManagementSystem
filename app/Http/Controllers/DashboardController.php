@@ -73,4 +73,8 @@ class DashboardController extends Controller
     public function profile() {
         return view('profile');
     }
+
+    public function dbImportExport() {
+        return view('db-import-export');
+    }
 }

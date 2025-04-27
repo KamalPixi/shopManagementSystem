@@ -29,5 +29,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/settings', 'settings')->name('settings');
         Route::get('/users', 'users')->name('users');
         Route::get('/profile', 'profile')->name('profile');
+        Route::get('/db-import-export', 'dbImportExport')->name('dbImportExport');
     });
 });

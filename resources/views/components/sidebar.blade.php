@@ -147,6 +147,14 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a href="{{ route('dbImportExport') }}" class="nav-link d-flex align-items-center">
+                    <span class="sidebar-icon">
+                        <i class="fa-solid fa-file-export"></i>
+                    </span>
+                    <span class="sidebar-text">DBImportExport</span>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="{{ route('logout') }}" class="nav-link d-flex align-items-center">
                     <span class="sidebar-icon">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i>
