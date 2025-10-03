@@ -3,11 +3,23 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Product;
 
 class DashboardController extends Controller
 {
     public function dashboard() {
-        return view('dashboard');
+        // Low stock: quantity < 10 (adjust as needed)
+        $lowStockThreshold = 10;
+        $products = Product::with('category')
+                           ->where('quantity', '<', $lowStockThreshold)
+                           ->where('status', 1) // Only active products
+                           ->orderBy('quantity', 'asc')
+                           ->take(10) // Limit for dashboard (e.g., top 10)
+                           ->get();
+
+        $lowStockCount = Product::where('quantity', '<', $lowStockThreshold)->where('status', 1)->count();
+
+        return view('dashboard', compact('products', 'lowStockCount'));
     }
 
     public function pos() {
