@@ -8,14 +8,12 @@ use App\Models\Product;
 class DashboardController extends Controller
 {
     public function dashboard() {
-        // Low stock: quantity < 10 (adjust as needed)
         $lowStockThreshold = 10;
         $products = Product::with('category')
-                           ->where('quantity', '<', $lowStockThreshold)
-                           ->where('status', 1) // Only active products
-                           ->orderBy('quantity', 'asc')
-                           ->take(10) // Limit for dashboard (e.g., top 10)
-                           ->get();
+                        ->where('quantity', '<', $lowStockThreshold)
+                        ->where('status', 1)
+                        ->orderBy('quantity', 'asc')
+                        ->paginate(10); // Paginate for links() and firstItem()
 
         $lowStockCount = Product::where('quantity', '<', $lowStockThreshold)->where('status', 1)->count();
 

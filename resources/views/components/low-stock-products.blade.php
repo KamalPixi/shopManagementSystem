@@ -1,65 +1,49 @@
-<div class="col-12">
-    <div class="card">
-        <!-- Card header -->
-        <div class="card-header">
-            <div class="row align-items-center">
-                <div class="col-8">
-                    <h3 class="mb-0">Low Stock Products</h3>
-                </div>
-                <div class="col-4 text-right">
-                    <span class="badge badge-danger badge-lg">{{ $lowStockCount ?? 0 }} items</span>
-                </div>
-            </div>
-        </div>
-        <!-- Light table -->
-        <div class="table-responsive">
-            <table class="table align-middle table-flush table-hover">
+<div class="card border-0 shadow mb-4">
+    <div class="card-body">
+        <h6 class="mb-3">Low Stock Products</h6>
+        <div class="mb-4 table-responsive">
+            <table class="table table-centered table-nowrap mb-0 rounded">
                 <thead class="thead-light">
                     <tr>
-                        <th scope="col">Name</th>
-                        <th scope="col">SKU</th>
-                        <th scope="col">Category</th>
-                        <th scope="col">Quantity</th>
-                        <th scope="col">Price</th>
-                        <th scope="col">Actions</th>
+                        <th style="width: 8%;" class="border-0 rounded-start">#</th>
+                        <th class="border-0">Name</th>
+                        <th class="border-0">SKU</th>
+                        <th class="border-0">Category</th>
+                        <th style="width: 8%;" class="border-0">Quantity</th>
+                        <th style="width: 8%;" class="border-0 text-end rounded-end">Action</th>
                     </tr>
                 </thead>
-                <tbody class="list">
-                    @forelse($products as $product)
-                        <tr>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <span class="avatar avatar-sm rounded-circle bg-warning me-2">
-                                        <i class="fas fa-box text-white"></i>
-                                    </span>
-                                    <div>
-                                        <p class="mb-0 text-sm">{{ $product->name }}</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="text-xs font-weight-bold">{{ $product->sku ?? 'N/A' }}</span>
-                            </td>
-                            <td>
-                                <span class="text-xs font-weight-bold">{{ $product->category->name ?? 'Uncategorized' }}</span>
-                            </td>
-                            <td>
-                                @if($product->quantity < 5)
-                                    <span class="badge badge-danger">{{ $product->quantity }}</span>
-                                @else
-                                    <span class="badge badge-warning">{{ $product->quantity }}</span>
-                                @endif
-                            </td>
-                            <td>
-                                <span class="text-xs font-weight-bold">${{ number_format($product->price, 2) }}</span>
-                            </td>
-                            <td class="text-right">
-                                <div class="actions">
-                                    <a href="{{ route('products.edit', $product->id) }}" class="btn btn-sm btn-primary">Edit</a>
-                                    <a href="{{ route('products.show', $product->id) }}" class="btn btn-sm btn-info">View</a>
-                                </div>
-                            </td>
-                        </tr>
+                <tbody>
+                    @forelse ($products as $product)
+                    <tr wire:key="tr_key_{{ $product->id }}">
+                        <td>{{ $products->firstItem() + $loop->index }}</td>
+                        <td class="fw-bold align-items-center">
+                            <div class="d-flex align-items-center">
+                                {{ $product->name }}
+                            </div>
+                        </td>
+                        <td class="fw-bold align-items-center"> {{ $product->sku ?? 'N/A' }} </td>
+                        <td class="fw-bold align-items-center"> {{ $product->category->name ?? 'Uncategorized' }} </td>
+                        <td class="fw-bold align-items-center text-center">
+                            @if($product->quantity < 5)
+                                <span class="badge bg-danger">{{ $product->quantity }}</span>
+                            @else
+                                <span class="badge bg-warning">{{ $product->quantity }}</span>
+                            @endif
+                        </td>
+                        <td class="text-end">
+                            <div class="dropdown">
+                                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                                    <li><a class="dropdown-item" href=""><i class="fas fa-edit pe-2"></i> Edit</a></li>
+                                    <li><a class="dropdown-item text-info" href=""><i class="fas fa-eye pe-2"></i> View</a></li>
+                                    <li><a class="dropdown-item text-danger" href="" onclick="return confirm('Are you sure?')"><i class="fas fa-trash pe-2"></i> Delete</a></li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
                     @empty
                         <tr>
                             <td colspan="6" class="text-center py-4">No low-stock products found.</td>
@@ -68,5 +52,7 @@
                 </tbody>
             </table>
         </div>
+
+        {{ $products->links() }}
     </div>
 </div>
