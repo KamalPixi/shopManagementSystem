@@ -184,6 +184,10 @@ class Pos extends Component
 
         try {
             // Calculate GST and Grand Total after mapping
+            $this->subtotal     = (float) $this->subtotal;
+            $this->discount     = (float) $this->discount;
+            $this->gst_percent  = (float) $this->gst_percent;
+
             $this->gst = $this->subtotal * ($this->gst_percent / 100);
             $this->grand_total = ($this->subtotal - $this->discount) + $this->gst;
         } catch (\Throwable $th) {

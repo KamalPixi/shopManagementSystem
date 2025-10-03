@@ -114,12 +114,12 @@
                     <tr>
                         <td class="py-1 text-end fw-bold vertical-align-center align-middle" style="width: 80%;">GST <span class="small text-muted">({{ $shop?->gst_percent }}%)</span>:</td>
                         <td class="py-1">
-                            <input wire:model="gst" readonly type="number" class="fw-bold text-end form-control form-control-sm">
+                            <input wire:model.live="gst" readonly type="number" class="fw-bold text-end form-control form-control-sm">
                         </td>
                     </tr>
                     <tr>
                         <td class="py-1 text-end fw-bold vertical-align-center align-middle" style="width: 80%;">Grand Total:</td>
-                        <td class="py-1"><input wire:model="grand_total" readonly type="number" class="fw-bold text-end form-control form-control-sm"></td>
+                        <td class="py-1"><input wire:model.live="grand_total" readonly type="number" class="fw-bold text-end form-control form-control-sm"></td>
                     </tr>
                 </table>
             </div>
