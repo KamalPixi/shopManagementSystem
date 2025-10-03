@@ -29,7 +29,7 @@
     {{-- Brand list --}}
     <div class="card border-0 shadow mb-4">
         <div class="card-body">
-            <div class="mb-4 ">
+            <div class="mb-4 table-responsive">
                 <table class="table table-centered table-nowrap mb-2 rounded">
                     <thead class="thead-light">
                         <tr>
@@ -37,7 +37,7 @@
                             <th class="border-0 text-start">Product</th>
                             <th class="border-0 text-center">Attributes</th>
                             <th class="border-0 text-center">Warranty</th>
-                            <th class="border-0 text-center">Price <small class="small">Price Per Unit</small></th>
+                            <th class="border-0 text-center">Sale Price <small class="small">Unit</small></th>
                             <th class="border-0 text-center">Qty</th>
                             <th class="border-0 text-center">Total</th>
                             <th  class="border-0 text-end">-</th>

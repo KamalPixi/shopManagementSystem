@@ -62,6 +62,14 @@ class DashboardController extends Controller
         return view('sales.sales');
     }
 
+    public function suppliers() {
+        return view('suppliers');
+    }
+
+    public function customers() {
+        return view('customers');
+    }
+
     public function settings() {
         return view('settings');
     }

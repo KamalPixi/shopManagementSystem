@@ -100,6 +100,16 @@ class DatabaseSeeder extends Seeder
             'settings:read',
             'settings:update',
             'settings:delete',
+
+            'supplier:create',
+            'supplier:read',
+            'supplier:update',
+            'supplier:delete',
+
+            'customer:create',
+            'customer:read',
+            'customer:update',
+            'customer:delete',
         ];
         foreach ($permissions as $p) {
             Permission::firstOrCreate(['name' => $p]);

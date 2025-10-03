@@ -85,6 +85,14 @@ class Sales extends Component
         return $query;
     }
 
+    public function deleteSale($id) {
+        $sale = Sale::findOrFail($id);
+        $sale->saleItems()->delete();
+
+        $sale->delete();
+        session()->flash('success', 'Sale Item has been deleted.');
+    }
+
     public function render()
     {
         if (!auth()->user()->hasPermissionTo('sales:read')) {

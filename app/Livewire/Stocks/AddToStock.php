@@ -91,6 +91,8 @@ class AddToStock extends Component
     public function create() {
         $validated = $this->validate();
 
+        // dd($validated);
+
         $product = Product::findBySkuSerialOrModel($this->identifier);
 
         $newAttributes = collect($this->productAttributes)->map(function ($att) {
@@ -108,7 +110,7 @@ class AddToStock extends Component
         $product->productPurchases()->create([
             'supplier_id' => !empty($validated['supplier_id']) ? $validated['supplier_id'] : null,
             'purchase_date' => !empty($validated['purchase_date']) ? $validated['purchase_date'] : null,
-            'purchase_price' => !empty($validated['purchase_price']) ? $validated['purchase_price'] : null,
+            'purchase_price' => !empty($validated['purchase_price']) ? $validated['purchase_price'] : 0,
             'quantity' => $validated['quantity'],
             'attributes_and_values' => $newAttributes,
             'created_by' => auth()->user()->id,

@@ -28,6 +28,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/stocks/show/{product_id}', 'stockShow')->name('stocks.show');
         Route::get('/settings', 'settings')->name('settings');
         Route::get('/users', 'users')->name('users');
+        Route::get('/suppliers', 'suppliers')->name('suppliers');
+        Route::get('/customers', 'customers')->name('customers');
         Route::get('/profile', 'profile')->name('profile');
         Route::get('/db-import-export', 'dbImportExport')->name('dbImportExport');
     });

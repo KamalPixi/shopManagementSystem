@@ -27,6 +27,11 @@
         .input-date {
           height: 1rem;
         }
+
+        /* to fix old laptop large display issue */
+        html {
+          font-size: 14px;
+        }
       </style>
   </head>
   <body class="d-flex flex-column min-vh-100">

@@ -52,17 +52,17 @@
                 </div>
             </div>
 
-            <div class="mb-4 ">
+            <div class="mb-4 table-responsive">
                 <table class="table table-centered table-nowrap mb-0 rounded">
                     <thead class="thead-light">
                         <tr>
                             <th style="width:2%;" class="border-0 rounded-start text-start px-2">#</th>
                             <th class="border-0">Products</th>
-                            <th class="border-0 text-center">Date</th>
-                            <th class="border-0 text-center">Customer</th>
                             <th class="border-0 text-center">Discount</th>
                             <th class="border-0 text-center">GST</th>
-                            <th class="border-0 text-center">Total</th>
+                            <th class="border-0 text-center">G.Total</th>
+                            <th class="border-0 text-center">Date</th>
+                            <th class="border-0 text-center">Customer</th>
                             <th class="border-0 text-center">SoldBy</th>
                             <th style="width: 8%;" class="border-0 text-end rounded-end">Action</th>
                         </tr>
@@ -91,12 +91,17 @@
                                             </td>
                                             <td class="px-1 py-1 align-middle text-center"> <small class="text-muted lh-1">Warranty: <br> <b class="text-primary">{{$item?->warranty?->name ?? '-' }}</b></span>  </td>
                                             <td class="px-1 py-1 align-middle text-center"> <small class="text-muted lh-1">Qty: <br> <b class="text-primary">{{$item?->quantity }}</b></span>  </td>
-                                            <td class="px-1 py-1 align-middle text-center"> <small class="text-muted lh-1">Price: <br> <b class="text-primary">{{$item?->price }}</b></span>  </td>
+                                            <td class="px-1 py-1 align-middle text-center"> <small class="text-muted lh-1">P.Price: <br> <b class="text-primary">{{$item?->purchase_price }}</b></span>  </td>
+                                            <td class="px-1 py-1 align-middle text-center"> <small class="text-muted lh-1">S.Price: <br> <b class="text-primary">{{$item?->price }}</b></span>  </td>
+                                            <td class="px-1 py-1 align-middle text-center"> <small class="text-muted lh-1">Profit: <br> <b class="text-primary">{{$item?->profit }}</b></span>  </td>
                                             <td class="px-1 py-1 align-middle text-center"> <small class="text-muted lh-1">Subtotal: <br> <b class="text-primary">{{$item?->total }}</b></span>  </td>
                                         </tr>
                                     @endforeach
                                 </table>
                             </td>
+                            <td class="fw-bold align-items-center align-middle text-center fw-bold"> {{ $sale->discount }} </td>
+                            <td class="fw-bold align-items-center align-middle text-center fw-bold"> {{ $sale->gst }} </td>
+                            <td class="fw-bold align-items-center align-middle text-center fw-bold"> {{ $sale->total_price }} </td>
                             <td class="fw-bold align-items-center align-middle text-center lh-1"> 
                                 <small>{{ $sale->created_at?->format('Y-m-d') }}</small> <br>
                                 <small class="text-muted">{{ $sale->created_at?->diffForHumans() }}</small>
@@ -105,9 +110,6 @@
                                 <small>{{ $sale->customer?->name }}</small>  <br>
                                  <small>{{ $sale->customer?->phone_no }}</small>
                             </td>
-                            <td class="fw-bold align-items-center align-middle text-center"> {{ $sale->discount }} </td>
-                            <td class="fw-bold align-items-center align-middle text-center"> {{ $sale->gst }} </td>
-                            <td class="fw-bold align-items-center align-middle text-center fw-bold"> {{ $sale->total_price }} </td>
                             <td class="fw-bold align-items-center align-middle text-center fw-bold"> {{ $sale->createdBy?->name }} </td>
                             <td class="text-end">
                                 <div class="dropdown">
@@ -117,6 +119,7 @@
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
                                         <li><a class="dropdown-item" href="#" wire:click="printSaleReceipt('{{$sale->id}}')"><i class="fa-solid fa-print pe-2"></i>Sale Receipt <small class="text-muted">(PDF)</small></a></li>
                                         <li><a class="dropdown-item" href="#" wire:click="printSaleReceiptA4('{{$sale->id}}')"><i class="fa-solid fa-print pe-2"></i>Sale Receipt A4 <small class="text-muted">(PDF)</small></a></li>
+                                        <li><a class="dropdown-item text-danger" href="#" wire:confirm="Are you sure you want to delete this item?" wire:click="deleteSale('{{$sale->id}}')"><i class="fa-solid fa-trash pe-2"></i>Delete</a></li>
                                     </ul>
                                 </div>
                             </td>

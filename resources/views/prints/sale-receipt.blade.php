@@ -156,7 +156,7 @@
         </tr>
         <tr>
             <th class="left">Discount:</td>
-            <td class="right">- {{ $sale->discount }}</td>
+            <td class="right">{{ $sale->discount }}</td>
         </tr>
         <tr>
             <th class="left">GST ({{ $shop->gst_percent }}%):</td>

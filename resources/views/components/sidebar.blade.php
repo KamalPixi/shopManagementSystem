@@ -108,6 +108,14 @@
                 </div>
             </li>
             <li class="nav-item">
+                <a href="{{ route('customers') }}" class="nav-link d-flex align-items-center">
+                    <span class="sidebar-icon">
+                        <i class="fa-solid fa-users-between-lines"></i>
+                    </span>
+                    <span class="sidebar-text">Customers</span>
+                </a>
+            </li>
+            <li class="nav-item">
                 <span class="nav-link collapsed d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#add-app">
                     <span>
                         <span class="sidebar-icon">
@@ -126,6 +134,7 @@
                         <li class="nav-item"><a class="nav-link" href="{{ route('brands') }}"><span class="sidebar-text">Brands</span></a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ route('categories') }}"><span class="sidebar-text">Categories</span></a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ route('warranties') }}"><span class="sidebar-text">Warranties</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('suppliers') }}"><span class="sidebar-text">Suppliers</span></a></li>
                     </ul>
                 </div>
             </li>
