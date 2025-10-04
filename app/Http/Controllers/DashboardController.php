@@ -13,7 +13,7 @@ class DashboardController extends Controller
                         ->where('quantity', '<', $lowStockThreshold)
                         ->where('status', 1)
                         ->orderBy('quantity', 'asc')
-                        ->paginate(10); // Paginate for links() and firstItem()
+                        ->paginate(5); // Paginate for links() and firstItem()
 
         $lowStockCount = Product::where('quantity', '<', $lowStockThreshold)->where('status', 1)->count();
 
