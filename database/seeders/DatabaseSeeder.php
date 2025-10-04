@@ -51,7 +51,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'default@domain.com',
         ]);
         Shop::firstOrCreate([
-            'name' => 'AllTopNetwork SDN. BHD.', 
+            'name' => 'ANGARIA MAJU (M) SDN. BHD.', 
             'country' => 'Malaysia', 
             'gst_percent' => 6,
             'currency' => ['code' => 'MYR', 'symbol' => 'RM', 'name' => 'Malaysian Ringgit'],
