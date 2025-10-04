@@ -73,9 +73,9 @@ class Customers extends Component
 
     public function render()
     {
-        // if (!auth()->user()->hasPermissionTo('customer:read')) {
-        //     return view('includes.unauthorized');
-        // }
+        if (!auth()->user()->hasPermissionTo('customer:read')) {
+            return view('includes.unauthorized');
+        }
 
         $customers = Customer::query()
             ->when($this->search, function ($query) {
