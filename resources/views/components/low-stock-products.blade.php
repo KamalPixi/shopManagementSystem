@@ -10,7 +10,6 @@
                         <th class="border-0">SKU</th>
                         <th class="border-0">Category</th>
                         <th style="width: 8%;" class="border-0">Quantity</th>
-                        <th style="width: 8%;" class="border-0 text-end rounded-end">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -30,18 +29,6 @@
                             @else
                                 <span class="badge bg-warning">{{ $product->quantity }}</span>
                             @endif
-                        </td>
-                        <td class="text-end">
-                            <div class="dropdown">
-                                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-ellipsis-h"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                                    <li><a class="dropdown-item" href=""><i class="fas fa-edit pe-2"></i> Edit</a></li>
-                                    <li><a class="dropdown-item text-info" href=""><i class="fas fa-eye pe-2"></i> View</a></li>
-                                    <li><a class="dropdown-item text-danger" href="" onclick="return confirm('Are you sure?')"><i class="fas fa-trash pe-2"></i> Delete</a></li>
-                                </ul>
-                            </div>
                         </td>
                     </tr>
                     @empty
