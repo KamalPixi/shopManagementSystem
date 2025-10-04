@@ -29,18 +29,17 @@
             </div>
         </div>
         <ul class="nav flex-column pt-3 pt-md-0">
-            <li class="nav-item"><a href="{{ route('dashboard') }}" class="nav-link d-flex align-items-center"><span class="sidebar-icon">
-                        <img class="border border-white border-2" style="width:2rem; border-radius:2px;" src="{{ asset($shop?->logo) }}" alt="logo">
-                    </span><span class="mt-1 ms-1 sidebar-text"> {{ $shop?->name }} </span></a>
+            <li class="nav-item">
+                <a href="{{ route('dashboard') }}" class="nav-link d-flex align-items-center"><span class="sidebar-icon">
+                    <img class="border border-white border-2" style="width:2rem; border-radius:2px;" src="{{ asset($shop?->logo) }}" alt="logo"></span>
+                    <span class="mt-1 ms-1 sidebar-text" style="font-size: 0.8rem;"> {{ $shop?->name }} </span>
+                </a>
             </li>
             <li role="separator" class="dropdown-divider mt-4 mb-3 border-gray-700"></li>
             <li class="nav-item">
                 <a href="{{ route('dashboard') }}" class="nav-link">
                     <span class="sidebar-icon">
-                        <svg class="icon icon-xs" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
-                            <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
-                        </svg>
+                        <i class="fa-solid fa-gauge"></i>
                     </span>
                     <span>Dashboard</span>
                 </a>
@@ -49,7 +48,7 @@
                 <span class="nav-link collapsed d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#stock-app">
                     <span>
                         <span class="sidebar-icon">
-                            <i class="fa-solid fa-box"></i>
+                            <i class="fa-solid fa-layer-group"></i>
                         </span>
                         <span class="sidebar-text">Stock</span>
                     </span>
@@ -71,7 +70,7 @@
                 <span class="nav-link collapsed d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#sales-app">
                     <span>
                         <span class="sidebar-icon">
-                            <i class="fa-solid fa-cart-shopping"></i>
+                            <i class="fa-solid fa-clipboard-list"></i>
                         </span>
                         <span class="sidebar-text">Sales</span>
                     </span>
@@ -89,7 +88,7 @@
                 <span class="nav-link collapsed d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#warranty-app">
                     <span>
                         <span class="sidebar-icon">
-                            <i class="fa-solid fa-wrench"></i>
+                            <i class="fa-solid fa-screwdriver-wrench"></i>
                         </span>
                         <span class="sidebar-text">Warranty</span>
                     </span>
@@ -110,7 +109,7 @@
             <li class="nav-item">
                 <a href="{{ route('customers') }}" class="nav-link d-flex align-items-center">
                     <span class="sidebar-icon">
-                        <i class="fa-solid fa-users-between-lines"></i>
+                        <i class="fa-solid fa-users-rays"></i>
                     </span>
                     <span class="sidebar-text">Customers</span>
                 </a>
@@ -119,7 +118,7 @@
                 <span class="nav-link collapsed d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#add-app">
                     <span>
                         <span class="sidebar-icon">
-                            <i class="fa-solid fa-circle-plus"></i>
+                            <i class="fa-solid fa-plus"></i>
                         </span>
                         <span class="sidebar-text">Add</span>
                     </span>
@@ -142,7 +141,7 @@
             <li class="nav-item">
                 <a href="{{ route('users') }}" class="nav-link d-flex align-items-center">
                     <span class="sidebar-icon">
-                        <i class="fa-solid fa-users"></i>
+                        <i class="fa-solid fa-user-plus"></i>
                     </span>
                     <span class="sidebar-text">Users</span>
                 </a>
@@ -150,7 +149,7 @@
             <li class="nav-item">
                 <a href="{{ route('settings') }}" class="nav-link d-flex align-items-center">
                     <span class="sidebar-icon">
-                        <i class="fa-solid fa-gear"></i>
+                        <i class="fa-solid fa-sliders"></i>
                     </span>
                     <span class="sidebar-text">Settings</span>
                 </a>
@@ -158,7 +157,7 @@
             <li class="nav-item">
                 <a href="{{ route('dbImportExport') }}" class="nav-link d-flex align-items-center">
                     <span class="sidebar-icon">
-                        <i class="fa-solid fa-file-export"></i>
+                        <i class="fa-solid fa-upload"></i>
                     </span>
                     <span class="sidebar-text">DBImportExport</span>
                 </a>
