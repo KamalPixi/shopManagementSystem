@@ -11,11 +11,13 @@
     "require": {
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
+        "charlieuki/receiptprinter": "^1.2",
         "elibyy/tcpdf-laravel": "^11.2",
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.5",
         "nativephp/electron": "^1.0",
+        "picqer/php-barcode-generator": "^3.2",
         "spatie/laravel-permission": "^6.12"
     },
     "require-dev": {
