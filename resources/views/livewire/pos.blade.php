@@ -38,6 +38,7 @@
                             <th class="border-0 text-center">Attributes</th>
                             <th class="border-0 text-center">Warranty</th>
                             <th class="border-0 text-center">Sale Price <small class="small">Unit</small></th>
+                            <th class="border-0 text-center">Discount<small class="small">(Fixed)</small></th>
                             <th class="border-0 text-center">Qty</th>
                             <th class="border-0 text-center">Total</th>
                             <th  class="border-0 text-end">-</th>
@@ -86,6 +87,7 @@
                                 </select>
                             </td>
                             <td class="fw-bold align-items-center" style="width: 11%;"> <input wire:model.live="sale_items.{{$product->id}}.price" type="number" class="form-control form-control-sm text-end"> </td>
+                            <td class="fw-bold align-items-center" style="width: 11%;"> <input wire:model.live="sale_items.{{$product->id}}.discount" type="number" class="form-control form-control-sm text-end"> </td>
                             <td class="fw-bold align-items-center" style="width: 8%;">
                                 <div class="d-flex align-items-center">
                                     <small class="text-muted badge badge-secondary" style="font-size: 0.8rem; padding-right: 2px;">{{ $product->quantity }}:</small>
@@ -109,7 +111,7 @@
                     </tr>
                     <tr>
                         <td class="py-1 text-end fw-bold vertical-align-center align-middle" style="width: 80%;">Discount:</td>
-                        <td class="py-1"><input wire:model.live="discount" type="number" class="fw-bold text-end form-control form-control-sm"></td>
+                        <td class="py-1"><input wire:model.live="discount" readonly type="number" class="fw-bold text-end form-control form-control-sm"></td>
                     </tr>
                     <tr>
                         <td class="py-1 text-end fw-bold vertical-align-center align-middle" style="width: 80%;">GST <span class="small text-muted">({{ $shop?->gst_percent }}%)</span>:</td>

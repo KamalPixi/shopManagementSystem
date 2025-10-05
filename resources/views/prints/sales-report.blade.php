@@ -93,9 +93,10 @@
                             </td>
                             <td class="text-center"><small>Warranty</small><br><b>{{ $item?->warranty?->name ?? '-' }}</b></td>
                             <td class="text-center"><small>Qty</small><br><b>{{ $item?->quantity }}</b></td>
-                            <td class="text-end" style="padding-right:1px;"><small>Price</small><br><b>{{ $item->price }}</b></td>
+                            <td class="text-end" style="padding-right:1px;"><small>UnitPurchasePrice</small><br><b>{{ $item?->purchase_price }}</b></td>
+                            <td class="text-end" style="padding-right:1px;"><small>UnitSalePrice</small><br><b>{{ $item->price }}</b></td>
+                            <td class="text-end" style="padding-right:1px;"><small>Discount</small><br><b>{{ $item?->discount }}</b></td>
                             <td class="text-end" style="padding-right:1px;"><small>Subtotal</small><br><b>{{ $item?->total }}</b></td>
-                            <td class="text-end" style="padding-right:1px;"><small>U.P.Price</small><br><b>{{ $item?->purchase_price }}</b></td>
                             <td class="text-end" style="padding-right:1px;"><small>Profit</small><br><b>{{ $item?->profit }}</b></td>
                         </tr>
                         @endforeach
@@ -117,10 +118,10 @@
             <tr>
                 <th style="width:5%;"></th>
                 <th class="text-start" style="width:65%;"></th>
-                <th class="text-end"> <small class="text-muted">Discount</small> {{ number_format($sales->sum('discount'), 2) }}</th>
-                <th class="text-end"><small class="text-muted">GST</small>  {{ number_format($sales->sum('gst'), 2) }}</th>
-                <th class="text-end"><small class="text-muted">Price</small>  {{ number_format($sales->sum('total_price'), 2) }}</th>
-                <th class="text-end"><small class="text-muted">Profit</small> {{ number_format($sales->sum('profit'), 2) }}</th>
+                <th class="text-end"> <small class="text-muted">T.Discount</small> {{ number_format($sales->sum('discount'), 2) }}</th>
+                <th class="text-end"><small class="text-muted">T.GST</small>  {{ number_format($sales->sum('gst'), 2) }}</th>
+                <th class="text-end"><small class="text-muted">T.Price</small>  {{ number_format($sales->sum('total_price'), 2) }}</th>
+                <th class="text-end"><small class="text-muted">T.Profit</small> {{ number_format($sales->sum('profit'), 2) }}</th>
             </tr>
         </thead>
     </table>

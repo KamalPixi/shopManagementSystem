@@ -10,6 +10,12 @@
     </div>
 @endif
 
+@if(session()->has('message'))
+    <div class="alert alert-info">
+        {{ session('message') }}
+    </div>
+@endif
+
 @if ($errors->any())
     <div class="alert alert-danger">
         <ul class="mb-0">

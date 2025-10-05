@@ -9,6 +9,7 @@ use App\Models\Shop;
 use App\Models\Sale;
 use App\Models\Customer;
 use App\Services\SaleService;
+use App\Services\PrintService;
 
 
 class Pos extends Component
@@ -80,6 +81,7 @@ class Pos extends Component
             'product_id' => $product->id,
             'warranty_id' => $product->warranty?->id,
             'price' => $product->price,
+            'discount' => 0,
             'quantity' => 1,
             'attributes_and_values' => [],
             'total' => 0.00,
@@ -114,6 +116,7 @@ class Pos extends Component
             'sale_items.*.warranty_id' => 'nullable|exists:warranties,id',
             'sale_items.*.attributes_and_values' => 'nullable|array',
             'sale_items.*.quantity' => 'required|integer',
+            'sale_items.*.discount' => 'required|numeric',
             'sale_items.*.price' => 'required|numeric',
             'sale_items.*.total' => 'required|numeric',
         ]);
@@ -126,6 +129,7 @@ class Pos extends Component
             // Calculate the profit for the item (considering quantity)
             $profit_per_unit = $item['price'] - $product->purchase_price; // Profit per unit
             $profit_total_for_item = $profit_per_unit * $item['quantity']; // Total profit for this item
+            $profit_total_for_item -= $item['discount'];
         
             // Add this item's profit to the total sale profit
             $profit_total += $profit_total_for_item;
@@ -138,6 +142,7 @@ class Pos extends Component
                 'quantity' => $item['quantity'],
                 'purchase_price' => $product->purchase_price, // Unit purchase price
                 'price' => $item['price'], // Unit selling price
+                'discount' => $item['discount'],
                 'total' => $item['total'], // Total selling price (quantity * unit price)
                 'profit' => $profit_total_for_item, // Total profit for this item
             ]);
@@ -163,9 +168,15 @@ class Pos extends Component
         }
 
         $this->clearPos();
-        session()->flash('success', 'Product sale success.');
 
-        $this->printSaleReceipt($sale->id);
+        // $this->printSaleReceipt($sale->id);
+
+        $printService = new PrintService();
+        // $printService->printReceiptWin($sale);
+        $msg = $printService->printReceiptMac($sale);
+        session()->flash('message', $msg);
+
+        // $this->printSaleReceipt($sale->id);
     }
 
     protected function calculate() {
@@ -175,6 +186,7 @@ class Pos extends Component
             try {
                 // Single unit total for the item
                 $item['total'] = number_format($item['price'] * $item['quantity'], '2', '.', '');
+                $item['total'] -= $item['discount'];
                 $this->subtotal += $item['total'];
             } catch (\Throwable $th) {
                 return $item;
@@ -185,11 +197,12 @@ class Pos extends Component
         try {
             // Calculate GST and Grand Total after mapping
             $this->subtotal     = (float) $this->subtotal;
-            $this->discount     = (float) $this->discount;
+            $this->discount     = (float) collect($this->sale_items)->sum('discount');
             $this->gst_percent  = (float) $this->gst_percent;
 
             $this->gst = $this->subtotal * ($this->gst_percent / 100);
             $this->grand_total = ($this->subtotal - $this->discount) + $this->gst;
+
         } catch (\Throwable $th) {
             return;
         }
