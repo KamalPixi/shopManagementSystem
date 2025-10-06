@@ -7,6 +7,7 @@ use Livewire\WithPagination;
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\BarcodeService;
+use App\Services\BarcodePdfService;
 use App\Services\StockService;
 use App\Models\Shop;
 
@@ -21,7 +22,10 @@ class Stocks extends Component
     public $stock_add_date = '';
     public $filter_type = 'day';
 
-    public function printStocks() {
+    public $productIds = [];
+    public $isSelectedAll = false;
+
+    public function pdfStocks() {
         $query = $this->buildQuery();
 
         $service = new StockService();
@@ -50,11 +54,74 @@ class Stocks extends Component
         $this->dispatch('print-pdf', ['url' => $url]);
     }
 
-    public function printBarcodes() {
+    public function pdfBarcodeOneColumn() {
+        $ids = $this->getSelectedProductIds();
+        $barcodeService = new BarcodeService();
+
+        $url = $barcodeService->generateBarcode([
+            'sku_array' => Product::whereIn('id', $ids)->pluck('sku')->toArray()
+        ]);
+
+        $this->dispatch('print-pdf', ['url' => $url]);
+    }
+
+    public function pdfBarcodeTwoColumn()
+    {
+        $ids = $this->getSelectedProductIds();
+
+        if (count($ids) % 2 !== 0) {
+            return session()->flash('failed', 'Please select even items.');
+        }
+
+        $barcodeService = new BarcodePdfService();
+        $pdf = $barcodeService->generateMultiplePdf($ids);
+
+        $filePath = public_path('barcodes/barcode-labels-multiple.pdf');
+        if (!file_exists(dirname($filePath))) {
+            mkdir(dirname($filePath), 0775, true);
+        }
+
+        file_put_contents($filePath, $pdf->output());
+
+        $url = asset('barcodes/barcode-labels-multiple.pdf');
+        $this->dispatch('print-pdf', ['url' => $url]);
+    }
+
+    public function printBarcodeTwoColumn()
+    {
+        $ids = $this->getSelectedProductIds();
+
+        if (count($ids) % 2 !== 0) {
+            return session()->flash('failed', 'Please select even items.');
+        }
+
+        $barcodeService = new BarcodePdfService();
+        $pdf = $barcodeService->generateMultiplePdf($ids);
+        $barcodeService->printPdfMac($pdf);
+
+        return session()->flash('message', 'Sent to printer....');
+    }
+
+    public function selectedAll($ids) {
+        $this->isSelectedAll = !$this->isSelectedAll;
+
+        if (!$this->isSelectedAll) {
+            $this->productIds = collect($this->productIds)->map(fn() => false)->toArray();
+            return;
+        }
+
+        $this->productIds = $ids;
+    }
+
+    private function getSelectedProductIds() {
+        return array_keys(array_filter($this->productIds));
+    }
+
+    public function printBarcode2() {
         $query = $this->buildQuery();
 
         $barcodeService = new BarcodeService();
-        $url = $barcodeService->generateBarcode([
+        $url = $barcodeService->generateBarcode2([
             'sku_array' => $query->get()->pluck('sku')->toArray()
         ]);
 

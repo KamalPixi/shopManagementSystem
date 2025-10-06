@@ -83,8 +83,10 @@
                             <i class="fas fa-ellipsis-h"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                            <li><a href="#" wire:click="printStocks" class="dropdown-item" type="button"><i class="fa-solid fa-print pe-2"></i>Stocks <small>(Print)</small> </a></li>
-                            <li><a href="#" wire:click="printBarcodes" class="dropdown-item" type="button"><i class="fa-solid fa-print pe-2"></i>Barcodes <small>(Print)</small> </a></li>
+                            <li><a href="#" wire:click="pdfStocks" class="dropdown-item" type="button"><i class="fa-solid fa-file pe-2"></i>Stocks <small>(PDF)</small> </a></li>
+                            <li><a href="#" wire:click="pdfBarcodeOneColumn" class="dropdown-item" type="button"><i class="fa-solid fa-file pe-2"></i>Barcode <small>(PDF 1 Column)</small> </a></li>
+                            <li><a href="#" wire:click="pdfBarcodeTwoColumn" class="dropdown-item" type="button"><i class="fa-solid fa-file pe-2"></i>Barcode <small>(PDF 2 Columns)</small> </a></li>
+                            <li><a href="#" wire:click="printBarcodeTwoColumn" class="dropdown-item" type="button"><i class="fa-solid fa-print pe-2"></i>Barcode <small>(Print 2 Columns)</small> </a></li>
                         </ul>
                     </div>
 
@@ -95,7 +97,10 @@
                 <table class="table table-centered table-nowrap mb-0 rounded">
                     <thead class="thead-light">
                         <tr>
-                            <th style="width:1%;" class="border-0 rounded-start">#</th>
+                            <th style="width:1%;" class="border-0 rounded-start">
+                                <input type="checkbox" wire:click='selectedAll(@json($products->pluck("id")->mapWithKeys(fn($id) => [$id => true])))'>
+                                #
+                            </th>
                             <th class="border-0 lh-1" style="width: 45%">Name <br> <small class="text-muted">SKU</small> </th>
                             <th class="border-0 text-center">Attributes</th>
                             <th class="border-0 text-center">Category</th>
@@ -113,7 +118,10 @@
                     <tbody>
                         @foreach ($products as $product)
                         <tr wire:key="tr_key_{{ $product->id }}">
-                            <td>{{ $products->firstItem() + $loop->index }}</td>
+                            <td>
+                                <input type="checkbox" wire:model="productIds.{{$product->id}}">
+                                {{ $products->firstItem() + $loop->index }}
+                            </td>
                             <td class="px-0 fw-bold align-items-center lh-1"> {{ $product->name }} <br> <span class="small text-muted">{{$product->sku}}</span></td>
                             <td class="px-0 fw-bold align-items-center text-center lh-1">
                                 <table class="table table-striped w-100">
@@ -141,7 +149,7 @@
                                         <i class="fas fa-ellipsis-h"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                                        <li><a class="dropdown-item" href="#" wire:click="printBarcode('{{ $product->id }}')"><i class="fa-solid fa-print pe-2"></i>Barcode  <small>(Print)</small></a></li>
+                                        <li><a class="dropdown-item" href="#" wire:click="printBarcode('{{ $product->id }}')"><i class="fa-solid fa-print pe-2"></i>Barcode  <small>(1 Column Print)</small></a></li>
                                         <li><a class="dropdown-item" href="{{ route('stocks.show', $product->id) }}"><i class="fa-solid fa-eye pe-2"></i>View</a></li>
                                         <li><a class="dropdown-item" href="{{ route('stocks.edit', $product->id) }}"><i class="fas fa-edit pe-2"></i> Edit</a></li>
                                         <li><a class="dropdown-item text-danger" wire:click="delete('{{ $product->id }}')" wire:confirm="Are you sure you want to delete?" href="#"><i class="fas fa-trash pe-2"></i> Delete</a></li>
