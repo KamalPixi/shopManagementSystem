@@ -272,11 +272,14 @@ final class PrintService
 
             // Footer
             $printer->setEmphasis(false);
+            $printer->setFont(Printer::FONT_B);  // Switch to smaller font
             $printer->setTextSize(1, 1);
             $printer->text("Goods sold are not returnable.\n");
-            $printer->setTextSize(1, 1);
             $printer->text("Please return your receipt and box\n");
             $printer->text("as proof of warranty service.\n\n");
+
+            // Switch back
+            $printer->setFont(Printer::FONT_A);
 
             $printer->setEmphasis(true);
             $printer->text("Thank you!\n");
