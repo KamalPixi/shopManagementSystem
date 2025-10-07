@@ -47,9 +47,10 @@ return new class extends Migration
 
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
+            $table->string('receipt_no')->unique();
             $table->decimal('total_price', 10, 2); // Total price of the sale
             $table->decimal('gst', 10, 2); // GST amount
-            $table->decimal('discount', 10, 2); // GST amount
+            $table->decimal('discount', 10, 2);
             $table->decimal('profit', 10, 2)->nullable();
             $table->foreignId('customer_id')->nullable()->constrained('customers')->onDelete('set null');
             $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
@@ -64,6 +65,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->decimal('purchase_price', 10, 2); // purchase_price at sale time
             $table->decimal('price', 10, 2); // Price at the time of sale
+            $table->decimal('discount', 10, 2);
             $table->decimal('total', 10, 2); // quantity * price
             $table->decimal('profit', 10, 2);
             $table->json('attributes_and_values')->nullable(); // [ ['name' => 'Color', 'value' => 'Green'] ]

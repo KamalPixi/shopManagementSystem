@@ -7,6 +7,7 @@ use Livewire\WithPagination;
 use App\Models\Sale;
 use App\Models\Shop;
 use App\Services\SaleService;
+use App\Services\PrintService;
 
 
 class Sales extends Component
@@ -53,6 +54,14 @@ class Sales extends Component
         $this->dispatch('print-pdf', ['url' => $url]);
     }
 
+    public function printSaleReceiptPos($id) {
+        $sale = Sale::findOrFail($id);
+        $printService = new PrintService();
+        $msg = $printService->printReceiptWin($sale);
+        // $msg = $printService->printReceiptMac($sale);
+        session()->flash('message', $msg);
+    }
+
     public function printSaleReceiptA4($id) {
         $s = new SaleService();
         $url = $s->generateSaleReceiptA4($id);
@@ -63,6 +72,7 @@ class Sales extends Component
     private function buildQuery()
     {
         $query = Sale::query();
+        $query->orderBy('created_at', 'desc');
         
         if ($this->sale_date && $this->filter_by) {
             $date = \Carbon\Carbon::parse($this->sale_date);
@@ -86,6 +96,10 @@ class Sales extends Component
     }
 
     public function deleteSale($id) {
+        if (!auth()->user()->hasPermissionTo('sales:delete')) {
+            return view('includes.unauthorized');
+        }
+
         $sale = Sale::findOrFail($id);
         $sale->saleItems()->delete();
 

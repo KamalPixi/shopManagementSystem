@@ -8,7 +8,7 @@ use App\Models\Shop;
 
 final class SaleService
 {
-    public function generateSaleReceipt($sale_id): string {   
+    public function generateSaleReceipt($sale_id): string {  
         $sale = Sale::findOrFail($sale_id); 
         $customWidth = 3.27 * 72; // ~235.44 pts
 
@@ -28,7 +28,7 @@ final class SaleService
         $file_path = public_path('sales/sale_receipt.pdf');
         $pdf->save($file_path);    
         return asset('sales/sale_receipt.pdf');
-    }
+    }    
 
     public function generateSaleReceiptA4($sale_id): string {   
         $sale = Sale::findOrFail($sale_id); 
