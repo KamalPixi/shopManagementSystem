@@ -97,7 +97,8 @@ class Stocks extends Component
 
         $barcodeService = new BarcodePdfService();
         $pdf = $barcodeService->generateMultiplePdf($ids);
-        $barcodeService->printPdfMac($pdf);
+        $barcodeService->printPdfWin($pdf);
+        // $barcodeService->printPdfMac($pdf);
 
         return session()->flash('message', 'Sent to printer....');
     }

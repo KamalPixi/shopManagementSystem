@@ -250,4 +250,25 @@ class BarcodePdfService
         sleep(1); // Wait for print job to be sent
         unlink($tempFile);
     }
+
+    /**
+     * Print PDF directly to printer (Windows 10)
+     */
+    public function printPdfWin($pdf, $printerName = 'TSC TE244')
+    {
+        $tempFile = sys_get_temp_dir() . '\\barcode_' . uniqid() . '.pdf';
+        $pdf->save($tempFile);
+        
+        // Print PDF using Windows print command
+        $printerName = escapeshellarg($printerName);
+        $tempFile = escapeshellarg($tempFile);
+        
+        // Method 3: Using PowerShell (built-in Windows method)
+        $command = "powershell -Command \"Start-Process -FilePath $tempFile -Verb Print -WindowStyle Hidden\"";
+        exec($command);
+        
+        // Clean up
+        sleep(2); // Wait for print job to be sent
+        unlink($tempFile);
+    }
 }

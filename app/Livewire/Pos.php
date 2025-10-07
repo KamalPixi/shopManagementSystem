@@ -172,10 +172,9 @@ class Pos extends Component
         // $this->printSaleReceipt($sale->id);
 
         $printService = new PrintService();
-        // $printService->printReceiptWin($sale);
-        $msg = $printService->printReceiptMac($sale);
-        session()->flash('message', $msg);
-
+        $msg = $printService->printReceiptWin($sale);
+        // $msg = $printService->printReceiptMac($sale);
+        return session()->flash('message', $msg);
         // $this->printSaleReceipt($sale->id);
     }
 
