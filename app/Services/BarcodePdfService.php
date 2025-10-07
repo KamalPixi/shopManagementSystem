@@ -103,7 +103,7 @@ class BarcodePdfService
         <head>
             <style>
                 @page {
-                    size: 80mm 30mm;
+                    size: 80mm 34mm;
                     margin: 0;
                 }
                 * {
@@ -113,19 +113,19 @@ class BarcodePdfService
                 }
                 html, body {
                     width: 80mm;
-                    height: 30mm;
+                    height: 34mm;
                     margin: 0;
                     padding: 0;
                 }
                 table {
                     width: 80mm;
-                    height: 30mm;
+                    height: 34mm;
                     border-collapse: collapse;
                     table-layout: fixed;
                 }
                 td {
                     width: 40mm;
-                    height: 30mm;
+                    height: 34mm;
                     text-align: center;
                     vertical-align: middle;
                     position: relative;
@@ -151,6 +151,7 @@ class BarcodePdfService
                     letter-spacing: 2;
                     /* border: 1px solid black; */
                     padding-left:2;
+                    font-weight:bold;
                 }
                 .price {
                     font-size: 9pt;
@@ -159,12 +160,13 @@ class BarcodePdfService
                     color: #000;
                 }
                 .title {
-                    font-size: 8pt;
+                    font-size: 10pt;
                     font-family: Arial, sans-serif;
+                    font-weight: bold;
                     color: #000;
                 }
                 .first {
-                    padding-left: 3;
+                    padding-left: 3; 
                     padding-top: 6;
                 }
             </style>
