@@ -58,8 +58,15 @@ class Stocks extends Component
         $ids = $this->getSelectedProductIds();
         $barcodeService = new BarcodeService();
 
+        $skus = [];
+        if (!count($ids)) {
+            $skus = Product::pluck('sku')->toArray();
+        }else {
+            $skus = Product::whereIn('id', $ids)->pluck('sku')->toArray();
+        }
+
         $url = $barcodeService->generateBarcode([
-            'sku_array' => Product::whereIn('id', $ids)->pluck('sku')->toArray()
+            'sku_array' => $skus
         ]);
 
         $this->dispatch('print-pdf', ['url' => $url]);
@@ -68,6 +75,14 @@ class Stocks extends Component
     public function pdfBarcodeTwoColumn()
     {
         $ids = $this->getSelectedProductIds();
+
+        if (!count($ids)) {
+            $ids = Product::pluck('id')->toArray();
+        }
+        // here make ids even if its odd remove one and make even
+        if (count($ids) % 2 !== 0) {
+            array_pop($ids);
+        }
 
         if (count($ids) % 2 !== 0) {
             return session()->flash('failed', 'Please select even items.');
@@ -90,6 +105,14 @@ class Stocks extends Component
     public function printBarcodeTwoColumn()
     {
         $ids = $this->getSelectedProductIds();
+
+        if (!count($ids)) {
+            $ids = Product::pluck('id')->toArray();
+        }
+        // here make ids even if its odd remove one and make even
+        if (count($ids) % 2 !== 0) {
+            array_pop($ids);
+        }
 
         if (count($ids) % 2 !== 0) {
             return session()->flash('failed', 'Please select even items.');
