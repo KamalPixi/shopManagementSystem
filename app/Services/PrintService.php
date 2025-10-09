@@ -188,7 +188,7 @@ final class PrintService
 
     public function printReceiptWin(Sale $sale)
     {
-        $printerName = $this->detectPosPrinterNameWin();
+        $printerName = "XP-80C";
         if (!$printerName) {
             return 'No CUPS printer detected. Add your printer as a raw queue first.';
         }
@@ -210,7 +210,6 @@ final class PrintService
             $printer->setEmphasis(true);
             $printer->text("SALE RECEIPT\n");
             $printer->text("\n");
-            $printer->setEmphasis(false);
 
             $printer->text("ANGARIA MAJU (M) SDN. BHD." . "\n");
             // $printer->text($shop->name . "\n");
@@ -218,6 +217,8 @@ final class PrintService
             $printer->text($shop->address . ", " . $shop->city . "\n");
             $printer->text($shop->postal_code . " " . $shop->state . "\n");
             $printer->text("Contact No.: " . $shop->contact_no . "\n");
+            $printer->setEmphasis(false);
+            
             $printer->text($divider);
 
             $printer->text("Receipt No.: " . $sale?->receipt_no . "\n");
