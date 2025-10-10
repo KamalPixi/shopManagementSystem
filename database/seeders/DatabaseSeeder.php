@@ -52,8 +52,12 @@ class DatabaseSeeder extends Seeder
         ]);
         Shop::firstOrCreate([
             'name' => 'ANGARIA MAJU (M) SDN. BHD.', 
+            'address' => 'NO. 52, JALAN LANDAK',
+            'city' => 'PUDU',
+            'state' => 'KUALA LUMPUR',
+            'postal_code' => '55100',
             'country' => 'Malaysia', 
-            'gst_percent' => 6,
+            'gst_percent' => 0,
             'currency' => ['code' => 'MYR', 'symbol' => 'RM', 'name' => 'Malaysian Ringgit'],
         ]);
 
