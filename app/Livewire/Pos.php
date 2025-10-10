@@ -71,21 +71,25 @@ class Pos extends Component
             return $item->id == $product->id;
         });
 
+        // increment count
         if ($adyExists) {
-            session()->flash('failed', "Already exists.");
-            return;
+            $qtyLeft = $product->quantity - (int) $this->sale_items[$product->id]['quantity'];
+            if ($qtyLeft < 1) {
+                return session()->flash('failed', 'Quantity out of stock!');
+            }
+            $this->sale_items[$product->id]['quantity'] += 1;
+        }else {
+            $this->products[] = $product;
+            $this->sale_items[$product->id] = [
+                'product_id' => $product->id,
+                'warranty_id' => $product->warranty?->id,
+                'price' => $product->price,
+                'discount' => 0,
+                'quantity' => 1,
+                'attributes_and_values' => [],
+                'total' => 0.00,
+            ];
         }
-
-        $this->products[] = $product;
-        $this->sale_items[$product->id] = [
-            'product_id' => $product->id,
-            'warranty_id' => $product->warranty?->id,
-            'price' => $product->price,
-            'discount' => 0,
-            'quantity' => 1,
-            'attributes_and_values' => [],
-            'total' => 0.00,
-        ];
 
         $this->reset(['identifier']);
         $this->calculate();
@@ -200,7 +204,7 @@ class Pos extends Component
             $this->gst_percent  = (float) $this->gst_percent;
 
             $this->gst = $this->subtotal * ($this->gst_percent / 100);
-            $this->grand_total = ($this->subtotal - $this->discount) + $this->gst;
+            $this->grand_total = ($this->subtotal) + $this->gst;
 
         } catch (\Throwable $th) {
             return;
