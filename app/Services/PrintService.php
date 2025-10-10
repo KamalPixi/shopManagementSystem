@@ -261,7 +261,7 @@ final class PrintService
             $printer->text($divider);
 
             // Totals
-            $subtotal = number_format($sale->total_price - $sale->gst + $sale->discount, 2);
+            $subtotal = number_format(($sale->total_price - $sale->gst), 2);
             $gst = number_format($sale->gst, 2);
             $total = number_format($sale->total_price, 2);
 
