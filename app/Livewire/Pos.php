@@ -24,8 +24,8 @@ class Pos extends Component
     public $gst = 0;
     public $grand_total = 0;
 
-    public $customer_name;
-    public $customer_phone_no;
+    public $customer_name = 'Walk In';
+    public $customer_phone_no = '000000000';
 
     // for suggestion & selection
     public $customers;
