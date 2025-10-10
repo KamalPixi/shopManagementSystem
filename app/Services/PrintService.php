@@ -207,8 +207,10 @@ final class PrintService
             $col4 = 16; // Amount
 
             // Header
+            $printer->setTextSize(2, 2);
             $printer->setEmphasis(true);
             $printer->text("SALE RECEIPT\n");
+            $printer->setEmphasis(false);
             $printer->text("\n");
 
             $printer->text("ANGARIA MAJU (M) SDN. BHD." . "\n");
@@ -217,8 +219,8 @@ final class PrintService
             $printer->text($shop->address . ", " . $shop->city . "\n");
             $printer->text($shop->postal_code . " " . $shop->state . "\n");
             $printer->text("Contact No.: " . $shop->contact_no . "\n");
-            $printer->setEmphasis(false);
-            
+            $printer->setTextSize(1, 1);
+
             $printer->text($divider);
 
             $printer->text("Receipt No.: " . $sale?->receipt_no . "\n");
