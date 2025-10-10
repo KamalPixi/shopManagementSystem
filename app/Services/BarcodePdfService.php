@@ -44,7 +44,7 @@ class BarcodePdfService
      */
     public function generateMultiplePdf($ids)
     {
-        $products = Product::whereIn('id', $ids)->select('price', 'title', 'sku')->get();
+        $products = Product::whereIn('id', $ids)->select('price', 'name', 'sku')->get();
         $barcodes = [];
 
         foreach ($products->chunk(2) as $pair) {
@@ -53,10 +53,10 @@ class BarcodePdfService
             $right = $pair[1] ?? null;
 
             $barcodes[] = [
-                'left_title' => $left->title,
+                'left_title' => $left->name,
                 'left_price' => $left->price,
                 'left_code'  => $left->sku,
-                'right_title' => $right->title ?? null,
+                'right_title' => $right->name ?? null,
                 'right_price' => $right->price ?? null,
                 'right_code'  => $right->sku ?? null,
             ];
@@ -77,7 +77,9 @@ class BarcodePdfService
                 $pair['left_price'],
                 $rightBarcodeImg, 
                 $pair['right_code'], 
-                $pair['right_price']
+                $pair['right_price'],
+                $pair['left_title'],
+                $pair['right_title'],
             );
         }
         
@@ -94,7 +96,7 @@ class BarcodePdfService
     /**
      * Generate HTML for PDF - Landscape with rotated barcodes
      */
-    private function generateHtml($leftImg, $leftCode, $leftPrice, $rightImg, $rightCode, $rightPrice)
+    private function generateHtml($leftImg, $leftCode, $leftPrice, $rightImg, $rightCode, $rightPrice, $leftTitle, $rightTitle)
     {
 
         return <<<HTML
@@ -178,7 +180,7 @@ class BarcodePdfService
                         <div class="rotate-content first">
                             <img src="data:image/png;base64,{$leftImg}" class="barcode" />
                             <div class="code">{$leftCode}</div>
-                            <div class="title">iPhone 17</div>
+                            <div class="title">{$leftTitle}</div>
                             <div class="price">RM {$leftPrice}</div>
                         </div>
                     </td>
@@ -186,7 +188,7 @@ class BarcodePdfService
                         <div class="rotate-content">
                             <img src="data:image/png;base64,{$rightImg}" class="barcode" />
                             <div class="code">{$rightCode}</div>
-                            <div class="title">Samsung S20</div>
+                            <div class="title">{$rightTitle}</div>
                             <div class="price">RM {$rightPrice}</div>
                         </div>
                     </td>
