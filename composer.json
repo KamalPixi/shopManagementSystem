@@ -16,7 +16,7 @@
         "laravel/framework": "^11.31",
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.5",
-        "nativephp/electron": "^1.0",
+        "nativephp/desktop": "^2.2",
         "picqer/php-barcode-generator": "^3.2",
         "spatie/laravel-permission": "^6.12"
     },
@@ -47,7 +47,8 @@
             "@php artisan package:discover --ansi"
         ],
         "post-update-cmd": [
-            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
+            "@php artisan native:install --force --quiet "
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
@@ -78,7 +79,8 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
-        }
+        },
+        "process-timeout": 900
     },
     "minimum-stability": "stable",
     "prefer-stable": true

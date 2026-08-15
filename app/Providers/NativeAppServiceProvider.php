@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
-use Native\Laravel\Facades\Window;
-use Native\Laravel\Contracts\ProvidesPhpIni;
-use Native\Laravel\Facades\Menu;
+use Native\Desktop\Facades\Window;
+use Native\Desktop\Contracts\ProvidesPhpIni;
+use Native\Desktop\Facades\Menu;
 
 class NativeAppServiceProvider implements ProvidesPhpIni
 {
@@ -22,7 +22,7 @@ class NativeAppServiceProvider implements ProvidesPhpIni
         Window::open()
         ->width(1024)
         ->height(768)
-        ->devTools(false);
+        ->showDevTools(false);
     }
 
     /**
@@ -34,3 +34,4 @@ class NativeAppServiceProvider implements ProvidesPhpIni
         ];
     }
 }
+
