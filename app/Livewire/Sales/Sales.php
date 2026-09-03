@@ -99,11 +99,24 @@ class Sales extends Component
             return view('includes.unauthorized');
         }
 
-        $sale = Sale::findOrFail($id);
-        $sale->saleItems()->delete();
+        \Illuminate\Support\Facades\DB::transaction(function () use ($id) {
+            $sale = Sale::with('saleItems')->findOrFail($id);
 
-        $sale->delete();
-        session()->flash('success', 'Sale Item has been deleted.');
+            // Restore product stock for all catalog items in this sale
+            foreach ($sale->saleItems as $item) {
+                if (!empty($item->product_id)) {
+                    $product = \App\Models\Product::find($item->product_id);
+                    if ($product) {
+                        $product->increment('quantity', (int) $item->quantity);
+                    }
+                }
+            }
+
+            $sale->saleItems()->delete();
+            $sale->delete();
+        });
+
+        session()->flash('success', 'Sale has been deleted and product quantities have been returned to stock.');
     }
 
     public function render()

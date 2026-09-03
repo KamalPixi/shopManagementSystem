@@ -123,9 +123,12 @@
                                         <i class="fas fa-ellipsis-h"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+                                        <li><a class="dropdown-item text-primary" href="{{ route('sales.edit', $sale->id) }}"><i class="fa-solid fa-pen-to-square pe-2"></i>Edit Sale</a></li>
+                                        <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item" href="#" wire:click="printSaleReceiptPos('{{$sale->id}}')"><i class="fa-solid fa-print pe-2"></i>Receipt <small class="text-muted">(POS)</small></a></li>
                                         <li><a class="dropdown-item" href="#" wire:click="printSaleReceipt('{{$sale->id}}')"><i class="fa-solid fa-print pe-2"></i>Receipt <small class="text-muted">(PDF)</small></a></li>
                                         <li><a class="dropdown-item" href="#" wire:click="printSaleReceiptA4('{{$sale->id}}')"><i class="fa-solid fa-print pe-2"></i>Receipt A4 <small class="text-muted">(PDF)</small></a></li>
+                                        <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item text-danger" href="#" wire:confirm="Are you sure you want to delete this item?" wire:click="deleteSale('{{$sale->id}}')"><i class="fa-solid fa-trash pe-2"></i>Delete</a></li>
                                     </ul>
                                 </div>
