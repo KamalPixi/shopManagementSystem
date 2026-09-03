@@ -247,8 +247,7 @@ class Pos extends Component
         $this->clearPos();
 
         $printService = new PrintService();
-        $msg = $printService->printReceiptWin($sale);
-        // $msg = $printService->printReceiptMac($sale);
+        $msg = $printService->printReceipt($sale);
         return session()->flash('message', $msg);
     }
 

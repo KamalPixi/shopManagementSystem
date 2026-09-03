@@ -57,8 +57,7 @@ class Sales extends Component
     public function printSaleReceiptPos($id) {
         $sale = Sale::findOrFail($id);
         $printService = new PrintService();
-        $msg = $printService->printReceiptWin($sale);
-        // $msg = $printService->printReceiptMac($sale);
+        $msg = $printService->printReceipt($sale);
         session()->flash('message', $msg);
     }
 

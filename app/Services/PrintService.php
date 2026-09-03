@@ -76,16 +76,36 @@ final class PrintService
     }
 
 
+    public function printReceipt(Sale $sale): string
+    {
+        try {
+            if (PHP_OS_FAMILY === 'Windows') {
+                return $this->printReceiptWin($sale);
+            } elseif (PHP_OS_FAMILY === 'Darwin') {
+                return $this->printReceiptMac($sale);
+            } else {
+                return 'Printing not supported on this OS: ' . PHP_OS_FAMILY;
+            }
+        } catch (\Throwable $e) {
+            return 'Printer error: ' . $e->getMessage();
+        }
+    }
+
     public function printReceiptMac(Sale $sale)
     {
         $printerName = $this->detectPosPrinterNameMac();
         if (!$printerName) {
-            return 'No CUPS printer detected. Add your printer as a raw queue first.';
+            return 'No CUPS printer detected on Mac. Add your printer as a raw queue first.';
         }
         
         $shop = Shop::firstOrFail();
-        $connector = new CupsPrintConnector($printerName);
-        $printer = new Printer($connector);
+
+        try {
+            $connector = new CupsPrintConnector($printerName);
+            $printer = new Printer($connector);
+        } catch (\Throwable $e) {
+            return 'Cannot connect to Mac printer: ' . $e->getMessage();
+        }
 
         try {
             $printWidth = 48;
@@ -177,10 +197,16 @@ final class PrintService
             $printer->cut();
 
             return "Printed successfully to: $printerName";
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return $e->getMessage();
         } finally {
-            $printer->close();
+            try {
+                if (isset($printer)) {
+                    $printer->close();
+                }
+            } catch (\Throwable $e) {
+                // Ignore close errors to prevent crashing
+            }
         }
     }
 
@@ -190,13 +216,17 @@ final class PrintService
     {
         $printerName = "XP-80C";
         if (!$printerName) {
-            return 'No CUPS printer detected. Add your printer as a raw queue first.';
+            return 'No printer configured.';
         }
 
         $shop = Shop::firstOrFail();
-        $connector = new WindowsPrintConnector($printerName);
-        $printer = new Printer($connector);
 
+        try {
+            $connector = new WindowsPrintConnector($printerName);
+            $printer = new Printer($connector);
+        } catch (\Throwable $e) {
+            return 'Cannot connect to Windows printer: ' . $e->getMessage();
+        }
 
         try {
             $printWidth = 48;
@@ -291,10 +321,16 @@ final class PrintService
             $printer->cut();
 
             return "Printed successfully to: $printerName";
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return $e->getMessage();
         } finally {
-            $printer->close();
+            try {
+                if (isset($printer)) {
+                    $printer->close();
+                }
+            } catch (\Throwable $e) {
+                // Ignore close errors to prevent crashing
+            }
         }
     }
 }
