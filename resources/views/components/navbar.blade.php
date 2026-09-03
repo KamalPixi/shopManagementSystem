@@ -9,32 +9,11 @@
           @livewire('search')
 
           <!-- Navbar links -->
-          <ul class="navbar-nav align-items-center">
-  
-            <!-- Language Switcher -->
-            <li class="nav-item dropdown me-2">
-                <a class="btn btn-sm btn-outline-gray-600 dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa-solid fa-globe me-1"></i>
-                    <span class="text-uppercase fw-bold">{{ app()->getLocale() }}</span>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center {{ app()->getLocale() === 'en' ? 'active fw-bold' : '' }}" href="{{ route('lang.switch', 'en') }}">
-                            <span class="me-2">🇬🇧</span> English
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item d-flex align-items-center {{ app()->getLocale() === 'fr' ? 'active fw-bold' : '' }}" href="{{ route('lang.switch', 'fr') }}">
-                            <span class="me-2">🇫🇷</span> Français
-                        </a>
-                    </li>
-                </ul>
-            </li>
-  
-            <li class="nav-item dropdown ms-lg-3">
-                <a class="nav-link dropdown-toggle pt-1 px-0" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <ul class="navbar-nav align-items-center flex-row">
+            <li class="nav-item dropdown ms-lg-2">
+                <a class="nav-link dropdown-toggle py-1 px-1" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   <div class="media d-flex align-items-center">
-                      <div class="media-body ms-2 text-dark align-items-center d-none d-lg-block"><span class="mb-0 font-small fw-bold text-gray-900">{{ auth()->user()->name }}</span></div>
+                      <div class="media-body text-dark align-items-center d-none d-lg-block"><span class="mb-0 font-small fw-bold text-gray-900">{{ auth()->user()->name }}</span></div>
                   </div>
                 </a>
                 <div class="dropdown-menu dashboard-dropdown dropdown-menu-end mt-2 py-1">
