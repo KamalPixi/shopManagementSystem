@@ -121,8 +121,7 @@ final class PrintService
             $printer->text("\n");
             $printer->setEmphasis(false);
 
-            $printer->text("ANGARIA MAJU (M) SDN. BHD." . "\n");
-            // $printer->text($shop->name . "\n");
+            $printer->text(($shop->name ?? 'TECH PARISIEN') . "\n");
             $printer->text("202501028219 (1629631-W)\n");
             $printer->text($shop->address . ", " . $shop->city . "\n");
             $printer->text($shop->postal_code . " " . $shop->state . "\n");
@@ -244,7 +243,7 @@ final class PrintService
             $printer->text("\n");
 
             $printer->setEmphasis(true);
-            $printer->text("ANGARIA MAJU (M) SDN. BHD." . "\n");
+            $printer->text(($shop->name ?? 'TECH PARISIEN') . "\n");
             $printer->text("202501028219 (1629631-W)\n");
             $printer->text($shop->address . ", " . $shop->city . "\n");
             $printer->text($shop->postal_code . " " . $shop->state . "\n");

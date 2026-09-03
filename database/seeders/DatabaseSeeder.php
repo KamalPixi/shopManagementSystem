@@ -51,7 +51,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'default@domain.com',
         ]);
         Shop::firstOrCreate([
-            'name' => 'ANGARIA MAJU (M) SDN. BHD.', 
+            'name' => 'TECH PARISIEN', 
             'address' => 'NO. 52, JALAN LANDAK',
             'city' => 'PUDU',
             'state' => 'KUALA LUMPUR',
