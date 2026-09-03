@@ -28,4 +28,10 @@ class SaleItem extends Model
     public function warranty() {
         return $this->belongsTo(Warranty::class, 'warranty_id');
     }
+
+    public function getNameAttribute()
+    {
+        return $this->item_name ?: ($this->product?->name ?? 'Item');
+    }
 }
+

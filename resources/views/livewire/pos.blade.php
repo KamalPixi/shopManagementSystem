@@ -11,22 +11,87 @@
         <div class="col-12">
             <div class="card border-0 shadow components-section">
                 <div class="card-body">
-                    <form wire:submit.prevent="add">
-                        <div class="row">
-                            <div class="col">
-                                <div class="mb-4">
+                    <div class="row align-items-end">
+                        <div class="col-md-9 col-12">
+                            <form wire:submit.prevent="add">
+                                <div>
                                     <label>Barcode / SKU / SerialNo*</label>
-                                    <input wire:model="identifier" type="text" class="form-control form-control-sm" autofocus required>
+                                    <input wire:model="identifier" type="text" class="form-control form-control-sm" autofocus placeholder="Scan barcode or enter SKU / Serial number">
                                 </div>
-                            </div>
+                            </form>
                         </div>
-                    </form>
+                        <div class="col-md-3 col-12 mt-3 mt-md-0 text-md-end">
+                            <button wire:click="openCustomModal" type="button" class="btn btn-sm btn-info text-white w-100">
+                                <i class="fa-solid fa-screwdriver-wrench me-1"></i> + Custom / Repair Item
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Brand list --}}
+    {{-- Custom / Repair Item Modal --}}
+    @if ($showCustomModal)
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title h6 mb-0 text-white">
+                        <i class="fa-solid fa-screwdriver-wrench me-2"></i> Add On-The-Fly / Custom Item
+                    </h5>
+                    <button wire:click="closeCustomModal" type="button" class="btn-close btn-close-white" aria-label="Close"></button>
+                </div>
+                <form wire:submit.prevent="addCustomItem">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Item / Service Name <span class="text-danger">*</span></label>
+                            <input wire:model="custom_item_name" type="text" class="form-control form-control-sm" placeholder="e.g. Mobile Screen Repair / Service" required>
+                            @error('custom_item_name') <span class="text-danger small">{{ $message }}</span> @enderror
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Sale Price <span class="text-danger">*</span></label>
+                                <input wire:model="custom_price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0.00" required>
+                                @error('custom_price') <span class="text-danger small">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Cost / Purchase Price <small class="text-muted">(Optional)</small></label>
+                                <input wire:model="custom_purchase_price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0.00">
+                                @error('custom_purchase_price') <span class="text-danger small">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                                <input wire:model="custom_quantity" type="number" min="1" class="form-control form-control-sm text-center" required>
+                                @error('custom_quantity') <span class="text-danger small">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Warranty <small class="text-muted">(Optional)</small></label>
+                                <select wire:model="custom_warranty_id" class="form-select form-select-sm">
+                                    <option value="">No Warranty</option>
+                                    @foreach ($warranties as $warranty)
+                                        <option value="{{ $warranty->id }}">{{ $warranty->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('custom_warranty_id') <span class="text-danger small">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button wire:click="closeCustomModal" type="button" class="btn btn-sm btn-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <i class="fa-solid fa-plus me-1"></i> Add to Cart
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Items list --}}
     <div class="card border-0 shadow mb-4">
         <div class="card-body">
             <div class="mb-4 table-responsive">
@@ -34,38 +99,44 @@
                     <thead class="thead-light">
                         <tr>
                             <th class="border-0 rounded-start">#</th>
-                            <th class="border-0 text-start">Product</th>
+                            <th class="border-0 text-start">Product / Item</th>
                             <th class="border-0 text-center">Attributes</th>
                             <th class="border-0 text-center">Warranty</th>
                             <th class="border-0 text-center">Sale Price <small class="small">Unit</small></th>
                             <th class="border-0 text-center">Discount<small class="small">(Fixed)</small></th>
                             <th class="border-0 text-center">Qty</th>
                             <th class="border-0 text-center">Total</th>
-                            <th  class="border-0 text-end">-</th>
+                            <th class="border-0 text-end">-</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($products as $product)
-                        <tr wire:key="tr_key_{{ $product->id }}">
-                            <td style="width: 3%;">{{ $loop->index + 1 }}</td>
+                        @forelse ($sale_items as $itemKey => $item)
+                        @php
+                            $prod = !empty($item['product_id']) ? collect($products)->firstWhere('id', $item['product_id']) : null;
+                        @endphp
+                        <tr wire:key="tr_key_{{ $itemKey }}">
+                            <td style="width: 3%;">{{ $loop->iteration }}</td>
                             <td class="fw-bold align-items-center lh-1"> 
-                                {{ $product->name }} 
-                                @if ($product->serial_no)
-                                    <br>
-                                    <small class="text-muted">SN:{{ $product->serial_no }}</small>
+                                {{ $item['item_name'] ?? ($prod?->name ?? 'Item') }}
+                                @if (!empty($item['is_custom']))
+                                    <span class="badge bg-info text-white ms-1" style="font-size: 0.7rem;">Custom / Service</span>
                                 @endif
-                                @if ($product->sku || $product->model_no)
+                                @if ($prod?->serial_no)
                                     <br>
-                                    <small class="text-muted">SKU: {{ $product->sku }} | Model: {{ $product->model_no }}</small>
+                                    <small class="text-muted">SN:{{ $prod->serial_no }}</small>
+                                @endif
+                                @if ($prod?->sku || $prod?->model_no)
+                                    <br>
+                                    <small class="text-muted">SKU: {{ $prod->sku }} | Model: {{ $prod->model_no }}</small>
                                 @endif
                             </td>
                             <td class="fw-bold lh-1 text-center" style="width: 11%;">
-                                @if ($product->attributes_and_values)
-                                <ul class="list-unstyled">
-                                    @foreach ($product->attributes_and_values as $att_and_values)
+                                @if ($prod && $prod->attributes_and_values)
+                                <ul class="list-unstyled mb-0">
+                                    @foreach ($prod->attributes_and_values as $att_and_values)
                                         <li class="d-flex align-items-center justify-content-between">
                                             <small class="text-muted pe-1">{{ ucfirst($att_and_values['name']) }}: </small> 
-                                            <select style="width:60%" wire:model="sale_items.{{$product->id}}.attributes_and_values.{{$att_and_values['name']}}" class="form-select form-select-sm">
+                                            <select style="width:60%" wire:model="sale_items.{{$itemKey}}.attributes_and_values.{{$att_and_values['name']}}" class="form-select form-select-sm">
                                                 <option value="-" selected>-</option>
                                                 @foreach ($att_and_values['values'] as $value)
                                                     <option wire:key="att_select_{{$value}}" value="{{$value}}">{{ucfirst($value)}}</option>
@@ -79,28 +150,40 @@
                                 @endif
                             </td>
                             <td class="fw-bold align-items-center" style="width: 9%;">
-                                <select wire:model="sale_items.{{$product->id}}.warranty_id" class="form-select form-select-sm">
+                                <select wire:model="sale_items.{{$itemKey}}.warranty_id" class="form-select form-select-sm">
                                     <option value="">-</option>
                                     @foreach ($warranties as $warranty)
                                         <option value="{{ $warranty->id }}">{{ $warranty->name }}</option>
                                     @endforeach
                                 </select>
                             </td>
-                            <td class="fw-bold align-items-center" style="width: 11%;"> <input wire:model.live="sale_items.{{$product->id}}.price" type="number" class="form-control form-control-sm text-end"> </td>
-                            <td class="fw-bold align-items-center" style="width: 11%;"> <input wire:model.live="sale_items.{{$product->id}}.discount" type="number" class="form-control form-control-sm text-end"> </td>
+                            <td class="fw-bold align-items-center" style="width: 11%;">
+                                <input wire:model.live="sale_items.{{$itemKey}}.price" type="number" step="0.01" class="form-control form-control-sm text-end">
+                            </td>
+                            <td class="fw-bold align-items-center" style="width: 11%;">
+                                <input wire:model.live="sale_items.{{$itemKey}}.discount" type="number" step="0.01" class="form-control form-control-sm text-end">
+                            </td>
                             <td class="fw-bold align-items-center" style="width: 8%;">
                                 <div class="d-flex align-items-center">
-                                    <small class="text-muted badge badge-secondary" style="font-size: 0.8rem; padding-right: 2px;">{{ $product->quantity }}:</small>
-                                    <input wire:model.live="sale_items.{{$product->id}}.quantity" type="number" class="form-control form-control-sm text-center"> 
+                                    @if ($prod)
+                                        <small class="text-muted badge badge-secondary" style="font-size: 0.8rem; padding-right: 2px;">{{ $prod->quantity }}:</small>
+                                    @endif
+                                    <input wire:model.live="sale_items.{{$itemKey}}.quantity" type="number" min="1" class="form-control form-control-sm text-center"> 
                                 </div>
                             </td>
-                            <td class="fw-bold align-items-center" style="width: 12%;"> <input wire:model="sale_items.{{$product->id}}.total" type="number" readonly class="form-control form-control-sm text-end"> </td>
+                            <td class="fw-bold align-items-center" style="width: 12%;">
+                                <input wire:model="sale_items.{{$itemKey}}.total" type="number" readonly class="form-control form-control-sm text-end">
+                            </td>
 
                             <td class="text-center px-0" style="width: 3%;">
-                                <a class="dropdown-item text-danger text-center rounded" wire:click="delete('{{ $product->id }}')" wire:confirm="Are you sure you want to delete?" href="#"><i class="fas fa-trash"></i></a>
+                                <a class="dropdown-item text-danger text-center rounded" wire:click="delete('{{ $itemKey }}')" wire:confirm="Are you sure you want to remove this item?" href="#"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
-                        @endforeach
+                        @empty
+                        <tr>
+                            <td colspan="9" class="text-center text-muted py-4">Scan a barcode or click <b>+ Custom / Repair Item</b> to add items to the cart.</td>
+                        </tr>
+                        @endforelse
                     </tbody>
                 </table>
 
@@ -151,10 +234,10 @@
                 </div>
             </div>
 
-            @if ($products)
+            @if (count($sale_items) > 0)
             <div class="text-end">
-                <button wire:click="sale" type="button" class="btn btn-primary px-6" type="button">Sale</button>
-                <button wire:click="clearPos" type="button" class="btn btn-danger px-3" type="button">Clear</button>
+                <button wire:click="sale" type="button" class="btn btn-primary px-6">Sale</button>
+                <button wire:click="clearPos" type="button" class="btn btn-danger px-3">Clear</button>
             </div>
             @endif
         </div>

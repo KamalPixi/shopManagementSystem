@@ -75,11 +75,17 @@
                         @foreach ($sale->saleItems as $item)
                         <tr>
                             <td style="width: 45%;line-height: 1;"> 
-                                <small>{{ $item?->product->name }}</small><br>
-                                @if ($item?->product->serial_no)
-                                    <small class="text-muted">SN:{{ $item?->product->serial_no }}</small> <br>
+                                <small>{{ $item->name }}</small>
+                                @if (empty($item->product_id))
+                                    <small style="color: #0dcaf0;">(Custom)</small>
                                 @endif
-                                <small class="text-muted">SKU: {{ $item?->product->sku }} | Model: {{ $item?->product->model_no }}</small>
+                                <br>
+                                @if ($item->product?->serial_no)
+                                    <small class="text-muted">SN:{{ $item->product->serial_no }}</small> <br>
+                                @endif
+                                @if ($item->product?->sku || $item->product?->model_no)
+                                    <small class="text-muted">SKU: {{ $item->product?->sku }} | Model: {{ $item->product?->model_no }}</small>
+                                @endif
                             </td>
                             <td style="width: 18%;"> 
                                 <table class="w-100">

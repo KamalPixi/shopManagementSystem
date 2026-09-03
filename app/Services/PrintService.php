@@ -128,7 +128,7 @@ final class PrintService
 
             // Sale items
             foreach ($sale->saleItems as $item) {
-                $productName = mb_strimwidth($item->product->name ?? 'Item', 0, $printWidth - 1, "...");
+                $productName = mb_strimwidth($item->name ?? 'Item', 0, $printWidth - 1, "...");
                 $printer->text($productName . "\n");
 
                 $unit = $item->quantity . ' Unit *';
@@ -242,7 +242,7 @@ final class PrintService
 
             // Sale items
             foreach ($sale->saleItems as $item) {
-                $productName = mb_strimwidth($item->product->name ?? 'Item', 0, $printWidth - 1, "...");
+                $productName = mb_strimwidth($item->name ?? 'Item', 0, $printWidth - 1, "...");
                 $printer->text($productName . "\n");
 
                 $unit = $item->quantity . ' Unit *';

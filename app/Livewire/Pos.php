@@ -33,6 +33,13 @@ class Pos extends Component
 
     public $gst_percent = 0;
 
+    public $custom_item_name = '';
+    public $custom_price = '';
+    public $custom_purchase_price = 0;
+    public $custom_quantity = 1;
+    public $custom_warranty_id = '';
+    public $showCustomModal = false;
+
     public function updated($propertyName) {
         if ($propertyName == 'customer_name') {
             if (empty($this->customer_name)) {
@@ -67,31 +74,79 @@ class Pos extends Component
             return;
         }
 
-        $adyExists = Collect($this->products)->contains(function ($item) use ($product) {
-            return $item->id == $product->id;
-        });
+        $itemKey = 'prod_' . $product->id;
 
-        // increment count
-        if ($adyExists) {
-            $qtyLeft = $product->quantity - (int) $this->sale_items[$product->id]['quantity'];
+        // increment count if already in cart
+        if (isset($this->sale_items[$itemKey])) {
+            $qtyLeft = $product->quantity - (int) $this->sale_items[$itemKey]['quantity'];
             if ($qtyLeft < 1) {
                 return session()->flash('failed', 'Quantity out of stock!');
             }
-            $this->sale_items[$product->id]['quantity'] += 1;
-        }else {
+            $this->sale_items[$itemKey]['quantity'] += 1;
+        } else {
             $this->products[] = $product;
-            $this->sale_items[$product->id] = [
+            $this->sale_items[$itemKey] = [
+                'key' => $itemKey,
                 'product_id' => $product->id,
+                'item_name' => $product->name,
                 'warranty_id' => $product->warranty?->id,
                 'price' => $product->price,
+                'purchase_price' => $product->purchase_price,
                 'discount' => 0,
                 'quantity' => 1,
                 'attributes_and_values' => [],
                 'total' => 0.00,
+                'is_custom' => false,
             ];
         }
 
         $this->reset(['identifier']);
+        $this->calculate();
+    }
+
+    public function openCustomModal() {
+        $this->reset([
+            'custom_item_name',
+            'custom_price',
+            'custom_purchase_price',
+            'custom_quantity',
+            'custom_warranty_id',
+        ]);
+        $this->custom_quantity = 1;
+        $this->custom_purchase_price = 0;
+        $this->showCustomModal = true;
+    }
+
+    public function closeCustomModal() {
+        $this->showCustomModal = false;
+    }
+
+    public function addCustomItem() {
+        $this->validate([
+            'custom_item_name' => 'required|string|max:255',
+            'custom_price' => 'required|numeric|min:0',
+            'custom_purchase_price' => 'nullable|numeric|min:0',
+            'custom_quantity' => 'required|integer|min:1',
+            'custom_warranty_id' => 'nullable|exists:warranties,id',
+        ]);
+
+        $itemKey = 'custom_' . uniqid();
+
+        $this->sale_items[$itemKey] = [
+            'key' => $itemKey,
+            'product_id' => null,
+            'item_name' => trim($this->custom_item_name),
+            'warranty_id' => !empty($this->custom_warranty_id) ? $this->custom_warranty_id : null,
+            'price' => (float) $this->custom_price,
+            'purchase_price' => (float) ($this->custom_purchase_price ?: 0),
+            'discount' => 0,
+            'quantity' => (int) $this->custom_quantity,
+            'attributes_and_values' => [],
+            'total' => 0.00,
+            'is_custom' => true,
+        ];
+
+        $this->closeCustomModal();
         $this->calculate();
     }
 
@@ -104,6 +159,10 @@ class Pos extends Component
             ]);
         }
 
+        if (empty($this->sale_items)) {
+            session()->flash('failed', 'No items in cart to sell!');
+            return;
+        }
 
         $sale = Sale::create([
             'total_price' => $this->grand_total,
@@ -116,54 +175,68 @@ class Pos extends Component
         $this->validate([
             'sale_items' => 'required|array',
             'sale_items.*' => 'required|array',
-            'sale_items.*.product_id' => 'required|exists:products,id',
+            'sale_items.*.product_id' => 'nullable|exists:products,id',
+            'sale_items.*.item_name' => 'required|string|max:255',
             'sale_items.*.warranty_id' => 'nullable|exists:warranties,id',
             'sale_items.*.attributes_and_values' => 'nullable|array',
             'sale_items.*.quantity' => 'required|integer',
             'sale_items.*.discount' => 'required|numeric',
             'sale_items.*.price' => 'required|numeric',
+            'sale_items.*.purchase_price' => 'nullable|numeric',
             'sale_items.*.total' => 'required|numeric',
         ]);
 
         $profit_total = 0;
         foreach ($this->sale_items as $item) {
-            // Find the product
-            $product = Collect($this->products)->firstWhere('id', $item['product_id']);
-        
-            // Calculate the profit for the item (considering quantity)
-            $profit_per_unit = $item['price'] - $product->purchase_price; // Profit per unit
-            $profit_total_for_item = $profit_per_unit * $item['quantity']; // Total profit for this item
-            $profit_total_for_item -= $item['discount'];
-        
-            // Add this item's profit to the total sale profit
+            $purchase_price = 0;
+
+            if (!empty($item['product_id'])) {
+                // Catalog product
+                $product = Collect($this->products)->firstWhere('id', $item['product_id']);
+                if (!$product) {
+                    $product = Product::find($item['product_id']);
+                }
+                $purchase_price = $product ? $product->purchase_price : ($item['purchase_price'] ?? 0);
+
+                // Decrease product quantity in stock
+                if ($product) {
+                    $product->update([
+                        'quantity' => $product->quantity - $item['quantity']
+                    ]);
+                }
+            } else {
+                // Custom / On-the-fly item
+                $purchase_price = (float) ($item['purchase_price'] ?? 0);
+            }
+
+            // Calculate the profit for the item
+            $profit_per_unit = $item['price'] - $purchase_price;
+            $profit_total_for_item = ($profit_per_unit * $item['quantity']) - $item['discount'];
+
+            // Add this item's profit to total sale profit
             $profit_total += $profit_total_for_item;
-        
+
             // Create the sale item entry
             $sale->saleItems()->create([
-                'product_id' => $item['product_id'],
+                'product_id' => $item['product_id'] ?? null,
+                'item_name' => $item['item_name'] ?? null,
                 'warranty_id' => empty($item['warranty_id']) ? null : $item['warranty_id'],
-                'attributes_and_values' => $item['attributes_and_values'],
+                'attributes_and_values' => $item['attributes_and_values'] ?? [],
                 'quantity' => $item['quantity'],
-                'purchase_price' => $product->purchase_price, // Unit purchase price
-                'price' => $item['price'], // Unit selling price
+                'purchase_price' => $purchase_price,
+                'price' => $item['price'],
                 'discount' => $item['discount'],
-                'total' => $item['total'], // Total selling price (quantity * unit price)
-                'profit' => $profit_total_for_item, // Total profit for this item
-            ]);
-        
-            // Decrease product quantity in stock
-            $product->update([
-                'quantity' => $product->quantity - $item['quantity']
+                'total' => $item['total'],
+                'profit' => $profit_total_for_item,
             ]);
         }
-        
+
         // Update the sale with the total profit
         $sale->update(['profit' => $profit_total]);
-        
-        
-        if(!empty($this->customer_id)) {
+
+        if (!empty($this->customer_id)) {
             $sale->update(['customer_id' => $this->customer_id]);
-        }else {
+        } else {
             $customer = Customer::create([
                 'name' => $this->customer_name,
                 'phone_no' => $this->customer_phone_no,
@@ -173,13 +246,10 @@ class Pos extends Component
 
         $this->clearPos();
 
-        // $this->printSaleReceipt($sale->id);
-
         $printService = new PrintService();
         $msg = $printService->printReceiptWin($sale);
         // $msg = $printService->printReceiptMac($sale);
         return session()->flash('message', $msg);
-        // $this->printSaleReceipt($sale->id);
     }
 
     protected function calculate() {
@@ -216,7 +286,6 @@ class Pos extends Component
         $this->grand_total = number_format($this->grand_total, 2, '.', '');
     }
 
-
     public function printSaleReceipt($sale_id) {
         $s = new SaleService();
         $url = $s->generateSaleReceipt($sale_id);
@@ -224,10 +293,14 @@ class Pos extends Component
         $this->dispatch('print-pdf', ['url' => $url]);
     }
 
-
-    public function delete($id) {
-        $this->sale_items = Collect($this->sale_items)->filter(fn($item) => $item['product_id'] != $id)->toArray();
-        $this->products = Collect($this->products)->filter(fn($item) => $item->id != $id);
+    public function delete($key) {
+        $item = $this->sale_items[$key] ?? null;
+        if ($item && !empty($item['product_id'])) {
+            $productId = $item['product_id'];
+            $this->products = Collect($this->products)->filter(fn($p) => $p->id != $productId);
+        }
+        unset($this->sale_items[$key]);
+        $this->calculate();
     }
 
     public function setCustomer($customer_id) {
@@ -249,6 +322,12 @@ class Pos extends Component
             'grand_total',
             'customer_name',
             'customer_phone_no',
+            'custom_item_name',
+            'custom_price',
+            'custom_purchase_price',
+            'custom_quantity',
+            'custom_warranty_id',
+            'showCustomModal',
         ]);
     }
 

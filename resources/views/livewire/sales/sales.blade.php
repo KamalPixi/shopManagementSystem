@@ -76,8 +76,13 @@
                                     @foreach ($sale->saleItems as $item)
                                         <tr wire:key="sale_items_tr_{{$item->id}}">
                                             <td class="px-1 py-1" style="width: 45%;"> 
-                                                <small>{{$item?->product->name }}</small> <br>
-                                                <small class="text-muted">{{ $item?->product->sku }} </small>
+                                                <small>{{ $item->name }}</small>
+                                                @if (empty($item->product_id))
+                                                    <span class="badge bg-info text-white" style="font-size: 0.6rem;">Custom</span>
+                                                @endif
+                                                @if ($item->product?->sku)
+                                                    <br><small class="text-muted">{{ $item->product->sku }}</small>
+                                                @endif
                                              </td>
                                             <td class="px-1 py-1 align-middle lh-1" style="width: 15%;"> 
                                                 <table class="w-100">

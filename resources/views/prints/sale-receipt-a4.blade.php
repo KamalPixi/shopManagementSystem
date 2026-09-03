@@ -123,9 +123,13 @@
                 <tr>
                     <td>{{ $loop->index + 1 }}</td>
                     <td style="line-height: 1;">
-                        {{ $item->product?->name }} <br>
-                        <small style="font-size: 8px;">{{ $item->product?->model_no }}</small> 
-                        <small style="font-size: 8px;">{{ $item->product?->serial_no }}</small> <br>
+                        {{ $item->name }} <br>
+                        @if ($item->product?->model_no)
+                            <small style="font-size: 8px;">{{ $item->product?->model_no }}</small> 
+                        @endif
+                        @if ($item->product?->serial_no)
+                            <small style="font-size: 8px;">{{ $item->product?->serial_no }}</small> <br>
+                        @endif
                         @foreach ($item->attributes_and_values ?? [] as $att => $value)
                         <small style="font-size: 8px;">
                            {{ ucfirst($att) }}:{{ ucfirst($value) }}
