@@ -63,6 +63,7 @@
                         <div class="mb-4">
                             <label>Country</label>
                             <select wire:model="country" class="form-select">
+                                <option value="France">France</option>
                                 <option value="Malaysia">Malaysia</option>
                             </select>
                         </div>
@@ -71,6 +72,7 @@
                         <div class="mb-4">
                             <label>Timezone</label>
                             <select wire:model="timezone" class="form-select">
+                                <option value="Europe/Paris">Europe / Paris</option>
                                 <option value="Asia/Kuala_Lumpur">Kuala Lumpur</option>
                             </select>
                         </div>
@@ -81,13 +83,14 @@
                         <div class="mb-4">
                             <label>Currency</label>
                             <select wire:model="currency" class="form-select">
-                                <option value="MYR">MYR</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="MYR">MYR (RM)</option>
                             </select>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="mb-4">
-                            <label>GST Percentage (%)</label>
+                            <label>{{ strcasecmp($country, 'France') === 0 ? 'TVA' : 'GST' }} Percentage (%)</label>
                             <input wire:model="gst_percent" type="text" class="form-control form-control-sm">
                         </div>
                     </div>

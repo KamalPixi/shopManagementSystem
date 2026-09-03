@@ -26,4 +26,9 @@ class Shop extends Model
         'currency',
         'timezone',
     ];
+
+    public function getTaxLabelAttribute(): string
+    {
+        return strcasecmp($this->country ?? '', 'France') === 0 ? 'TVA' : 'GST';
+    }
 }

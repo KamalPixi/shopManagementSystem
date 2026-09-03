@@ -56,9 +56,10 @@ class DatabaseSeeder extends Seeder
             'city' => 'PUDU',
             'state' => 'KUALA LUMPUR',
             'postal_code' => '55100',
-            'country' => 'Malaysia', 
+            'country' => 'France', 
             'gst_percent' => 0,
-            'currency' => ['code' => 'MYR', 'symbol' => 'RM', 'name' => 'Malaysian Ringgit'],
+            'currency' => ['code' => 'EUR', 'symbol' => '€', 'name' => 'Euro'],
+            'timezone' => 'Europe/Paris',
         ]);
 
         // create role and permissions & assign admin as admin role

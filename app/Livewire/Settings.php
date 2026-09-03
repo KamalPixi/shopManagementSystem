@@ -79,15 +79,21 @@ class Settings extends Component
             $logo_path = $this->logo->storeAs($directory, $fileName, 'public_direct');
         }
 
+        $currencyMap = [
+            'EUR' => ['code' => 'EUR', 'symbol' => '€', 'name' => 'Euro'],
+            'MYR' => ['code' => 'MYR', 'symbol' => 'RM', 'name' => 'Malaysian Ringgit'],
+        ];
+        $selectedCurrency = $currencyMap[$validated['currency']] ?? ['code' => $validated['currency'], 'symbol' => $validated['currency'], 'name' => $validated['currency']];
+
         if (!$shop) {
             $validated['logo'] = $logo_path ?? null;
-            $validated['currency'] = ['code' => $validated['currency']];
+            $validated['currency'] = $selectedCurrency;
             Shop::create($validated);
             return session()->flash('success', 'Shop settings saved.');
         }
 
         $validated['logo'] = $logo_path ?? null;
-        $validated['currency'] = ['code' => $validated['currency']];
+        $validated['currency'] = $selectedCurrency;
         $shop->update($validated);
         return session()->flash('success', 'Shop settings updated.');
     }

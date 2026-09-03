@@ -128,8 +128,11 @@ final class PrintService
             $printer->text("Contact No.: " . $shop->contact_no . "\n");
             $printer->text($divider);
 
+            $currencyCode = $shop->currency['code'] ?? 'EUR';
+            $shopTimezone = $shop->timezone ?? 'Europe/Paris';
+
             $printer->text("Receipt No.: " . $sale?->receipt_no . "\n");
-            $printer->text("Date       : " . $sale?->created_at->timezone('Asia/Kuala_Lumpur')->format('d/m/Y h:i:s A') . "\n");
+            $printer->text("Date       : " . $sale?->created_at->timezone($shopTimezone)->format('d/m/Y h:i:s A') . "\n");
             $printer->text("Cashier    : " . ($sale?->createdBy?->username ?? '-') . "\n");
             $printer->text($divider);
 
@@ -139,7 +142,7 @@ final class PrintService
             $printer->setEmphasis(false);
             $printer->text(
                 str_pad("Unit", $col1, ' ', STR_PAD_RIGHT) .
-                str_pad("Price RM", $col2, ' ', STR_PAD_LEFT) .
+                str_pad("Price $currencyCode", $col2, ' ', STR_PAD_LEFT) .
                 str_pad("Disc", $col3, ' ', STR_PAD_LEFT) .
                 str_pad("Amount", $col4, ' ', STR_PAD_LEFT) . "\n"
             );
@@ -170,8 +173,9 @@ final class PrintService
             $gst = number_format($sale->gst, 2);
             $total = number_format($sale->total_price, 2);
 
+            $taxLabel = ($shop->tax_label ?? 'GST') . ':';
             $printer->text(str_pad("Sub Total:", 25) . str_pad($subtotal, 20, ' ', STR_PAD_LEFT) . "\n");
-            $printer->text(str_pad("GST:", 25) . str_pad($gst, 20, ' ', STR_PAD_LEFT) . "\n");
+            $printer->text(str_pad($taxLabel, 25) . str_pad($gst, 20, ' ', STR_PAD_LEFT) . "\n");
             $printer->setEmphasis(true);
             $printer->text(str_pad("Total:", 25) . str_pad($total, 20, ' ', STR_PAD_LEFT) . "\n");
             $printer->setEmphasis(false);
@@ -252,8 +256,11 @@ final class PrintService
 
             $printer->text($divider);
 
+            $currencyCode = $shop->currency['code'] ?? 'EUR';
+            $shopTimezone = $shop->timezone ?? 'Europe/Paris';
+
             $printer->text("Receipt No.: " . $sale?->receipt_no . "\n");
-            $printer->text("Date       : " . $sale?->created_at->timezone('Asia/Kuala_Lumpur')->format('d/m/Y h:i:s A') . "\n");
+            $printer->text("Date       : " . $sale?->created_at->timezone($shopTimezone)->format('d/m/Y h:i:s A') . "\n");
             $printer->text("Cashier    : " . ($sale?->createdBy?->username ?? '-') . "\n");
             $printer->text($divider);
 
@@ -263,7 +270,7 @@ final class PrintService
             $printer->setEmphasis(false);
             $printer->text(
                 str_pad("Unit", $col1, ' ', STR_PAD_RIGHT) .
-                str_pad("Price RM", $col2, ' ', STR_PAD_LEFT) .
+                str_pad("Price $currencyCode", $col2, ' ', STR_PAD_LEFT) .
                 str_pad("Disc", $col3, ' ', STR_PAD_LEFT) .
                 str_pad("Amount", $col4, ' ', STR_PAD_LEFT) . "\n"
             );
@@ -294,8 +301,9 @@ final class PrintService
             $gst = number_format($sale->gst, 2);
             $total = number_format($sale->total_price, 2);
 
+            $taxLabel = ($shop->tax_label ?? 'GST') . ':';
             $printer->text(str_pad("Sub Total:", 25) . str_pad($subtotal, 20, ' ', STR_PAD_LEFT) . "\n");
-            $printer->text(str_pad("GST:", 25) . str_pad($gst, 20, ' ', STR_PAD_LEFT) . "\n");
+            $printer->text(str_pad($taxLabel, 25) . str_pad($gst, 20, ' ', STR_PAD_LEFT) . "\n");
             $printer->setEmphasis(true);
             $printer->text(str_pad("Total:", 25) . str_pad($total, 20, ' ', STR_PAD_LEFT) . "\n");
             $printer->setEmphasis(false);

@@ -206,7 +206,7 @@
                         <td class="py-1"><input wire:model.live="discount" readonly type="number" class="fw-bold text-end form-control form-control-sm"></td>
                     </tr>
                     <tr>
-                        <td class="py-1 text-end fw-bold vertical-align-center align-middle" style="width: 80%;">GST <span class="small text-muted">({{ $shop?->gst_percent }}%)</span>:</td>
+                        <td class="py-1 text-end fw-bold vertical-align-center align-middle" style="width: 80%;">{{ $shop?->tax_label ?? 'GST' }} <span class="small text-muted">({{ $shop?->gst_percent }}%)</span>:</td>
                         <td class="py-1">
                             <input wire:model.live="gst" readonly type="number" class="fw-bold text-end form-control form-control-sm">
                         </td>
