@@ -287,8 +287,10 @@ class Pos extends Component
 
         $this->clearPos();
 
+        // Send raw print command to physical/virtual POS printer
         $printService = new PrintService();
         $msg = $printService->printReceipt($sale);
+
         return session()->flash('message', $msg);
     }
 

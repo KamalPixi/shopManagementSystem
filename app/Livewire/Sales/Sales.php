@@ -58,6 +58,16 @@ class Sales extends Component
         $sale = Sale::findOrFail($id);
         $printService = new PrintService();
         $msg = $printService->printReceipt($sale);
+
+        // Also trigger the PDF preview window
+        try {
+            $s = new SaleService();
+            $url = $s->generateSaleReceipt($id);
+            $this->dispatch('print-pdf', ['url' => $url]);
+        } catch (\Throwable $e) {
+            // Ignore preview error
+        }
+
         session()->flash('message', $msg);
     }
 
