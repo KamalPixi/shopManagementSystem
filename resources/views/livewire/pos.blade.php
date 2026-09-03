@@ -15,14 +15,14 @@
                         <div class="col-md-9 col-12">
                             <form wire:submit.prevent="add">
                                 <div>
-                                    <label>Barcode / SKU / SerialNo*</label>
-                                    <input wire:model="identifier" type="text" class="form-control form-control-sm" autofocus placeholder="Scan barcode or enter SKU / Serial number">
+                                    <label>{{ __('Barcode / SKU / SerialNo*') }}</label>
+                                    <input wire:model="identifier" type="text" class="form-control form-control-sm" autofocus placeholder="{{ __('Scan barcode or enter SKU / Serial number') }}">
                                 </div>
                             </form>
                         </div>
                         <div class="col-md-3 col-12 mt-3 mt-md-0 text-md-end">
                             <button wire:click="openCustomModal" type="button" class="btn btn-sm btn-info text-white w-100">
-                                <i class="fa-solid fa-screwdriver-wrench me-1"></i> + Custom / Repair Item
+                                <i class="fa-solid fa-screwdriver-wrench me-1"></i> {{ __('+ Custom / Repair Item') }}
                             </button>
                         </div>
                     </div>
@@ -198,11 +198,11 @@
 
                 <table class="w-100">
                     <tr>
-                        <td class="text-end fw-bold vertical-align-center align-middle py-0" style="width: 80%;">Subtotal:</td>
+                        <td class="text-end fw-bold vertical-align-center align-middle py-0" style="width: 80%;">{{ __('Subtotal') }}:</td>
                         <td class="py-1"><input wire:model="subtotal" readonly type="number" class="fw-bold text-end form-control form-control-sm"></td>
                     </tr>
                     <tr>
-                        <td class="py-1 text-end fw-bold vertical-align-center align-middle" style="width: 80%;">Discount:</td>
+                        <td class="py-1 text-end fw-bold vertical-align-center align-middle" style="width: 80%;">{{ __('Discount') }}:</td>
                         <td class="py-1"><input wire:model.live="discount" readonly type="number" class="fw-bold text-end form-control form-control-sm"></td>
                     </tr>
                     <tr>
@@ -212,7 +212,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="py-1 text-end fw-bold vertical-align-center align-middle" style="width: 80%;">Grand Total:</td>
+                        <td class="py-1 text-end fw-bold vertical-align-center align-middle" style="width: 80%;">{{ __('Grand Total') }}:</td>
                         <td class="py-1"><input wire:model.live="grand_total" readonly type="number" class="fw-bold text-end form-control form-control-sm"></td>
                     </tr>
                 </table>
@@ -221,7 +221,7 @@
             <div class="row rounded pt-2 mb-4" style="background-color: rgb(228, 228, 228); margin-left:0.01rem;margin-right:0.01rem;">
                 <div class="col">
                     <div class="mb-4 position-relative">
-                        <label>Customer name*</label>
+                        <label>{{ __('Customer name*') }}</label>
                         <input wire:model.live="customer_name" type="text" class="form-control form-control-sm" required>
 
                         @if (collect($customers)->count())
@@ -237,7 +237,7 @@
                 </div>
                 <div class="col">
                     <div class="mb-4">
-                        <label>Phone No.*</label>
+                        <label>{{ __('Phone No.*') }}</label>
                         <input wire:model="customer_phone_no" type="text" class="form-control form-control-sm" required>
                     </div>
                 </div>
@@ -245,8 +245,8 @@
 
             @if (count($sale_items) > 0)
             <div class="text-end">
-                <button wire:click="sale" type="button" class="btn btn-primary px-6">Sale</button>
-                <button wire:click="clearPos" type="button" class="btn btn-danger px-3">Clear</button>
+                <button wire:click="sale" type="button" class="btn btn-primary px-6">{{ __('Sale') }}</button>
+                <button wire:click="clearPos" type="button" class="btn btn-danger px-3">{{ __('Clear') }}</button>
             </div>
             @endif
         </div>

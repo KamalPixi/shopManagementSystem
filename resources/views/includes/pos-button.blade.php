@@ -3,6 +3,6 @@
       <div class="icon icon-xs me-2">
         <i class="fa-solid fa-cart-plus icon icon-xs me-2"></i>
       </div>
-      POS
+      {{ __('POS') }}
   </a>
 </div>

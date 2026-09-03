@@ -10,7 +10,7 @@
             </li>
             @foreach ($data as $title => $url)
                 <li class="breadcrumb-item @if($loop->last) active @endif">
-                    <a href="{{ $url }}">{{ $title }}</a>
+                    <a href="{{ $url }}">{{ __($title) }}</a>
                 </li>
             @endforeach
         </ol>

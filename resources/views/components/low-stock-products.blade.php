@@ -1,15 +1,15 @@
 <div class="card border-0 shadow mb-4">
     <div class="card-body">
-        <h6 class="mb-3">Low Stock Products</h6>
+        <h6 class="mb-3">{{ __('Low Stock Products') }}</h6>
         <div class="mb-4 table-responsive">
             <table class="table table-centered table-nowrap mb-0 rounded">
                 <thead class="thead-light">
                     <tr>
                         <th style="width: 8%;" class="border-0 rounded-start">#</th>
-                        <th class="border-0">Name</th>
+                        <th class="border-0">{{ __('Name') }}</th>
                         <th class="border-0">SKU</th>
-                        <th class="border-0">Category</th>
-                        <th style="width: 8%;" class="border-0">Quantity</th>
+                        <th class="border-0">{{ __('Category') }}</th>
+                        <th style="width: 8%;" class="border-0">{{ __('Quantity') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,7 +33,7 @@
                     </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-4">No low-stock products found.</td>
+                            <td colspan="6" class="text-center py-4">{{ __('No low-stock products found.') }}</td>
                         </tr>
                     @endforelse
                 </tbody>

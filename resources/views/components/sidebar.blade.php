@@ -41,7 +41,7 @@
                     <span class="sidebar-icon">
                         <i class="fa-solid fa-gauge"></i>
                     </span>
-                    <span>Dashboard</span>
+                    <span>{{ __('Dashboard') }}</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -50,7 +50,7 @@
                         <span class="sidebar-icon">
                             <i class="fa-solid fa-layer-group"></i>
                         </span>
-                        <span class="sidebar-text">Stock</span>
+                        <span class="sidebar-text">{{ __('Stock') }}</span>
                     </span>
                     <span class="link-arrow">
                         <span class="icon icon-sm">
@@ -60,9 +60,9 @@
                 </span>
                 <div class="multi-level collapse" role="list" id="stock-app" aria-expanded="false">
                     <ul class="flex-column nav">
-                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks.add') }}"><span class="sidebar-text">New Product</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks.addToStock') }}"><span class="sidebar-text">Add To Stock</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks.index') }}"><span class="sidebar-text">Stock List</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks.add') }}"><span class="sidebar-text">{{ __('New Product') }}</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks.addToStock') }}"><span class="sidebar-text">{{ __('Add To Stock') }}</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks.index') }}"><span class="sidebar-text">{{ __('Stock List') }}</span></a></li>
                     </ul>
                 </div>
             </li>
@@ -72,7 +72,7 @@
                         <span class="sidebar-icon">
                             <i class="fa-solid fa-clipboard-list"></i>
                         </span>
-                        <span class="sidebar-text">Sales</span>
+                        <span class="sidebar-text">{{ __('Sales') }}</span>
                     </span>
                     <span class="icon icon-sm">
                         <i class="fa-solid fa-angle-right"></i>
@@ -80,7 +80,7 @@
                 </span>
                 <div class="multi-level collapse" role="list" id="sales-app" aria-expanded="false">
                     <ul class="flex-column nav">
-                        <li class="nav-item"><a class="nav-link" href="{{ route('sales.index') }}"><span class="sidebar-text">Sales</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('sales.index') }}"><span class="sidebar-text">{{ __('Sales') }}</span></a></li>
                     </ul>
                 </div>
             </li>
@@ -90,7 +90,7 @@
                         <span class="sidebar-icon">
                             <i class="fa-solid fa-screwdriver-wrench"></i>
                         </span>
-                        <span class="sidebar-text">Warranty</span>
+                        <span class="sidebar-text">{{ __('Warranty') }}</span>
                     </span>
                     <span class="link-arrow">
                         <span class="icon icon-sm">
@@ -100,9 +100,9 @@
                 </span>
                 <div class="multi-level collapse" role="list" id="warranty-app" aria-expanded="false">
                     <ul class="flex-column nav">
-                        <li class="nav-item"><a class="nav-link" href="{{ route('warrantySend') }}"><span class="sidebar-text">Warranty Send</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('warrantyReceive') }}"><span class="sidebar-text">Warranty Receive</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('warrantyCustomerReceive') }}"><span class="sidebar-text">Customer Receive</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('warrantySend') }}"><span class="sidebar-text">{{ __('Warranty Send') }}</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('warrantyReceive') }}"><span class="sidebar-text">{{ __('Warranty Receive') }}</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('warrantyCustomerReceive') }}"><span class="sidebar-text">{{ __('Customer Receive') }}</span></a></li>
                     </ul>
                 </div>
             </li>
@@ -111,7 +111,7 @@
                     <span class="sidebar-icon">
                         <i class="fa-solid fa-users-rays"></i>
                     </span>
-                    <span class="sidebar-text">Customers</span>
+                    <span class="sidebar-text">{{ __('Customers') }}</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -120,7 +120,7 @@
                         <span class="sidebar-icon">
                             <i class="fa-solid fa-plus"></i>
                         </span>
-                        <span class="sidebar-text">Add</span>
+                        <span class="sidebar-text">{{ __('Add') }}</span>
                     </span>
                     <span class="link-arrow">
                         <span class="icon icon-sm">
@@ -130,10 +130,10 @@
                 </span>
                 <div class="multi-level collapse" role="list" id="add-app" aria-expanded="false">
                     <ul class="flex-column nav">
-                        <li class="nav-item"><a class="nav-link" href="{{ route('brands') }}"><span class="sidebar-text">Brands</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('categories') }}"><span class="sidebar-text">Categories</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('warranties') }}"><span class="sidebar-text">Warranties</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('suppliers') }}"><span class="sidebar-text">Suppliers</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('brands') }}"><span class="sidebar-text">{{ __('Brands') }}</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('categories') }}"><span class="sidebar-text">{{ __('Categories') }}</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('warranties') }}"><span class="sidebar-text">{{ __('Warranties') }}</span></a></li>
+                        <li class="nav-item"><a class="nav-link" href="{{ route('suppliers') }}"><span class="sidebar-text">{{ __('Suppliers') }}</span></a></li>
                     </ul>
                 </div>
             </li>
@@ -143,7 +143,7 @@
                     <span class="sidebar-icon">
                         <i class="fa-solid fa-user-plus"></i>
                     </span>
-                    <span class="sidebar-text">Users</span>
+                    <span class="sidebar-text">{{ __('Users') }}</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -151,7 +151,7 @@
                     <span class="sidebar-icon">
                         <i class="fa-solid fa-sliders"></i>
                     </span>
-                    <span class="sidebar-text">Settings</span>
+                    <span class="sidebar-text">{{ __('Settings') }}</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -159,7 +159,7 @@
                     <span class="sidebar-icon">
                         <i class="fa-solid fa-upload"></i>
                     </span>
-                    <span class="sidebar-text">DBImportExport</span>
+                    <span class="sidebar-text">{{ __('DBImportExport') }}</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -167,7 +167,7 @@
                     <span class="sidebar-icon">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i>
                     </span>
-                    <span class="sidebar-text">Sign Out</span>
+                    <span class="sidebar-text">{{ __('Sign Out') }}</span>
                 </a>
             </li>
         </ul>

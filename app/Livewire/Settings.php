@@ -26,6 +26,7 @@ class Settings extends Component
     public $gst_percent = 6;
     public $currency = 'MYR';
     public $timezone = 'Asia/Kuala_Lumpur';
+    public $language = 'en';
     public $settings;
 
     protected $rules = [
@@ -41,11 +42,15 @@ class Settings extends Component
         'gst_percent' => 'nullable|numeric',
         'currency' => 'nullable|string|max:3',
         'timezone' => 'nullable|string|max:100',
+        'language' => 'nullable|string|in:en,fr',
     ];
 
     public function mount() {
         $shop = Shop::first();
         if ($shop) {
+            $shopLang = $shop->settings['language'] ?? (strcasecmp($shop->country ?? '', 'France') === 0 ? 'fr' : 'en');
+            $this->language = session('locale', $shopLang);
+
             $this->fill([
                 'name' => $shop->name,
                 'contact_no' => $shop->contact_no,
@@ -85,17 +90,27 @@ class Settings extends Component
         ];
         $selectedCurrency = $currencyMap[$validated['currency']] ?? ['code' => $validated['currency'], 'symbol' => $validated['currency'], 'name' => $validated['currency']];
 
+        $shopSettings = $shop?->settings ?? [];
+        $shopSettings['language'] = $validated['language'] ?? 'en';
+        $validated['settings'] = $shopSettings;
+
+        // Apply immediately to current user session & app
+        session(['locale' => $shopSettings['language']]);
+        app()->setLocale($shopSettings['language']);
+
         if (!$shop) {
             $validated['logo'] = $logo_path ?? null;
             $validated['currency'] = $selectedCurrency;
             Shop::create($validated);
-            return session()->flash('success', 'Shop settings saved.');
+            session()->flash('success', __('Shop settings saved.'));
+            return $this->redirect(route('settings'), navigate: false);
         }
 
         $validated['logo'] = $logo_path ?? null;
         $validated['currency'] = $selectedCurrency;
         $shop->update($validated);
-        return session()->flash('success', 'Shop settings updated.');
+        session()->flash('success', __('Shop settings updated.'));
+        return $this->redirect(route('settings'), navigate: false);
     }
 
     public function render()

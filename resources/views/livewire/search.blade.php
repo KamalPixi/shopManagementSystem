@@ -6,7 +6,7 @@
         </svg> 
       </span>
 
-        <input wire:model.live="search" type="text" class="form-control" id="topbarInputIconLeft" placeholder="Search" aria-label="Search" aria-describedby="topbar-addon">
+        <input wire:model.live="search" type="text" class="form-control" id="topbarInputIconLeft" placeholder="{{ __('Search') }}" aria-label="{{ __('Search') }}" aria-describedby="topbar-addon">
         @if (collect($products)->count())
         <div wire:key="customer_div" class="position-absolute rounded w-100 shadow mt-5 border overflow-scroll" style="background-color: rgb(243, 243, 243); max-height: 10rem; z-index: 1;">
             <ul class="list-unstyled m-0 py-2 w-100">
