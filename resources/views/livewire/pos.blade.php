@@ -11,18 +11,18 @@
         <div class="col-12">
             <div class="card border-0 shadow components-section">
                 <div class="card-body">
-                    <div class="row align-items-end">
-                        <div class="col-md-9 col-12">
-                            <form wire:submit.prevent="add">
+                    <div class="row align-items-end g-3">
+                        <div class="col-lg-9 col-md-8 col-12">
+                            <form wire:submit.prevent="add" class="m-0 p-0">
                                 <div>
-                                    <label>{{ __('Barcode / SKU / SerialNo*') }}</label>
-                                    <input wire:model="identifier" type="text" class="form-control form-control-sm" autofocus placeholder="{{ __('Scan barcode or enter SKU / Serial number') }}">
+                                    <label class="form-label mb-1 fw-bold">{{ __('Barcode / SKU / SerialNo*') }}</label>
+                                    <input wire:model="identifier" type="text" class="form-control m-0" style="height: 42px; line-height: 42px; box-sizing: border-box;" autofocus placeholder="{{ __('Scan barcode or enter SKU / Serial number') }}">
                                 </div>
                             </form>
                         </div>
-                        <div class="col-md-3 col-12 mt-3 mt-md-0 text-md-end">
-                            <button wire:click="openCustomModal" type="button" class="btn btn-sm btn-info text-white w-100">
-                                <i class="fa-solid fa-screwdriver-wrench me-1"></i> {{ __('+ Custom / Repair Item') }}
+                        <div class="col-lg-3 col-md-4 col-12">
+                            <button wire:click="openCustomModal" type="button" class="btn btn-info text-white w-100 d-inline-flex align-items-center justify-content-center text-nowrap shadow-sm m-0" style="height: 42px; line-height: 1; box-sizing: border-box; white-space: nowrap;">
+                                <i class="fa-solid fa-screwdriver-wrench me-2"></i> {{ __('+ Custom / Repair Item') }}
                             </button>
                         </div>
                     </div>
@@ -38,39 +38,39 @@
             <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title h6 mb-0 text-white">
-                        <i class="fa-solid fa-screwdriver-wrench me-2"></i> Add On-The-Fly / Custom Item
+                        <i class="fa-solid fa-screwdriver-wrench me-2"></i> {{ __('Add On-The-Fly / Custom Item') }}
                     </h5>
-                    <button wire:click="closeCustomModal" type="button" class="btn-close btn-close-white" aria-label="Close"></button>
+                    <button wire:click="closeCustomModal" type="button" class="btn-close btn-close-white" aria-label="{{ __('Cancel') }}"></button>
                 </div>
                 <form wire:submit.prevent="addCustomItem">
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label">Item / Service Name <span class="text-danger">*</span></label>
-                            <input wire:model="custom_item_name" type="text" class="form-control form-control-sm" placeholder="e.g. Mobile Screen Repair / Service" required>
+                            <label class="form-label">{{ __('Item / Service Name') }} <span class="text-danger">*</span></label>
+                            <input wire:model="custom_item_name" type="text" class="form-control form-control-sm" placeholder="{{ __('e.g. Mobile Screen Repair / Service') }}" required>
                             @error('custom_item_name') <span class="text-danger small">{{ $message }}</span> @enderror
                         </div>
                         <div class="row">
                             <div class="col-6 mb-3">
-                                <label class="form-label">Sale Price <span class="text-danger">*</span></label>
+                                <label class="form-label">{{ __('Sale Price') }} <span class="text-danger">*</span></label>
                                 <input wire:model="custom_price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0.00" required>
                                 @error('custom_price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-6 mb-3">
-                                <label class="form-label">Cost / Purchase Price <small class="text-muted">(Optional)</small></label>
+                                <label class="form-label">{{ __('Cost / Purchase Price') }} <small class="text-muted">({{ __('Optional') }})</small></label>
                                 <input wire:model="custom_purchase_price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0.00">
                                 @error('custom_purchase_price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-6 mb-3">
-                                <label class="form-label">Quantity <span class="text-danger">*</span></label>
+                                <label class="form-label">{{ __('Quantity') }} <span class="text-danger">*</span></label>
                                 <input wire:model="custom_quantity" type="number" min="1" class="form-control form-control-sm text-center" required>
                                 @error('custom_quantity') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-6 mb-3">
-                                <label class="form-label">Warranty <small class="text-muted">(Optional)</small></label>
+                                <label class="form-label">{{ __('Warranty') }} <small class="text-muted">({{ __('Optional') }})</small></label>
                                 <select wire:model="custom_warranty_id" class="form-select form-select-sm">
-                                    <option value="">No Warranty</option>
+                                    <option value="">{{ __('No Warranty') }}</option>
                                     @foreach ($warranties as $warranty)
                                         <option value="{{ $warranty->id }}">{{ $warranty->name }}</option>
                                     @endforeach
@@ -80,9 +80,9 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button wire:click="closeCustomModal" type="button" class="btn btn-sm btn-secondary">Cancel</button>
+                        <button wire:click="closeCustomModal" type="button" class="btn btn-sm btn-secondary">{{ __('Cancel') }}</button>
                         <button type="submit" class="btn btn-sm btn-primary">
-                            <i class="fa-solid fa-plus me-1"></i> Add to Cart
+                            <i class="fa-solid fa-plus me-1"></i> {{ __('Add to Cart') }}
                         </button>
                     </div>
                 </form>
@@ -106,13 +106,13 @@
                     <thead class="thead-light">
                         <tr>
                             <th class="border-0 rounded-start">#</th>
-                            <th class="border-0 text-start">Product / Item</th>
-                            <th class="border-0 text-center">Attributes</th>
-                            <th class="border-0 text-center">Warranty</th>
-                            <th class="border-0 text-center">Sale Price <small class="small">Unit</small></th>
-                            <th class="border-0 text-center">Discount<small class="small">(Fixed)</small></th>
-                            <th class="border-0 text-center">Qty</th>
-                            <th class="border-0 text-center">Total</th>
+                            <th class="border-0 text-start">{{ __('Product / Item') }}</th>
+                            <th class="border-0 text-center">{{ __('Attributes') }}</th>
+                            <th class="border-0 text-center">{{ __('Warranty') }}</th>
+                            <th class="border-0 text-center">{{ __('Sale Price') }} <small class="small">{{ __('Unit') }}</small></th>
+                            <th class="border-0 text-center">{{ __('Discount') }} <small class="small">({{ __('Fixed') }})</small></th>
+                            <th class="border-0 text-center">{{ __('Qty') }}</th>
+                            <th class="border-0 text-center">{{ __('Total') }}</th>
                             <th class="border-0 text-end">-</th>
                         </tr>
                     </thead>
@@ -126,7 +126,7 @@
                             <td class="fw-bold align-items-center lh-1"> 
                                 {{ $item['item_name'] ?? ($prod?->name ?? 'Item') }}
                                 @if (!empty($item['is_custom']))
-                                    <span class="badge bg-info text-white ms-1" style="font-size: 0.7rem;">Custom / Service</span>
+                                    <span class="badge bg-info text-white ms-1" style="font-size: 0.7rem;">{{ __('Custom / Service') }}</span>
                                 @endif
                                 @if ($prod?->serial_no)
                                     <br>
@@ -185,12 +185,12 @@
                             </td>
 
                             <td class="text-center px-0" style="width: 3%;">
-                                <a class="dropdown-item text-danger text-center rounded" wire:click="delete('{{ $itemKey }}')" wire:confirm="Are you sure you want to remove this item?" href="#"><i class="fas fa-trash"></i></a>
+                                <a class="dropdown-item text-danger text-center rounded" wire:click="delete('{{ $itemKey }}')" wire:confirm="{{ __('Are you sure you want to remove this item?') }}" href="#"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="text-center text-muted py-4">Scan a barcode or click <b>+ Custom / Repair Item</b> to add items to the cart.</td>
+                            <td colspan="9" class="text-center text-muted py-4">{{ __('Scan a barcode or click + Custom / Repair Item to add items to the cart.') }}</td>
                         </tr>
                         @endforelse
                     </tbody>
