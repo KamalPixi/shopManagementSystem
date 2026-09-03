@@ -32,6 +32,19 @@
         html {
           font-size: 14px;
         }
+
+        /* Sidebar active child highlight */
+        .sidebar .multi-level .nav-item.active > .nav-link,
+        .sidebar .multi-level .nav-link.active {
+          color: #ffffff !important;
+          background: rgba(255, 255, 255, 0.12);
+          border-radius: 0.375rem;
+          font-weight: 600;
+        }
+        .sidebar .nav-item.active > .nav-link:not([data-bs-toggle="collapse"]) {
+          background-color: #1f2937;
+          color: #ffffff;
+        }
       </style>
   </head>
   <body class="d-flex flex-column min-vh-100">

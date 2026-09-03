@@ -36,16 +36,21 @@
                 </a>
             </li>
             <li role="separator" class="dropdown-divider mt-4 mb-3 border-gray-700"></li>
-            <li class="nav-item">
-                <a href="{{ route('dashboard') }}" class="nav-link">
+            
+            {{-- Dashboard --}}
+            <li class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <span class="sidebar-icon">
                         <i class="fa-solid fa-gauge"></i>
                     </span>
                     <span>{{ __('Dashboard') }}</span>
                 </a>
             </li>
+
+            {{-- Stock App --}}
+            @php $isStockActive = request()->routeIs('stocks.*'); @endphp
             <li class="nav-item">
-                <span class="nav-link collapsed d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#stock-app">
+                <span class="nav-link {{ $isStockActive ? '' : 'collapsed' }} d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#stock-app" aria-expanded="{{ $isStockActive ? 'true' : 'false' }}">
                     <span>
                         <span class="sidebar-icon">
                             <i class="fa-solid fa-layer-group"></i>
@@ -58,16 +63,31 @@
                         </span>
                     </span>
                 </span>
-                <div class="multi-level collapse" role="list" id="stock-app" aria-expanded="false">
+                <div class="multi-level collapse {{ $isStockActive ? 'show' : '' }}" role="list" id="stock-app" aria-expanded="{{ $isStockActive ? 'true' : 'false' }}">
                     <ul class="flex-column nav">
-                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks.add') }}"><span class="sidebar-text">{{ __('New Product') }}</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks.addToStock') }}"><span class="sidebar-text">{{ __('Add To Stock') }}</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('stocks.index') }}"><span class="sidebar-text">{{ __('Stock List') }}</span></a></li>
+                        <li class="nav-item {{ request()->routeIs('stocks.add') ? 'active' : '' }}">
+                            <a class="nav-link {{ request()->routeIs('stocks.add') ? 'active text-white fw-bold' : '' }}" href="{{ route('stocks.add') }}">
+                                <span class="sidebar-text">{{ __('New Product') }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ request()->routeIs('stocks.addToStock') ? 'active' : '' }}">
+                            <a class="nav-link {{ request()->routeIs('stocks.addToStock') ? 'active text-white fw-bold' : '' }}" href="{{ route('stocks.addToStock') }}">
+                                <span class="sidebar-text">{{ __('Add To Stock') }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ request()->routeIs('stocks.index') ? 'active' : '' }}">
+                            <a class="nav-link {{ request()->routeIs('stocks.index') ? 'active text-white fw-bold' : '' }}" href="{{ route('stocks.index') }}">
+                                <span class="sidebar-text">{{ __('Stock List') }}</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
+
+            {{-- Sales App --}}
+            @php $isSalesActive = request()->routeIs('sales.*'); @endphp
             <li class="nav-item">
-                <span class="nav-link collapsed d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#sales-app">
+                <span class="nav-link {{ $isSalesActive ? '' : 'collapsed' }} d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#sales-app" aria-expanded="{{ $isSalesActive ? 'true' : 'false' }}">
                     <span>
                         <span class="sidebar-icon">
                             <i class="fa-solid fa-clipboard-list"></i>
@@ -78,14 +98,21 @@
                         <i class="fa-solid fa-angle-right"></i>
                     </span>
                 </span>
-                <div class="multi-level collapse" role="list" id="sales-app" aria-expanded="false">
+                <div class="multi-level collapse {{ $isSalesActive ? 'show' : '' }}" role="list" id="sales-app" aria-expanded="{{ $isSalesActive ? 'true' : 'false' }}">
                     <ul class="flex-column nav">
-                        <li class="nav-item"><a class="nav-link" href="{{ route('sales.index') }}"><span class="sidebar-text">{{ __('Sales') }}</span></a></li>
+                        <li class="nav-item {{ request()->routeIs('sales.index') ? 'active' : '' }}">
+                            <a class="nav-link {{ request()->routeIs('sales.index') ? 'active text-white fw-bold' : '' }}" href="{{ route('sales.index') }}">
+                                <span class="sidebar-text">{{ __('Sales') }}</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
+
+            {{-- Warranty App --}}
+            @php $isWarrantyActive = request()->routeIs('warranty*'); @endphp
             <li class="nav-item">
-                <span class="nav-link collapsed d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#warranty-app">
+                <span class="nav-link {{ $isWarrantyActive ? '' : 'collapsed' }} d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#warranty-app" aria-expanded="{{ $isWarrantyActive ? 'true' : 'false' }}">
                     <span>
                         <span class="sidebar-icon">
                             <i class="fa-solid fa-screwdriver-wrench"></i>
@@ -98,24 +125,41 @@
                         </span>
                     </span>
                 </span>
-                <div class="multi-level collapse" role="list" id="warranty-app" aria-expanded="false">
+                <div class="multi-level collapse {{ $isWarrantyActive ? 'show' : '' }}" role="list" id="warranty-app" aria-expanded="{{ $isWarrantyActive ? 'true' : 'false' }}">
                     <ul class="flex-column nav">
-                        <li class="nav-item"><a class="nav-link" href="{{ route('warrantySend') }}"><span class="sidebar-text">{{ __('Warranty Send') }}</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('warrantyReceive') }}"><span class="sidebar-text">{{ __('Warranty Receive') }}</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('warrantyCustomerReceive') }}"><span class="sidebar-text">{{ __('Customer Receive') }}</span></a></li>
+                        <li class="nav-item {{ request()->routeIs('warrantySend') ? 'active' : '' }}">
+                            <a class="nav-link {{ request()->routeIs('warrantySend') ? 'active text-white fw-bold' : '' }}" href="{{ route('warrantySend') }}">
+                                <span class="sidebar-text">{{ __('Warranty Send') }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ request()->routeIs('warrantyReceive') ? 'active' : '' }}">
+                            <a class="nav-link {{ request()->routeIs('warrantyReceive') ? 'active text-white fw-bold' : '' }}" href="{{ route('warrantyReceive') }}">
+                                <span class="sidebar-text">{{ __('Warranty Receive') }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ request()->routeIs('warrantyCustomerReceive') ? 'active' : '' }}">
+                            <a class="nav-link {{ request()->routeIs('warrantyCustomerReceive') ? 'active text-white fw-bold' : '' }}" href="{{ route('warrantyCustomerReceive') }}">
+                                <span class="sidebar-text">{{ __('Customer Receive') }}</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
-            <li class="nav-item">
-                <a href="{{ route('customers') }}" class="nav-link d-flex align-items-center">
+
+            {{-- Customers --}}
+            <li class="nav-item {{ request()->routeIs('customers') ? 'active' : '' }}">
+                <a href="{{ route('customers') }}" class="nav-link {{ request()->routeIs('customers') ? 'active' : '' }} d-flex align-items-center">
                     <span class="sidebar-icon">
                         <i class="fa-solid fa-users-rays"></i>
                     </span>
                     <span class="sidebar-text">{{ __('Customers') }}</span>
                 </a>
             </li>
+
+            {{-- Add App (Brands, Categories, Warranties, Suppliers) --}}
+            @php $isAddActive = request()->routeIs('brands', 'categories', 'warranties', 'suppliers'); @endphp
             <li class="nav-item">
-                <span class="nav-link collapsed d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#add-app">
+                <span class="nav-link {{ $isAddActive ? '' : 'collapsed' }} d-flex justify-content-between align-items-center" data-bs-toggle="collapse" data-bs-target="#add-app" aria-expanded="{{ $isAddActive ? 'true' : 'false' }}">
                     <span>
                         <span class="sidebar-icon">
                             <i class="fa-solid fa-plus"></i>
@@ -128,40 +172,65 @@
                         </span>
                     </span>
                 </span>
-                <div class="multi-level collapse" role="list" id="add-app" aria-expanded="false">
+                <div class="multi-level collapse {{ $isAddActive ? 'show' : '' }}" role="list" id="add-app" aria-expanded="{{ $isAddActive ? 'true' : 'false' }}">
                     <ul class="flex-column nav">
-                        <li class="nav-item"><a class="nav-link" href="{{ route('brands') }}"><span class="sidebar-text">{{ __('Brands') }}</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('categories') }}"><span class="sidebar-text">{{ __('Categories') }}</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('warranties') }}"><span class="sidebar-text">{{ __('Warranties') }}</span></a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('suppliers') }}"><span class="sidebar-text">{{ __('Suppliers') }}</span></a></li>
+                        <li class="nav-item {{ request()->routeIs('brands') ? 'active' : '' }}">
+                            <a class="nav-link {{ request()->routeIs('brands') ? 'active text-white fw-bold' : '' }}" href="{{ route('brands') }}">
+                                <span class="sidebar-text">{{ __('Brands') }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ request()->routeIs('categories') ? 'active' : '' }}">
+                            <a class="nav-link {{ request()->routeIs('categories') ? 'active text-white fw-bold' : '' }}" href="{{ route('categories') }}">
+                                <span class="sidebar-text">{{ __('Categories') }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ request()->routeIs('warranties') ? 'active' : '' }}">
+                            <a class="nav-link {{ request()->routeIs('warranties') ? 'active text-white fw-bold' : '' }}" href="{{ route('warranties') }}">
+                                <span class="sidebar-text">{{ __('Warranties') }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item {{ request()->routeIs('suppliers') ? 'active' : '' }}">
+                            <a class="nav-link {{ request()->routeIs('suppliers') ? 'active text-white fw-bold' : '' }}" href="{{ route('suppliers') }}">
+                                <span class="sidebar-text">{{ __('Suppliers') }}</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
+
             <li role="separator" class="dropdown-divider mt-4 mb-3 border-gray-700"></li>
-            <li class="nav-item">
-                <a href="{{ route('users') }}" class="nav-link d-flex align-items-center">
+
+            {{-- Users --}}
+            <li class="nav-item {{ request()->routeIs('users') ? 'active' : '' }}">
+                <a href="{{ route('users') }}" class="nav-link {{ request()->routeIs('users') ? 'active' : '' }} d-flex align-items-center">
                     <span class="sidebar-icon">
                         <i class="fa-solid fa-user-plus"></i>
                     </span>
                     <span class="sidebar-text">{{ __('Users') }}</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="{{ route('settings') }}" class="nav-link d-flex align-items-center">
+
+            {{-- Settings --}}
+            <li class="nav-item {{ request()->routeIs('settings') ? 'active' : '' }}">
+                <a href="{{ route('settings') }}" class="nav-link {{ request()->routeIs('settings') ? 'active' : '' }} d-flex align-items-center">
                     <span class="sidebar-icon">
                         <i class="fa-solid fa-sliders"></i>
                     </span>
                     <span class="sidebar-text">{{ __('Settings') }}</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="{{ route('dbImportExport') }}" class="nav-link d-flex align-items-center">
+
+            {{-- DB Import Export --}}
+            <li class="nav-item {{ request()->routeIs('dbImportExport') ? 'active' : '' }}">
+                <a href="{{ route('dbImportExport') }}" class="nav-link {{ request()->routeIs('dbImportExport') ? 'active' : '' }} d-flex align-items-center">
                     <span class="sidebar-icon">
                         <i class="fa-solid fa-upload"></i>
                     </span>
                     <span class="sidebar-text">{{ __('DBImportExport') }}</span>
                 </a>
             </li>
+
+            {{-- Sign Out --}}
             <li class="nav-item">
                 <a href="{{ route('logout') }}" class="nav-link d-flex align-items-center">
                     <span class="sidebar-icon">

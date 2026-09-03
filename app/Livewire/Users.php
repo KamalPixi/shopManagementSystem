@@ -48,12 +48,12 @@ class Users extends Component
         }
         
         $this->reset();
-        session()->flash('success', 'User Added.');
+        session()->flash('success', __('User Added.'));
     }
 
     public function edit($id) {
         if (!auth()->user()->hasPermissionTo('users:update')) {
-            session()->flash('failed', 'Access denied!');
+            session()->flash('failed', __('Access denied!'));
             return;
         }
 
@@ -68,7 +68,7 @@ class Users extends Component
 
     public function update() {
         if (!auth()->user()->hasPermissionTo('users:update')) {
-            session()->flash('failed', 'Access denied!');
+            session()->flash('failed', __('Access denied!'));
             return;
         }
 
@@ -94,12 +94,12 @@ class Users extends Component
         $u->update($validated);
 
         $this->reset();
-        session()->flash('success', 'User updated.');
+        session()->flash('success', __('User updated.'));
     }
 
     public function delete($id) {
         if (!auth()->user()->hasPermissionTo('users:delete')) {
-            session()->flash('failed', 'Access denied!');
+            session()->flash('failed', __('Access denied!'));
             return;
         }
 
@@ -107,7 +107,7 @@ class Users extends Component
 
         if (User::where('user_type', 'admin')->count() < 2) {
             if ($u->user_type == 'admin') {
-                session()->flash('failed', 'Unable to delete admin');
+                session()->flash('failed', __('Unable to delete admin'));
                 return;
             }
         }
@@ -116,7 +116,7 @@ class Users extends Component
         $u->permissions()->detach();
 
         $u->delete();
-        session()->flash('success', 'User deleted.');
+        session()->flash('success', __('User deleted.'));
     }
 
     public function updateStaffPermissions() {
@@ -126,7 +126,7 @@ class Users extends Component
         $permissions = Permission::whereIn('id', $this->staff_permissions)->get();
         $role->syncPermissions($permissions);
 
-        session()->flash('success', 'Staff permissions updated.');
+        session()->flash('success', __('Staff permissions updated.'));
     }
 
     public function render()

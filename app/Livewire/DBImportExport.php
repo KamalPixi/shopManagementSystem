@@ -21,7 +21,7 @@ class DBImportExport extends Component
         $storedPath = $this->file->storeAs('imports', uniqid() . '.csv');
         app(DBImportExportService::class)->importFromCSV($storedPath);
 
-        session()->flash('success', 'Import successful.');
+        session()->flash('success', __('Import successful.'));
     }
 
     public function export() {
