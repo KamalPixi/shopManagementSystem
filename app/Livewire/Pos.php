@@ -39,8 +39,11 @@ class Pos extends Component
     public $custom_quantity = 1;
     public $custom_warranty_id = '';
     public $showCustomModal = false;
+    public $errorMessage = '';
 
     public function updated($propertyName) {
+        $this->errorMessage = '';
+
         if ($propertyName == 'customer_name') {
             if (empty($this->customer_name)) {
                 $this->customer_id = null;
@@ -49,6 +52,29 @@ class Pos extends Component
             }
             $this->customers = Customer::where('name', 'like', '%'. $this->customer_name .'%')->get();
             return;
+        }
+
+        // Validate stock if item quantity changed
+        if (preg_match('/^sale_items\.(.+)\.quantity$/', $propertyName, $matches)) {
+            $itemKey = $matches[1];
+            if (isset($this->sale_items[$itemKey])) {
+                $qty = (int) $this->sale_items[$itemKey]['quantity'];
+                if ($qty < 1) {
+                    $this->sale_items[$itemKey]['quantity'] = 1;
+                    $this->errorMessage = 'Quantity must be at least 1.';
+                    session()->flash('failed', $this->errorMessage);
+                } elseif (!empty($this->sale_items[$itemKey]['product_id'])) {
+                    $product = collect($this->products)->firstWhere('id', $this->sale_items[$itemKey]['product_id']);
+                    if (!$product) {
+                        $product = Product::find($this->sale_items[$itemKey]['product_id']);
+                    }
+                    if ($product && $qty > $product->quantity) {
+                        $this->sale_items[$itemKey]['quantity'] = max(1, $product->quantity);
+                        $this->errorMessage = "Cannot exceed available stock! Only {$product->quantity} in stock for [{$product->name}].";
+                        session()->flash('failed', $this->errorMessage);
+                    }
+                }
+            }
         }
 
         $this->calculate();
@@ -164,13 +190,6 @@ class Pos extends Component
             return;
         }
 
-        $sale = Sale::create([
-            'total_price' => $this->grand_total,
-            'gst' => $this->gst,
-            'discount' => $this->discount,
-            'created_by' => auth()->user()->id,
-        ]);
-
         // validate sale items
         $this->validate([
             'sale_items' => 'required|array',
@@ -179,11 +198,33 @@ class Pos extends Component
             'sale_items.*.item_name' => 'required|string|max:255',
             'sale_items.*.warranty_id' => 'nullable|exists:warranties,id',
             'sale_items.*.attributes_and_values' => 'nullable|array',
-            'sale_items.*.quantity' => 'required|integer',
+            'sale_items.*.quantity' => 'required|integer|min:1',
             'sale_items.*.discount' => 'required|numeric',
             'sale_items.*.price' => 'required|numeric',
             'sale_items.*.purchase_price' => 'nullable|numeric',
             'sale_items.*.total' => 'required|numeric',
+        ]);
+
+        // Pre-validate that all catalog products have sufficient stock
+        foreach ($this->sale_items as $item) {
+            if (!empty($item['product_id'])) {
+                $product = Product::find($item['product_id']);
+                if (!$product) {
+                    session()->flash('failed', "Product not found for item [{$item['item_name']}].");
+                    return;
+                }
+                if ($product->quantity < $item['quantity']) {
+                    session()->flash('failed', "Insufficient stock for [{$product->name}]. Requested: {$item['quantity']}, In stock: {$product->quantity}.");
+                    return;
+                }
+            }
+        }
+
+        $sale = Sale::create([
+            'total_price' => $this->grand_total,
+            'gst' => $this->gst,
+            'discount' => $this->discount,
+            'created_by' => auth()->user()->id,
         ]);
 
         $profit_total = 0;

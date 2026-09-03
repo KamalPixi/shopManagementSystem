@@ -94,6 +94,13 @@
     {{-- Items list --}}
     <div class="card border-0 shadow mb-4">
         <div class="card-body">
+            @if (!empty($errorMessage))
+                <div class="alert alert-danger d-flex align-items-center mb-3" role="alert">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                    <div>{{ $errorMessage }}</div>
+                </div>
+            @endif
+
             <div class="mb-4 table-responsive">
                 <table class="table table-centered table-nowrap mb-2 rounded">
                     <thead class="thead-light">
@@ -167,8 +174,10 @@
                                 <div class="d-flex align-items-center">
                                     @if ($prod)
                                         <small class="text-muted badge badge-secondary" style="font-size: 0.8rem; padding-right: 2px;">{{ $prod->quantity }}:</small>
+                                        <input wire:model.live="sale_items.{{$itemKey}}.quantity" type="number" min="1" max="{{ $prod->quantity }}" class="form-control form-control-sm text-center"> 
+                                    @else
+                                        <input wire:model.live="sale_items.{{$itemKey}}.quantity" type="number" min="1" class="form-control form-control-sm text-center"> 
                                     @endif
-                                    <input wire:model.live="sale_items.{{$itemKey}}.quantity" type="number" min="1" class="form-control form-control-sm text-center"> 
                                 </div>
                             </td>
                             <td class="fw-bold align-items-center" style="width: 12%;">
