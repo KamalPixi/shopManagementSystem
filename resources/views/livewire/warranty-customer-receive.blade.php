@@ -14,14 +14,14 @@
             <div class="row">
                 <div class="col-12 col-md-6">
                     <div class="mb-4">
-                        <label>Reference No</label>
-                        <input wire:model.live="search_reference_no" type="text" class="form-control form-control-sm" placeholder="Search by reference no.">
+                        <label>{{ __('Reference No') }}</label>
+                        <input wire:model.live="search_reference_no" type="text" class="form-control form-control-sm" placeholder="{{ __('Search by reference no.') }}">
                     </div>
                 </div>
                 <div class="col-12 col-md-6">
                     <div class="mb-4">
-                        <label>Customer name</label>
-                        <input wire:model.live="search_customer_name" type="text" class="form-control form-control-sm" placeholder="Search by customer name.">
+                        <label>{{ __('Customer name') }}</label>
+                        <input wire:model.live="search_customer_name" type="text" class="form-control form-control-sm" placeholder="{{ __('Search by customer name.') }}">
                     </div>
                 </div>
             </div>
@@ -31,17 +31,17 @@
                     <thead class="thead-light">
                         <tr>
                             <th style="width:2%;" class="border-0 rounded-start px-1">#</th>
-                            <th class="border-0 px-1 lh-1">Reference No. <br> <small class="text-muted">Send Date</small></th>
-                            <th class="border-0 px-1">Product</th>
-                            <th class="border-0">Customer</th>
-                            <th class="border-0">Problem</th>
-                            <th class="border-0">Repair Shop</th>
-                            <th class="border-0">Remark</th>
-                            <th class="border-0 text-center">Cost</th>
-                            <th class="border-0 text-center">Paid</th>
-                            <th class="border-0 text-center">Due</th>
-                            <th class="border-0 text-center lh-1"> <small>(From Repair Shop)</small> <br> Receive details</th>
-                            <th class="border-0 text-center lh-1"> <small>(Customer)</small><br> Receive details</th>
+                            <th class="border-0 px-1 lh-1">{{ __('Reference No.') }} <br> <small class="text-muted">{{ __('Send Date') }}</small></th>
+                            <th class="border-0 px-1">{{ __('Product') }}</th>
+                            <th class="border-0">{{ __('Customer') }}</th>
+                            <th class="border-0">{{ __('Problem') }}</th>
+                            <th class="border-0">{{ __('Repair Shop') }}</th>
+                            <th class="border-0">{{ __('Remark') }}</th>
+                            <th class="border-0 text-center">{{ __('Cost') }}</th>
+                            <th class="border-0 text-center">{{ __('Paid') }}</th>
+                            <th class="border-0 text-center">{{ __('Due') }}</th>
+                            <th class="border-0 text-center lh-1"> <small>({{ __('From Repair Shop') }})</small> <br> {{ __('Receive details') }}</th>
+                            <th class="border-0 text-center lh-1"> <small>({{ __('Customer') }})</small><br> {{ __('Receive details') }}</th>
                         </tr>
                     </thead>
                     <tbody>

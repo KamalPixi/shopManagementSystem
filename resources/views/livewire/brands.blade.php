@@ -15,19 +15,19 @@
                         <div class="row">
                             <div class="col-6">
                                 <div class="mb-4">
-                                    <label for="brand">Brand Name*</label>
+                                    <label for="brand">{{ __('Brand Name*') }}</label>
                                     <input wire:model="name" type="text" class="form-control form-control-sm" id="brand">
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="mb-4">
-                                    <label for="description">Description</label>
+                                    <label for="description">{{ __('Description') }}</label>
                                     <textarea wire:model="description" class="form-control form-control-sm" rows="1"></textarea>
                                 </div>
                             </div>
                         </div>
                         <div>
-                            <button type="submit" class="btn btn-primary btn-sm" type="button"> @if($brandIdEdit) Update @else Add @endif Brand</button>
+                            <button type="submit" class="btn btn-primary btn-sm"> @if($brandIdEdit) {{ __('Update Brand') }} @else {{ __('Add Brand') }} @endif</button>
                         </div>
                     </form>
                 </div>
@@ -43,9 +43,9 @@
                     <thead class="thead-light">
                         <tr>
                             <th style="width: 8%;" class="border-0 rounded-start">#</th>
-                            <th class="border-0">Brand</th>
-                            <th class="border-0">Description</th>
-                            <th style="width: 8%;" class="border-0 text-end rounded-end">Action</th>
+                            <th class="border-0">{{ __('Brand') }}</th>
+                            <th class="border-0">{{ __('Description') }}</th>
+                            <th style="width: 8%;" class="border-0 text-end rounded-end">{{ __('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -60,8 +60,8 @@
                                         <i class="fas fa-ellipsis-h"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                                      <li><a class="dropdown-item" wire:click="edit('{{ $brand->id }}')" href="#"><i class="fas fa-edit pe-2"></i> Edit</a></li>
-                                      <li><a class="dropdown-item text-danger" wire:click="delete('{{ $brand->id }}')" wire:confirm="Are you sure you want to delete?" href="#"><i class="fas fa-trash pe-2"></i> Delete</a></li>
+                                      <li><a class="dropdown-item" wire:click="edit('{{ $brand->id }}')" href="#"><i class="fas fa-edit pe-2"></i> {{ __('Edit') }}</a></li>
+                                      <li><a class="dropdown-item text-danger" wire:click="delete('{{ $brand->id }}')" wire:confirm="{{ __('Are you sure you want to delete?') }}" href="#"><i class="fas fa-trash pe-2"></i> {{ __('Delete') }}</a></li>
                                     </ul>
                                   </div>
                                   

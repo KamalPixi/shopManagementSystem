@@ -13,32 +13,32 @@
         <div class="col-12 mb-4">
             <div class="card border-0 shadow components-section">
                 <div class="card-body">
-                    <h1 class="h5 mb-4">Search Stock</h1>
+                    <h1 class="h5 mb-4">{{ __('Search Stock') }}</h1>
 
                     <div class="row">
                         <div class="col">
                             <div class="mb-4">
-                                <label for="description">Product name</label>
+                                <label for="description">{{ __('Product name') }}</label>
                                 <input wire:model.live="name" type="text" class="form-control form-control-sm">
                             </div>
                         </div>
                         <div class="col">
                             <div class="mb-4">
-                                <label for="description">SKU/Bercode</label>
+                                <label for="description">{{ __('SKU/Bercode') }}</label>
                                 <input wire:model.live="sku" type="text" class="form-control form-control-sm">
                             </div>
                         </div>
                         <div class="col">
                             <div class="mb-4">
-                                <label for="description">Model No</label>
+                                <label for="description">{{ __('Model No') }}</label>
                                 <input wire:model.live="model_no" type="text" class="form-control form-control-sm">
                             </div>
                         </div>
                         <div class="col">
                             <div class="mb-4">
-                                <label for="brand">Category</label>
+                                <label for="brand">{{ __('Category') }}</label>
                                 <select wire:model.live="category_id" class="form-select form-select-sm">
-                                    <option value="" selected="selected" disabled>Select Category</option>
+                                    <option value="" selected="selected" disabled>{{ __('Select Category') }}</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                                     @endforeach
@@ -47,24 +47,24 @@
                         </div>
                         <div class="col">
                             <div class="mb-4">
-                                <label>Stock Added Date</label>
+                                <label>{{ __('Stock Added Date') }}</label>
                                 <input wire:model.live="stock_add_date" type="date" class="form-control form-control-sm input-date">
                             </div>
                         </div>
                         <div class="col">
                             <div class="mb-4">
-                                <label for="brand">Date Search Type</label>
+                                <label for="brand">{{ __('Date Search Type') }}</label>
                                 <select wire:model.live="filter_type" class="form-select form-select-sm">
-                                    <option value="day">Day</option>
-                                    <option value="month">Month</option>
-                                    <option value="year">Year</option>
+                                    <option value="day">{{ __('Day') }}</option>
+                                    <option value="month">{{ __('Month') }}</option>
+                                    <option value="year">{{ __('Year') }}</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
                     <div class="d-flex justify-content-end">
-                        <button type="button" wire:click="clearFilter" class="btn btn-danger btn-sm m-0 px-4" type="button">Clear</button>
+                        <button type="button" wire:click="clearFilter" class="btn btn-danger btn-sm m-0 px-4">{{ __('Clear') }}</button>
                     </div>
                 </div>
             </div>
@@ -76,14 +76,14 @@
     <div class="card border-0 shadow mb-4">
         <div class="card-body">
             <div class="d-flex justify-content-between">
-                <h1 class="h5 mb-4">Stock List</h1>
+                <h1 class="h5 mb-4">{{ __('Stock List') }}</h1>
                 <div>
                     <div class="dropdown">
                         <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-ellipsis-h"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                            <li><a href="#" wire:click="pdfStocks" class="dropdown-item" type="button"><i class="fa-solid fa-file pe-2"></i>Stocks <small>(PDF)</small> </a></li>
+                            <li><a href="#" wire:click="pdfStocks" class="dropdown-item" type="button"><i class="fa-solid fa-file pe-2"></i>{{ __('Stocks') }} <small>(PDF)</small> </a></li>
                             <li><a href="#" wire:click="pdfBarcodeOneColumn" class="dropdown-item" type="button"><i class="fa-solid fa-file pe-2"></i>Barcode <small>(PDF 1 Column)</small> </a></li>
                             <li><a href="#" wire:click="pdfBarcodeTwoColumn" class="dropdown-item" type="button"><i class="fa-solid fa-file pe-2"></i>Barcode <small>(PDF 2 Columns)</small> </a></li>
                             <li><a href="#" wire:click="printBarcodeTwoColumn" class="dropdown-item" type="button"><i class="fa-solid fa-print pe-2"></i>Barcode <small>(Print 2 Columns)</small> </a></li>
@@ -101,18 +101,18 @@
                                 <input type="checkbox" wire:click='selectedAll(@json($products->pluck("id")->mapWithKeys(fn($id) => [$id => true])))'>
                                 #
                             </th>
-                            <th class="border-0 lh-1" style="width: 45%">Name <br> <small class="text-muted">SKU</small> </th>
-                            <th class="border-0 text-center">Attributes</th>
-                            <th class="border-0 text-center">Category</th>
-                            <th class="border-0 text-center">Brand</th>
-                            <th class="border-0 text-center">ModelNo</th>
-                            <th class="border-0 text-center">SN/IMEI</th>
-                            <th class="border-0 text-center">Warranty</th>
-                            <th class="border-0 text-center">Price</th>
-                            <th class="border-0 text-center">Stock</th>
-                            <th class="border-0 text-center">Status</th>
-                            <th class="border-0 text-center">AddedBy</th>
-                            <th style="width: 8%;" class="border-0 text-end rounded-end">Action</th>
+                            <th class="border-0 lh-1" style="width: 45%">{{ __('Name') }} <br> <small class="text-muted">SKU</small> </th>
+                            <th class="border-0 text-center">{{ __('Attributes') }}</th>
+                            <th class="border-0 text-center">{{ __('Category') }}</th>
+                            <th class="border-0 text-center">{{ __('Brand') }}</th>
+                            <th class="border-0 text-center">{{ __('ModelNo') }}</th>
+                            <th class="border-0 text-center">{{ __('SN/IMEI') }}</th>
+                            <th class="border-0 text-center">{{ __('Warranty') }}</th>
+                            <th class="border-0 text-center">{{ __('Price') }}</th>
+                            <th class="border-0 text-center">{{ __('Stock') }}</th>
+                            <th class="border-0 text-center">{{ __('Status') }}</th>
+                            <th class="border-0 text-center">{{ __('AddedBy') }}</th>
+                            <th style="width: 8%;" class="border-0 text-end rounded-end">{{ __('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -149,10 +149,10 @@
                                         <i class="fas fa-ellipsis-h"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                                        <li><a class="dropdown-item" href="#" wire:click="printBarcode('{{ $product->id }}')"><i class="fa-solid fa-print pe-2"></i>Barcode  <small>(1 Column Print)</small></a></li>
-                                        <li><a class="dropdown-item" href="{{ route('stocks.show', $product->id) }}"><i class="fa-solid fa-eye pe-2"></i>View</a></li>
-                                        <li><a class="dropdown-item" href="{{ route('stocks.edit', $product->id) }}"><i class="fas fa-edit pe-2"></i> Edit</a></li>
-                                        <li><a class="dropdown-item text-danger" wire:click="delete('{{ $product->id }}')" wire:confirm="Are you sure you want to delete?" href="#"><i class="fas fa-trash pe-2"></i> Delete</a></li>
+                                        <li><a class="dropdown-item" href="#" wire:click="printBarcode('{{ $product->id }}')"><i class="fa-solid fa-print pe-2"></i>{{ __('Barcode (1 Column Print)') }}</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('stocks.show', $product->id) }}"><i class="fa-solid fa-eye pe-2"></i>{{ __('Show') }}</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('stocks.edit', $product->id) }}"><i class="fa-solid fa-pen-to-square pe-2"></i>{{ __('Edit') }}</a></li>
+                                        <li><a class="dropdown-item text-danger" href="#" wire:click="delete('{{$product->id}}')" wire:confirm="{{ __('Are you sure you want to delete?') }}"><i class="fa-solid fa-trash pe-2"></i>{{ __('Delete') }}</a></li>
                                     </ul>
                                 </div>
                             </td>

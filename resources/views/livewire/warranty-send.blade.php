@@ -16,13 +16,13 @@
                         <div class="row">
                             <div class="col-12 col-md-4">
                                 <div class="mb-4">
-                                    <label>Reference No.</label>
+                                    <label>{{ __('Reference No.') }}</label>
                                     <input wire:model="reference_no" type="text" class="form-control form-control-sm">
                                 </div>
                             </div>
                             <div class="col-12 col-md-4">
                                 <div class="mb-4 position-relative">
-                                    <label>Product*</label>
+                                    <label>{{ __('Product*') }}</label>
                                     <input wire:model.live="product_name" type="text" class="form-control form-control-sm" required>
 
                                     @if ($products->count())
@@ -38,7 +38,7 @@
                             </div>
                             <div class="col-12 col-md-4">
                                 <div class="mb-4">
-                                    <label for="description">Problem description</label>
+                                    <label for="description">{{ __('Problem description') }}</label>
                                     <textarea wire:model="problem_description" class="form-control form-control-sm" rows="1"></textarea>
                                 </div>
                             </div>
@@ -46,19 +46,19 @@
                         <div class="row">
                             <div class="col-12 col-md-4">
                                 <div class="mb-4">
-                                    <label>Customer Name*</label>
+                                    <label>{{ __('Customer Name*') }}</label>
                                     <input wire:model="customer_name" type="text" class="form-control form-control-sm" required>
                                 </div>
                             </div>
                             <div class="col-12 col-md-4">
                                 <div class="mb-4">
-                                    <label>Customer phone no.</label>
+                                    <label>{{ __('Customer phone no.') }}</label>
                                     <input wire:model="customer_phone_no" type="text" class="form-control form-control-sm">
                                 </div>
                             </div>
                             <div class="col-12 col-md-4">
                                 <div class="mb-4">
-                                    <label for="description">Repair shop address/details</label>
+                                    <label for="description">{{ __('Repair shop address/details') }}</label>
                                     <textarea wire:model="repair_shop_details" id="description" class="form-control form-control-sm" rows="1"></textarea>
                                 </div>
                             </div>
@@ -66,19 +66,19 @@
                         <div class="row">
                             <div class="col-12 col-md-4">
                                 <div class="mb-4">
-                                    <label>Repair cost </label>
+                                    <label>{{ __('Repair cost') }} </label>
                                     <input wire:model="repair_cost" type="number" class="form-control form-control-sm">
                                 </div>
                             </div>
                             <div class="col-12 col-md-4">
                                 <div class="mb-4">
-                                    <label>Repair cost paid.</label>
+                                    <label>{{ __('Repair cost paid.') }}</label>
                                     <input wire:model="repair_cost_paid" type="number" class="form-control form-control-sm">
                                 </div>
                             </div>
                             <div class="col-12 col-md-4">
                                 <div class="mb-4">
-                                    <label for="description">Repair cost due</label>
+                                    <label for="description">{{ __('Repair cost due') }}</label>
                                     <input wire:model="repair_cost_due" type="number" class="form-control form-control-sm">
                                 </div>
                             </div>
@@ -86,19 +86,19 @@
                         <div class="row">
                             <div class="col-12 col-md-4">
                                 <div class="mb-4">
-                                    <label>Send date </label>
+                                    <label>{{ __('Send date') }} </label>
                                     <input wire:model="send_date" type="date" class="form-control form-control-sm">
                                 </div>
                             </div>
                             <div class="col-12 col-md-8">
                                 <div class="mb-4">
-                                    <label>Remark</label>
+                                    <label>{{ __('Remark') }}</label>
                                     <textarea wire:model="remark" id="description" class="form-control" rows="1"></textarea>
                                 </div>
                             </div>
                         </div>
                         <div>
-                            <button type="submit" class="btn btn-primary btn-sm" type="button"> @if($editId) Update @else Send @endif Warranty</button>
+                            <button type="submit" class="btn btn-primary btn-sm"> @if($editId) {{ __('Update Warranty') }} @else {{ __('Send Warranty') }} @endif</button>
                         </div>
                     </form>
                 </div>
@@ -113,14 +113,14 @@
             <div class="row">
                 <div class="col-12 col-md-6">
                     <div class="mb-4">
-                        <label>Reference No</label>
-                        <input wire:model.live="search_reference_no" type="text" class="form-control form-control-sm" placeholder="Search by reference no.">
+                        <label>{{ __('Reference No') }}</label>
+                        <input wire:model.live="search_reference_no" type="text" class="form-control form-control-sm" placeholder="{{ __('Search by reference no.') }}">
                     </div>
                 </div>
                 <div class="col-12 col-md-6">
                     <div class="mb-4">
-                        <label>Customer name</label>
-                        <input wire:model.live="search_customer_name" type="text" class="form-control form-control-sm" placeholder="Search by customer name.">
+                        <label>{{ __('Customer name') }}</label>
+                        <input wire:model.live="search_customer_name" type="text" class="form-control form-control-sm" placeholder="{{ __('Search by customer name.') }}">
                     </div>
                 </div>
             </div>
@@ -130,16 +130,16 @@
                     <thead class="thead-light">
                         <tr>
                             <th style="width:2%;" class="border-0 rounded-start px-1">#</th>
-                            <th class="border-0 px-1 lh-1">Reference No. <br> <small class="text-muted">Send Date</small></th>
-                            <th class="border-0 px-1">Product</th>
-                            <th class="border-0">Customer</th>
-                            <th class="border-0">Problem</th>
-                            <th class="border-0">Repair Shop</th>
-                            <th class="border-0">Remark</th>
-                            <th class="border-0 text-center">Cost</th>
-                            <th class="border-0 text-center">Paid</th>
-                            <th class="border-0 text-center">Due</th>
-                            <th style="width: 8%;" class="border-0 text-end rounded-end">Action</th>
+                            <th class="border-0 px-1 lh-1">{{ __('Reference No.') }} <br> <small class="text-muted">{{ __('Send Date') }}</small></th>
+                            <th class="border-0 px-1">{{ __('Product') }}</th>
+                            <th class="border-0">{{ __('Customer') }}</th>
+                            <th class="border-0">{{ __('Problem') }}</th>
+                            <th class="border-0">{{ __('Repair Shop') }}</th>
+                            <th class="border-0">{{ __('Remark') }}</th>
+                            <th class="border-0 text-center">{{ __('Cost') }}</th>
+                            <th class="border-0 text-center">{{ __('Paid') }}</th>
+                            <th class="border-0 text-center">{{ __('Due') }}</th>
+                            <th style="width: 8%;" class="border-0 text-end rounded-end">{{ __('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>

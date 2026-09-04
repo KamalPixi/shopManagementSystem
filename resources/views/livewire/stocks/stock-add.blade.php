@@ -13,20 +13,20 @@
 
 
 <form  wire:submit.prevent class="card-body">
-    <h1 class="h5 mb-4">Add New Product</h1>
+    <h1 class="h5 mb-4">{{ __('Add New Product') }}</h1>
 
     <div class="row">
         <div class="col-12 col-md-4">
             <div class="mb-4">
-                <label for="brand">Product Name*</label>
+                <label for="brand">{{ __('Product Name*') }}</label>
                 <input wire:model="name" required type="text" class="form-control form-control-sm">
             </div>
         </div>
         <div class="col-12 col-md-4">
             <div class="mb-4">
-                <label class="my-1 me-2">Category*</label>
+                <label class="my-1 me-2">{{ __('Category*') }}</label>
                 <select wire:model="category_id" required class="form-select">
-                    <option value="null" selected="selected" disabled>Select Category</option>
+                    <option value="null" selected="selected" disabled>{{ __('Select Category') }}</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category->id }}">{{ $category->name }}</option>
                     @endforeach
@@ -35,9 +35,9 @@
         </div>
         <div class="col-12 col-md-4">
             <div class="mb-4">
-                <label class="my-1 me-2">Brand*</label>
+                <label class="my-1 me-2">{{ __('Brand*') }}</label>
                 <select wire:model="brand_id" required class="form-select">
-                    <option value="null" selected="selected" disabled>Select Brand</option>
+                    <option value="null" selected="selected" disabled>{{ __('Select Brand') }}</option>
                     @foreach ($brands as $brand)
                         <option value="{{ $brand->id }}">{{ $brand->name }}</option>
                     @endforeach
@@ -137,7 +137,7 @@
             <div class="mb-4">
                 <label>Warranty</label>
                 <select wire:model="warranty_id" class="form-select">
-                    <option value="null" selected="selected" disabled>Select Warranty</option>
+                    <option value="null" selected="selected" disabled>{{ __('Select Warranty') }}</option>
                     @foreach ($warranties as $warranty)
                         <option value="{{ $warranty->id }}">{{ $warranty->name }}</option>
                     @endforeach
@@ -148,19 +148,19 @@
     <div class="row">
         <div class="col-12 col-md-4">
             <div class="mb-4">
-                <label>Product Description</label>
+                <label>{{ __('Description') }}</label>
                 <textarea wire:model="description" rows="1" class="form-control form-control-sm"></textarea>
             </div>
         </div>
         <div class="col-12 col-md-4">
             <div class="mb-4">
-                <label>Remark</label>
+                <label>{{ __('Remark') }}</label>
                 <textarea wire:model="remark" rows="1" class="form-control form-control-sm"></textarea>
             </div>
         </div>
         <div class="col-12 col-md-4">
             <div class="mb-4">
-                <label>Status</label>
+                <label>{{ __('Status') }}</label>
                 <select wire:model="status" class="form-select">
                     <option value="1">Active</option>
                     <option value="0">Inactive</option>
@@ -170,7 +170,7 @@
     </div>
 
     <div>
-        <button type="button" wire:click="create" class="btn btn-primary btn-sm" type="button">Add Product</button>
+        <button type="button" wire:click="create" class="btn btn-primary btn-sm">{{ __('New Product') }}</button>
     </div>
 </form>
 

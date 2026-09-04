@@ -15,57 +15,57 @@
                     <form wire:submit.prevent="@if($supplierIdEdit) update @else create @endif">
                         <div class="row">
                             <div class="col-6 mb-3">
-                                <label>Name*</label>
+                                <label>{{ __('Name*') }}</label>
                                 <input wire:model="name" type="text" class="form-control form-control-sm">
                                 @error('name') <small class="text-danger">{{ $message }}</small> @enderror
                             </div>
                             <div class="col-6 mb-3">
-                                <label>Email</label>
+                                <label>{{ __('Email') }}</label>
                                 <input wire:model="email" type="email" class="form-control form-control-sm">
                             </div>
                             <div class="col-6 mb-3">
-                                <label>Phone</label>
+                                <label>{{ __('Phone') }}</label>
                                 <input wire:model="phone" type="text" class="form-control form-control-sm">
                             </div>
                             <div class="col-6 mb-3">
-                                <label>Contact Person</label>
+                                <label>{{ __('Contact Person') }}</label>
                                 <input wire:model="contact_person" type="text" class="form-control form-control-sm">
                             </div>
                             <div class="col-6 mb-3">
-                                <label>Address</label>
+                                <label>{{ __('Address') }}</label>
                                 <input wire:model="address" type="text" class="form-control form-control-sm">
                             </div>
                             <div class="col-6 mb-3">
-                                <label>City</label>
+                                <label>{{ __('City') }}</label>
                                 <input wire:model="city" type="text" class="form-control form-control-sm">
                             </div>
                             <div class="col-6 mb-3">
-                                <label>State</label>
+                                <label>{{ __('State') }}</label>
                                 <input wire:model="state" type="text" class="form-control form-control-sm">
                             </div>
                             <div class="col-6 mb-3">
-                                <label>Postal Code</label>
+                                <label>{{ __('Postal Code') }}</label>
                                 <input wire:model="postal_code" type="text" class="form-control form-control-sm">
                             </div>
                             <div class="col-6 mb-3">
-                                <label>Country</label>
+                                <label>{{ __('Country') }}</label>
                                 <input wire:model="country" type="text" class="form-control form-control-sm">
                             </div>
                             <div class="col-6 mb-3">
-                                <label>Website</label>
+                                <label>{{ __('Website') }}</label>
                                 <input wire:model="website" type="text" class="form-control form-control-sm">
                             </div>
                             <div class="col-12 mb-3">
-                                <label>Bank Details</label>
+                                <label>{{ __('Bank Details') }}</label>
                                 <textarea wire:model="bank_details" class="form-control form-control-sm"></textarea>
                             </div>
                             <div class="col-12 mb-3">
-                                <label>Notes</label>
+                                <label>{{ __('Notes') }}</label>
                                 <textarea wire:model="notes" class="form-control form-control-sm"></textarea>
                             </div>
                         </div>
                         <button type="submit" class="btn btn-primary btn-sm">
-                            @if($supplierIdEdit) Update @else Add @endif Supplier
+                            @if($supplierIdEdit) {{ __('Update Supplier') }} @else {{ __('Add Supplier') }} @endif
                         </button>
                     </form>
                 </div>
@@ -80,13 +80,13 @@
                 <thead class="thead-light">
                     <tr>
                         <th>#</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Contact Person</th>
-                        <th>City</th>
-                        <th>Country</th>
-                        <th class="text-end">Action</th>
+                        <th>{{ __('Name') }}</th>
+                        <th>{{ __('Email') }}</th>
+                        <th>{{ __('Phone') }}</th>
+                        <th>{{ __('Contact Person') }}</th>
+                        <th>{{ __('City') }}</th>
+                        <th>{{ __('Country') }}</th>
+                        <th class="text-end">{{ __('Action') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -105,8 +105,8 @@
                                         <i class="fas fa-ellipsis-h"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a class="dropdown-item" wire:click="edit('{{ $supplier->id }}')" href="#"><i class="fas fa-edit pe-2"></i> Edit</a></li>
-                                        <li><a class="dropdown-item text-danger" wire:click="delete('{{ $supplier->id }}')" wire:confirm="Delete supplier?" href="#"><i class="fas fa-trash pe-2"></i> Delete</a></li>
+                                        <li><a class="dropdown-item" wire:click="edit('{{ $supplier->id }}')" href="#"><i class="fas fa-edit pe-2"></i> {{ __('Edit') }}</a></li>
+                                        <li><a class="dropdown-item text-danger" wire:click="delete('{{ $supplier->id }}')" wire:confirm="{{ __('Delete supplier?') }}" href="#"><i class="fas fa-trash pe-2"></i> {{ __('Delete') }}</a></li>
                                     </ul>
                                 </div>
                             </td>

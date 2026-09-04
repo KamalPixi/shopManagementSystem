@@ -13,28 +13,28 @@
         <div class="col-12">
             <div class="card border-0 shadow components-section">
                 <div class="card-body">
-                    <h1 class="h5 mb-3">Filter Sales</h1>
+                    <h1 class="h5 mb-3">{{ __('Filter Sales') }}</h1>
                     <div class="row">
                         <div class="col">
                             <div class="">
-                                <label for="description">Sale Date</label>
+                                <label for="description">{{ __('Sale Date') }}</label>
                                 <input wire:model.live="sale_date" required type="date" class="form-control form-control-sm input-date">
                             </div>
                         </div>
                         <div class="col">
                             <div class="">
-                                <label for="brand">Filter By</label>
+                                <label for="brand">{{ __('Filter By') }}</label>
                                 <select wire:model.live="filter_by" class="form-select form-select-sm">
-                                    <option value="DAY">Day</option>
-                                    <option value="MONTH">Month</option>
-                                    <option value="YEAR">Year</option>
+                                    <option value="DAY">{{ __('Day') }}</option>
+                                    <option value="MONTH">{{ __('Month') }}</option>
+                                    <option value="YEAR">{{ __('Year') }}</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
                     <div class="text-end">
-                        <button wire:click="clearFilter" class="btn btn-sm btn-danger px-4">Clear</button>
+                        <button wire:click="clearFilter" class="btn btn-sm btn-danger px-4">{{ __('Clear') }}</button>
                     </div>
                 </div>
             </div>
@@ -46,9 +46,9 @@
     <div class="card border-0 shadow mb-4">
         <div class="card-body">
             <div class="d-flex justify-content-between">
-                <h1 class="h5 mb-4">Sale List</h1>
+                <h1 class="h5 mb-4">{{ __('Sale List') }}</h1>
                 <div>
-                    <button type="button" wire:click="printSalesReport" class="btn btn-sm btn-secondary"><i class="fa-solid fa-print pe-2"></i>Sales Report</button>
+                    <button type="button" wire:click="printSalesReport" class="btn btn-sm btn-secondary"><i class="fa-solid fa-print pe-2"></i>{{ __('Sales Report') }}</button>
                 </div>
             </div>
 
@@ -57,14 +57,14 @@
                     <thead class="thead-light">
                         <tr>
                             <th style="width:2%;" class="border-0 rounded-start text-start px-2">#</th>
-                            <th class="border-0">Products</th>
-                            <th class="border-0 text-center">T.Discount</th>
-                            <th class="border-0 text-center">GST</th>
-                            <th class="border-0 text-center">G.Total</th>
-                            <th class="border-0 text-center">Date</th>
-                            <th class="border-0 text-center">Customer</th>
-                            <th class="border-0 text-center">SoldBy</th>
-                            <th style="width: 8%;" class="border-0 text-end rounded-end">Action</th>
+                            <th class="border-0">{{ __('Products') }}</th>
+                            <th class="border-0 text-center">{{ __('T.Discount') }}</th>
+                            <th class="border-0 text-center">{{ $shop?->tax_label ?? 'GST' }}</th>
+                            <th class="border-0 text-center">{{ __('G.Total') }}</th>
+                            <th class="border-0 text-center">{{ __('Date') }}</th>
+                            <th class="border-0 text-center">{{ __('Customer') }}</th>
+                            <th class="border-0 text-center">{{ __('SoldBy') }}</th>
+                            <th style="width: 8%;" class="border-0 text-end rounded-end">{{ __('Action') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -123,13 +123,13 @@
                                         <i class="fas fa-ellipsis-h"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
-                                        <li><a class="dropdown-item text-primary" href="{{ route('sales.edit', $sale->id) }}"><i class="fa-solid fa-pen-to-square pe-2"></i>Edit Sale</a></li>
+                                        <li><a class="dropdown-item text-primary" href="{{ route('sales.edit', $sale->id) }}"><i class="fa-solid fa-pen-to-square pe-2"></i>{{ __('Edit Sale') }}</a></li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="#" wire:click="printSaleReceiptPos('{{$sale->id}}')"><i class="fa-solid fa-print pe-2"></i>Receipt <small class="text-muted">(POS)</small></a></li>
-                                        <li><a class="dropdown-item" href="#" wire:click="printSaleReceipt('{{$sale->id}}')"><i class="fa-solid fa-print pe-2"></i>Receipt <small class="text-muted">(PDF)</small></a></li>
-                                        <li><a class="dropdown-item" href="#" wire:click="printSaleReceiptA4('{{$sale->id}}')"><i class="fa-solid fa-print pe-2"></i>Receipt A4 <small class="text-muted">(PDF)</small></a></li>
+                                        <li><a class="dropdown-item" href="#" wire:click="printSaleReceiptPos('{{$sale->id}}')"><i class="fa-solid fa-print pe-2"></i>{{ __('Receipt (POS)') }}</a></li>
+                                        <li><a class="dropdown-item" href="#" wire:click="printSaleReceipt('{{$sale->id}}')"><i class="fa-solid fa-print pe-2"></i>{{ __('Receipt (PDF)') }}</a></li>
+                                        <li><a class="dropdown-item" href="#" wire:click="printSaleReceiptA4('{{$sale->id}}')"><i class="fa-solid fa-print pe-2"></i>{{ __('Receipt A4 (PDF)') }}</a></li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item text-danger" href="#" wire:confirm="Are you sure you want to delete this item?" wire:click="deleteSale('{{$sale->id}}')"><i class="fa-solid fa-trash pe-2"></i>Delete</a></li>
+                                        <li><a class="dropdown-item text-danger" href="#" wire:confirm="{{ __('Are you sure you want to delete this item?') }}" wire:click="deleteSale('{{$sale->id}}')"><i class="fa-solid fa-trash pe-2"></i>{{ __('Delete') }}</a></li>
                                     </ul>
                                 </div>
                             </td>
