@@ -145,6 +145,17 @@
                     <td class="text-center">{{ $item->quantity }}</td>
                     <td class="text-end">{{ $item->total }}</td>
                 </tr>
+                @php
+                    $warrantyText = $item->warranty_description ?: ($item->warranty?->description ?: $item->warranty?->name);
+                @endphp
+                @if ($warrantyText)
+                <tr>
+                    <td></td>
+                    <td colspan="4" style="font-size: 7px; color: #555; padding-bottom: 4px; font-style: italic;">
+                        &bull; Warranty: {{ $warrantyText }}
+                    </td>
+                </tr>
+                @endif
             @endforeach
         </tbody>
     </table>

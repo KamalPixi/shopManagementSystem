@@ -94,7 +94,12 @@
                                                     @endforeach
                                                 </table>
                                             </td>
-                                            <td class="px-1 py-1 align-middle text-center"> <small class="text-muted lh-1">Warranty: <br> <b class="text-primary">{{$item?->warranty?->name ?? '-' }}</b></span>  </td>
+                                            <td class="px-1 py-1 align-middle text-center"> 
+                                                 <small class="text-muted lh-1">Warranty: <br> <b class="text-primary">{{$item?->warranty?->name ?? '-' }}</b></small>
+                                                 @if ($item->warranty_description)
+                                                     <br><small class="text-muted" style="font-size: 0.65rem;" title="{{ $item->warranty_description }}">({{ \Illuminate\Support\Str::limit($item->warranty_description, 20) }})</small>
+                                                 @endif
+                                             </td>
                                             <td class="px-1 py-1 align-middle text-center"> <small class="text-muted lh-1">Qty: <br> <b class="text-primary">{{$item?->quantity }}</b></span>  </td>
                                             <td class="px-1 py-1 align-middle text-center"> <small class="text-muted lh-1">P.Price: <br> <b class="text-primary">{{$item?->purchase_price }}</b></span>  </td>
                                             <td class="px-1 py-1 align-middle text-center"> <small class="text-muted lh-1">S.Price: <br> <b class="text-primary">{{$item?->price }}</b></span>  </td>

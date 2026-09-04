@@ -38,6 +38,7 @@ class Pos extends Component
     public $custom_purchase_price = 0;
     public $custom_quantity = 1;
     public $custom_warranty_id = '';
+    public $custom_warranty_description = '';
     public $showCustomModal = false;
     public $errorMessage = '';
 
@@ -51,6 +52,32 @@ class Pos extends Component
                 return;
             }
             $this->customers = Customer::where('name', 'like', '%'. $this->customer_name .'%')->get();
+            return;
+        }
+
+        // When custom modal warranty changes, auto-fill description
+        if ($propertyName == 'custom_warranty_id') {
+            if (!empty($this->custom_warranty_id)) {
+                $w = Warranty::find($this->custom_warranty_id);
+                $this->custom_warranty_description = $w?->description ?? '';
+            } else {
+                $this->custom_warranty_description = '';
+            }
+            return;
+        }
+
+        // When warranty_id changes for a cart line item, auto-fill its warranty_description
+        if (preg_match('/^sale_items\.(.+)\.warranty_id$/', $propertyName, $matches)) {
+            $itemKey = $matches[1];
+            if (isset($this->sale_items[$itemKey])) {
+                $wid = $this->sale_items[$itemKey]['warranty_id'];
+                if (!empty($wid)) {
+                    $warranty = Warranty::find($wid);
+                    $this->sale_items[$itemKey]['warranty_description'] = $warranty?->description ?? '';
+                } else {
+                    $this->sale_items[$itemKey]['warranty_description'] = '';
+                }
+            }
             return;
         }
 
@@ -116,6 +143,7 @@ class Pos extends Component
                 'product_id' => $product->id,
                 'item_name' => $product->name,
                 'warranty_id' => $product->warranty?->id,
+                'warranty_description' => $product->warranty?->description ?? '',
                 'price' => $product->price,
                 'purchase_price' => $product->purchase_price,
                 'discount' => 0,
@@ -137,6 +165,7 @@ class Pos extends Component
             'custom_purchase_price',
             'custom_quantity',
             'custom_warranty_id',
+            'custom_warranty_description',
         ]);
         $this->custom_quantity = 1;
         $this->custom_purchase_price = 0;
@@ -154,6 +183,7 @@ class Pos extends Component
             'custom_purchase_price' => 'nullable|numeric|min:0',
             'custom_quantity' => 'required|integer|min:1',
             'custom_warranty_id' => 'nullable|exists:warranties,id',
+            'custom_warranty_description' => 'nullable|string|max:1000',
         ]);
 
         $itemKey = 'custom_' . uniqid();
@@ -163,6 +193,7 @@ class Pos extends Component
             'product_id' => null,
             'item_name' => trim($this->custom_item_name),
             'warranty_id' => !empty($this->custom_warranty_id) ? $this->custom_warranty_id : null,
+            'warranty_description' => trim($this->custom_warranty_description),
             'price' => (float) $this->custom_price,
             'purchase_price' => (float) ($this->custom_purchase_price ?: 0),
             'discount' => 0,
@@ -262,6 +293,7 @@ class Pos extends Component
                 'product_id' => $item['product_id'] ?? null,
                 'item_name' => $item['item_name'] ?? null,
                 'warranty_id' => empty($item['warranty_id']) ? null : $item['warranty_id'],
+                'warranty_description' => !empty($item['warranty_description']) ? $item['warranty_description'] : null,
                 'attributes_and_values' => $item['attributes_and_values'] ?? [],
                 'quantity' => $item['quantity'],
                 'purchase_price' => $purchase_price,

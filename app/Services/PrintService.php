@@ -164,6 +164,12 @@ final class PrintService
                     str_pad($discount, $col3, ' ', STR_PAD_LEFT) .
                     str_pad($amount, $col4, ' ', STR_PAD_LEFT) . "\n"
                 );
+
+                $warrantyText = $item->warranty_description ?: ($item->warranty?->description ?: $item->warranty?->name);
+                if ($warrantyText) {
+                    $wText = mb_strimwidth("  * Warranty: " . $warrantyText, 0, $printWidth - 1, "...");
+                    $printer->text($wText . "\n");
+                }
             }
 
             $printer->text($divider);
@@ -292,6 +298,12 @@ final class PrintService
                     str_pad($discount, $col3, ' ', STR_PAD_LEFT) .
                     str_pad($amount, $col4, ' ', STR_PAD_LEFT) . "\n"
                 );
+
+                $warrantyText = $item->warranty_description ?: ($item->warranty?->description ?: $item->warranty?->name);
+                if ($warrantyText) {
+                    $wText = mb_strimwidth("  * Warranty: " . $warrantyText, 0, $printWidth - 1, "...");
+                    $printer->text($wText . "\n");
+                }
             }
 
             $printer->text($divider);

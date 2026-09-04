@@ -33,43 +33,47 @@
 
     {{-- Custom / Repair Item Modal --}}
     @if ($showCustomModal)
-    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);" aria-modal="true" role="dialog">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title h6 mb-0 text-white">
-                        <i class="fa-solid fa-screwdriver-wrench me-2"></i> {{ __('Add On-The-Fly / Custom Item') }}
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px);" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 620px;">
+            <div class="modal-content border-0 shadow-lg rounded-3">
+                <div class="modal-header bg-gray-800 text-white py-3 px-4 rounded-top-3">
+                    <h5 class="modal-title h6 mb-0 text-white d-flex align-items-center">
+                        <i class="fa-solid fa-screwdriver-wrench me-2 text-primary"></i> {{ __('Add On-The-Fly / Custom Item') }}
                     </h5>
                     <button wire:click="closeCustomModal" type="button" class="btn-close btn-close-white" aria-label="{{ __('Cancel') }}"></button>
                 </div>
                 <form wire:submit.prevent="addCustomItem">
-                    <div class="modal-body">
+                    <div class="modal-body p-4">
                         <div class="mb-3">
-                            <label class="form-label">{{ __('Item / Service Name') }} <span class="text-danger">*</span></label>
-                            <input wire:model="custom_item_name" type="text" class="form-control form-control-sm" placeholder="{{ __('e.g. Mobile Screen Repair / Service') }}" required>
+                            <label class="form-label fw-bold small mb-1">{{ __('Item / Service Name') }} <span class="text-danger">*</span></label>
+                            <input wire:model="custom_item_name" type="text" class="form-control" placeholder="{{ __('e.g. Mobile Screen Repair / Service') }}" required>
                             @error('custom_item_name') <span class="text-danger small">{{ $message }}</span> @enderror
                         </div>
-                        <div class="row">
-                            <div class="col-6 mb-3">
-                                <label class="form-label">{{ __('Sale Price') }} <span class="text-danger">*</span></label>
-                                <input wire:model="custom_price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0.00" required>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6 col-12">
+                                <label class="form-label fw-bold small mb-1">{{ __('Sale Price') }} <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <input wire:model="custom_price" type="number" step="0.01" min="0" class="form-control text-end" placeholder="0.00" required>
+                                </div>
                                 @error('custom_price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
-                            <div class="col-6 mb-3">
-                                <label class="form-label">{{ __('Cost / Purchase Price') }} <small class="text-muted">({{ __('Optional') }})</small></label>
-                                <input wire:model="custom_purchase_price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0.00">
+                            <div class="col-md-6 col-12">
+                                <label class="form-label fw-bold small mb-1">{{ __('Cost / Purchase Price') }} <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
+                                <input wire:model="custom_purchase_price" type="number" step="0.01" min="0" class="form-control text-end" placeholder="0.00">
                                 @error('custom_purchase_price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-6 mb-3">
-                                <label class="form-label">{{ __('Quantity') }} <span class="text-danger">*</span></label>
-                                <input wire:model="custom_quantity" type="number" min="1" class="form-control form-control-sm text-center" required>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6 col-12">
+                                <label class="form-label fw-bold small mb-1">{{ __('Quantity') }} <span class="text-danger">*</span></label>
+                                <input wire:model="custom_quantity" type="number" min="1" class="form-control text-center fw-bold" required>
                                 @error('custom_quantity') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
-                            <div class="col-6 mb-3">
-                                <label class="form-label">{{ __('Warranty') }} <small class="text-muted">({{ __('Optional') }})</small></label>
-                                <select wire:model="custom_warranty_id" class="form-select form-select-sm">
+                            <div class="col-md-6 col-12">
+                                <label class="form-label fw-bold small mb-1">{{ __('Warranty') }} <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
+                                <select wire:model.live="custom_warranty_id" class="form-select">
                                     <option value="">{{ __('No Warranty') }}</option>
                                     @foreach ($warranties as $warranty)
                                         <option value="{{ $warranty->id }}">{{ $warranty->name }}</option>
@@ -78,10 +82,16 @@
                                 @error('custom_warranty_id') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>
+
+                        <div class="mb-2">
+                            <label class="form-label fw-bold small mb-1">{{ __('Warranty Description / Terms') }} <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
+                            <input wire:model="custom_warranty_description" type="text" class="form-control" placeholder="{{ __('e.g. 1 Month warranty on replacement parts') }}">
+                            @error('custom_warranty_description') <span class="text-danger small">{{ $message }}</span> @enderror
+                        </div>
                     </div>
-                    <div class="modal-footer">
-                        <button wire:click="closeCustomModal" type="button" class="btn btn-sm btn-secondary">{{ __('Cancel') }}</button>
-                        <button type="submit" class="btn btn-sm btn-primary">
+                    <div class="modal-footer bg-light py-2 px-4 rounded-bottom-3 d-flex justify-content-between">
+                        <button wire:click="closeCustomModal" type="button" class="btn btn-outline-secondary px-4">{{ __('Cancel') }}</button>
+                        <button type="submit" class="btn btn-primary px-4 shadow-sm">
                             <i class="fa-solid fa-plus me-1"></i> {{ __('Add to Cart') }}
                         </button>
                     </div>
@@ -156,13 +166,14 @@
                                     -
                                 @endif
                             </td>
-                            <td class="fw-bold align-items-center" style="width: 9%;">
-                                <select wire:model="sale_items.{{$itemKey}}.warranty_id" class="form-select form-select-sm">
-                                    <option value="">-</option>
+                            <td class="fw-bold align-items-center" style="width: 14%;">
+                                <select wire:model.live="sale_items.{{$itemKey}}.warranty_id" class="form-select form-select-sm mb-1">
+                                    <option value="">- {{ __('No Warranty') }} -</option>
                                     @foreach ($warranties as $warranty)
                                         <option value="{{ $warranty->id }}">{{ $warranty->name }}</option>
                                     @endforeach
                                 </select>
+                                <input wire:model.live="sale_items.{{$itemKey}}.warranty_description" type="text" class="form-control form-control-sm text-muted" placeholder="{{ __('Warranty terms / note') }}" style="font-size: 0.72rem; padding: 2px 5px;" title="{{ __('Edit warranty description') }}">
                             </td>
                             <td class="fw-bold align-items-center" style="width: 11%;">
                                 <input wire:model.live="sale_items.{{$itemKey}}.price" type="number" step="0.01" class="form-control form-control-sm text-end">
