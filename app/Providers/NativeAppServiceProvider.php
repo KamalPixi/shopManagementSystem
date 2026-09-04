@@ -23,6 +23,17 @@ class NativeAppServiceProvider implements ProvidesPhpIni
         ->width(1024)
         ->height(768)
         ->showDevTools(false);
+
+        // Auto-start Cloudflare tunnel if enabled in Shop Settings
+        try {
+            $tunnelService = app(\App\Services\CloudflareTunnelService::class);
+            $config = $tunnelService->getConfig();
+            if ($config['enabled'] && $config['auto_start'] && !empty($config['tunnel_token'])) {
+                $tunnelService->start();
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Cloudflare tunnel auto-start encountered error: ' . $e->getMessage());
+        }
     }
 
     /**

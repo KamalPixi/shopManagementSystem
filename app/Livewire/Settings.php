@@ -30,6 +30,13 @@ class Settings extends Component
     public $language = 'en';
     public $settings;
 
+    // Cloudflare Tunnel Properties
+    public $cf_enabled = false;
+    public $cf_auto_start = false;
+    public $cf_custom_domain = '';
+    public $cf_tunnel_token = '';
+    public $cf_status = [];
+
     protected $rules = [
         'name' => 'required|string|max:255',
         'contact_no' => 'nullable|string|max:255',
@@ -44,6 +51,10 @@ class Settings extends Component
         'currency' => 'nullable|string|max:3',
         'timezone' => 'nullable|string|max:100',
         'language' => 'nullable|string|in:en,fr',
+        'cf_enabled' => 'nullable|boolean',
+        'cf_auto_start' => 'nullable|boolean',
+        'cf_custom_domain' => 'nullable|string|max:255',
+        'cf_tunnel_token' => 'nullable|string|max:500',
     ];
 
     public function mount() {
@@ -51,6 +62,12 @@ class Settings extends Component
         if ($shop) {
             $shopLang = $shop->settings['language'] ?? (strcasecmp($shop->country ?? '', 'France') === 0 ? 'fr' : 'en');
             $this->language = session('locale', $shopLang);
+
+            $cf = $shop->settings['cloudflare'] ?? [];
+            $this->cf_enabled = (bool) ($cf['enabled'] ?? false);
+            $this->cf_auto_start = (bool) ($cf['auto_start'] ?? false);
+            $this->cf_custom_domain = $cf['custom_domain'] ?? '';
+            $this->cf_tunnel_token = $cf['tunnel_token'] ?? '';
 
             $this->fill([
                 'name' => $shop->name,
@@ -67,6 +84,8 @@ class Settings extends Component
                 'existing_logo' => $shop->logo,
             ]);
         }
+
+        $this->refreshTunnelStatus();
     }
 
     public function update() {
@@ -94,6 +113,12 @@ class Settings extends Component
 
         $shopSettings = $shop?->settings ?? [];
         $shopSettings['language'] = $validated['language'] ?? 'en';
+        $shopSettings['cloudflare'] = [
+            'enabled' => (bool) $this->cf_enabled,
+            'auto_start' => (bool) $this->cf_auto_start,
+            'custom_domain' => trim($this->cf_custom_domain ?? ''),
+            'tunnel_token' => trim($this->cf_tunnel_token ?? ''),
+        ];
         $validated['settings'] = $shopSettings;
 
         // Apply immediately to current user session & app
@@ -103,17 +128,52 @@ class Settings extends Component
         if (!$shop) {
             $validated['logo'] = $logo_path ?? null;
             $validated['currency'] = $selectedCurrency;
-            Shop::create($validated);
-            session()->flash('success', __('Shop settings saved.'));
-            return $this->redirect(route('settings'), navigate: false);
+            $shop = Shop::create($validated);
+        } else {
+            // Keep existing logo if no new logo was uploaded
+            $validated['logo'] = $logo_path ?: $shop->logo;
+            $validated['currency'] = $selectedCurrency;
+            $shop->update($validated);
         }
 
-        // Keep existing logo if no new logo was uploaded
-        $validated['logo'] = $logo_path ?: $shop->logo;
-        $validated['currency'] = $selectedCurrency;
-        $shop->update($validated);
+        // Auto-stop tunnel if internet availability was disabled
+        $tunnelService = app(\App\Services\CloudflareTunnelService::class);
+        if (!$this->cf_enabled && $tunnelService->isRunning()) {
+            $tunnelService->stop();
+        }
+
         session()->flash('success', __('Shop settings updated.'));
+        $this->refreshTunnelStatus();
         return $this->redirect(route('settings'), navigate: false);
+    }
+
+    public function refreshTunnelStatus()
+    {
+        $this->cf_status = app(\App\Services\CloudflareTunnelService::class)->getStatus();
+    }
+
+    public function startTunnel()
+    {
+        if (!$this->cf_enabled) {
+            session()->flash('error', __('Please enable Remote Access first and save settings.'));
+            return;
+        }
+
+        $result = app(\App\Services\CloudflareTunnelService::class)->start();
+        if ($result['success']) {
+            session()->flash('success', __($result['message']));
+        } else {
+            session()->flash('error', __($result['message']));
+        }
+
+        $this->refreshTunnelStatus();
+    }
+
+    public function stopTunnel()
+    {
+        $result = app(\App\Services\CloudflareTunnelService::class)->stop();
+        session()->flash('success', __($result['message']));
+        $this->refreshTunnelStatus();
     }
 
     public function render()
