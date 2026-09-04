@@ -16,6 +16,7 @@ class Settings extends Component
 
     public $name;
     public $logo = '';
+    public $existing_logo = '';
     public $address;
     public $state;
     public $city;
@@ -63,6 +64,7 @@ class Settings extends Component
                 'gst_percent' => $shop->gst_percent,
                 'currency' => $shop->currency['code'],
                 'timezone' => $shop->timezone,
+                'existing_logo' => $shop->logo,
             ]);
         }
     }
@@ -106,7 +108,8 @@ class Settings extends Component
             return $this->redirect(route('settings'), navigate: false);
         }
 
-        $validated['logo'] = $logo_path ?? null;
+        // Keep existing logo if no new logo was uploaded
+        $validated['logo'] = $logo_path ?: $shop->logo;
         $validated['currency'] = $selectedCurrency;
         $shop->update($validated);
         session()->flash('success', __('Shop settings updated.'));
