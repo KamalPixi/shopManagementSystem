@@ -13,7 +13,7 @@ return [
      * usually in the form of a reverse domain name.
      * For example: com.nativephp.app
      */
-    'app_id' => env('NATIVEPHP_APP_ID', 'com.greenpixi.angariamaju'),
+    'app_id' => env('NATIVEPHP_APP_ID', 'com.greenpixi.techparisien'),
 
     /**
      * If your application allows deep linking, you can specify the scheme
