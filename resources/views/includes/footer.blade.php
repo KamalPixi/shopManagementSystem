@@ -15,59 +15,37 @@
     </div>
 </footer>
 
-<!-- Developer Info Modal -->
+<!-- Developer Info Modal (Compact Terminal / Code Style) -->
 <div class="modal fade" id="developerInfoModal" tabindex="-1" aria-labelledby="developerInfoModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-primary text-white py-2 px-3">
-                <h6 class="modal-title text-white mb-0" id="developerInfoModalLabel">
-                    <i class="fa-solid fa-laptop-code me-2"></i>Developer Information
-                </h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4 text-center">
-                <div class="mb-3">
-                    <div class="avatar-lg bg-light text-primary rounded-circle d-inline-flex align-items-center justify-content-center mx-auto shadow-sm" style="width: 64px; height: 64px; font-size: 1.8rem;">
-                        <i class="fa-solid fa-user-tie"></i>
+    <div class="modal-dialog modal-dialog-centered modal-sm" style="max-width: 380px;">
+        <div class="modal-content border-0 shadow-lg rounded-3" style="background: #0f172a; color: #94a3b8; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Courier New', monospace; font-size: 0.78rem;">
+            <div class="modal-body p-3 position-relative">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-2" style="font-size: 0.65rem;" data-bs-dismiss="modal" aria-label="Close"></button>
+                
+                {{-- Terminal title prompt --}}
+                <div class="d-flex align-items-center mb-2 text-muted pb-2 border-bottom border-secondary border-opacity-25" style="font-size: 0.7rem;">
+                    <span class="d-inline-block rounded-circle bg-danger me-1" style="width: 8px; height: 8px;"></span>
+                    <span class="d-inline-block rounded-circle bg-warning me-1" style="width: 8px; height: 8px;"></span>
+                    <span class="d-inline-block rounded-circle bg-success me-2" style="width: 8px; height: 8px;"></span>
+                    <span class="text-light opacity-75">kamal@dev:~</span>
+                </div>
+
+                {{-- Code / Developer meta --}}
+                <div class="line-height-base">
+                    <div class="p-2 rounded" style="background: #1e293b; color: #f8fafc; font-size: 0.74rem;">
+                        <div><span class="text-info">"name"</span>: <span class="text-light fw-bold">"Md Kamal Uddin"</span>,</div>
+                        <div><span class="text-info">"tel_bd"</span>: <a href="tel:+8801811329970" class="text-decoration-none" style="color: #4ade80 !important; font-weight: 500;">"+8801811329970"</a>,</div>
+                        <div><span class="text-info">"tel_my"</span>: <a href="https://wa.me/601111085061" target="_blank" class="text-decoration-none" style="color: #4ade80 !important; font-weight: 500;">"+601111085061"</a>,</div>
+                        <div><span class="text-info">"email"</span>: <a href="mailto:kamalpixi@gmail.com" class="text-decoration-none" style="color: #38bdf8 !important; font-weight: 500;">"kamalpixi@gmail.com"</a></div>
                     </div>
                 </div>
-                <h5 class="fw-bold mb-1">Md Kamal Uddin</h5>
-                <p class="text-muted small mb-3">Founder & Full-Stack Developer at <strong>GreenPixi</strong></p>
-                <hr class="my-3">
-                <div class="text-start px-2">
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="icon icon-xs me-2 text-primary text-center" style="width: 24px;">
-                            <i class="fa-solid fa-phone"></i>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block" style="font-size: 0.7rem;">Phone (BD):</small>
-                            <a href="tel:+8801811329970" class="text-dark fw-semibold text-decoration-none">+880 1811-329970</a>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center mb-2">
-                        <div class="icon icon-xs me-2 text-success text-center" style="width: 24px;">
-                            <i class="fa-brands fa-whatsapp"></i>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block" style="font-size: 0.7rem;">Phone (MY) / WhatsApp:</small>
-                            <a href="https://wa.me/601111085061" target="_blank" class="text-dark fw-semibold text-decoration-none">+60 11-1108 5061</a>
-                        </div>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <div class="icon icon-xs me-2 text-danger text-center" style="width: 24px;">
-                            <i class="fa-solid fa-envelope"></i>
-                        </div>
-                        <div>
-                            <small class="text-muted d-block" style="font-size: 0.7rem;">Email:</small>
-                            <a href="mailto:kamalpixi@gmail.com" class="text-dark fw-semibold text-decoration-none">kamalpixi@gmail.com</a>
-                        </div>
-                    </div>
+
+                <div class="d-flex justify-content-end align-items-center mt-2 text-muted" style="font-size: 0.68rem;">
+                    <button type="button" class="btn btn-dark btn-sm py-0 px-2 border border-secondary border-opacity-50 text-light" style="font-size: 0.68rem;" data-bs-dismiss="modal">esc</button>
                 </div>
-            </div>
-            <div class="modal-footer py-2 px-3 bg-light justify-content-end">
-                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
+
 
