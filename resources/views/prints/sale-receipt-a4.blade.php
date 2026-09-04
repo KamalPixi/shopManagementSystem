@@ -78,6 +78,16 @@
             font-size: 10px;
         }
 
+        .shop-logo {
+            max-width: 140px;
+            max-height: 60px;
+            height: auto;
+            width: auto;
+            display: block;
+            margin: 0 auto 8px auto;
+            object-fit: contain;
+        }
+
         .page-break {
             page-break-before: always;
         }
@@ -85,6 +95,9 @@
 </head>
 <body>
     <div class="company-info">
+        @if (!empty($shop->logo) && file_exists(public_path($shop->logo)))
+            <img src="{{ public_path($shop->logo) }}" alt="{{ $shop->name }}" class="shop-logo">
+        @endif
         <h1>{{ $shop->name }}</h1>
         <p>{{ $shop->address }}, {{ $shop->city }} {{ $shop->postal_code }} </p>
         <p>{{ $shop->state }}, {{ $shop->country }} </p>

@@ -12,12 +12,14 @@ final class SaleService
         $sale = Sale::findOrFail($sale_id); 
         $customWidth = 3.27 * 72; // ~235.44 pts
 
+        $shop = Shop::first();
         $numRows = $sale->saleItems()->count();
-        $maxHeight = ($numRows * 20) + 250;
+        $logoHeight = (!empty($shop?->logo) && file_exists(public_path($shop->logo))) ? 60 : 0;
+        $maxHeight = ($numRows * 20) + 250 + $logoHeight;
         
         $pdf = Pdf::loadView('prints.sale-receipt', [
             'sale' => $sale,
-            'shop' => Shop::first(),
+            'shop' => $shop,
         ]);
         $pdf->setPaper([0, 0, $customWidth, $maxHeight], 'portrait');
 

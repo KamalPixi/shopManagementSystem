@@ -34,6 +34,15 @@
             font-size: 8px;
             padding: 0;
         }
+        .shop-logo {
+            max-width: 140px;
+            max-height: 60px;
+            height: auto;
+            width: auto;
+            display: block;
+            margin: 0 auto 8px auto;
+            object-fit: contain;
+        }
     </style>
 
 </head>
@@ -41,6 +50,9 @@
 
     <!-- Company Info -->
     <div class="text-center company-info">
+        @if (!empty($shop->logo) && file_exists(public_path($shop->logo)))
+            <img src="{{ public_path($shop->logo) }}" alt="{{ $shop->name }}" class="shop-logo">
+        @endif
         <h1 class="fw-bold" style="margin-bottom: 2px;">{{ $shop->name }}</h1>
         <p>{{ $shop->address }}, {{ $shop->city }} {{ $shop->postal_code }}</p>
         <p>{{ $shop->state }}, {{ $shop->country }}</p>
