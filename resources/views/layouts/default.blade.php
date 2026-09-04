@@ -45,16 +45,32 @@
           background-color: #1f2937;
           color: #ffffff;
         }
+
+        /* Sticky footer styling - full width edge to edge */
+        .site-footer {
+          position: sticky;
+          bottom: 0;
+          z-index: 999;
+          background: rgba(255, 255, 255, 0.98);
+          backdrop-filter: blur(5px);
+          border-top: 1px solid #e5e7eb;
+          margin-left: -1rem !important;
+          margin-right: -1rem !important;
+          margin-bottom: 0 !important;
+          border-radius: 0 !important;
+        }
       </style>
   </head>
   <body class="d-flex flex-column min-vh-100">
     <x-sidebar />
 
-    <main class="content flex-grow-1">
+    <main class="content flex-grow-1 d-flex flex-column">
         <x-navbar />
-        @yield('content')
-      </main>
-      @include('includes.footer')
+        <div class="flex-grow-1">
+            @yield('content')
+        </div>
+        @include('includes.footer')
+    </main>
     <script src="{{ asset('/vendor/@popperjs/core/dist/umd/popper.min.js') }}"></script>
     <script src="{{ asset('/vendor/bootstrap/dist/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('/assets/js/volt.js') }}"></script>
