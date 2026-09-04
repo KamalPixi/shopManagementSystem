@@ -292,7 +292,7 @@
                         <ol class="mb-0">
                             <li>{{ __('Create a free account at') }} <a href="https://dash.cloudflare.com" target="_blank">dash.cloudflare.com</a> {{ __('and add your domain name.') }}</li>
                             <li>{{ __('Navigate to') }} <strong>Cloudflare Zero Trust &rarr; Networks &rarr; Tunnels</strong>.</li>
-                            <li>{{ __('Click') }} <strong>{{ __('Create a Tunnel') }}</strong>, {{ __('select "Cloudflared", name it (e.g. "Shop POS"), and click Next.') }}</li>
+                            <li>{{ __('Click') }} <strong>{{ __('Create a Tunnel') }}</strong>, {{ __('select "Cloudflared", name it (e.g. "Shop_POS"), and click Next.') }}</li>
                             <li>{{ __('Choose your operating system (Mac/Windows/Linux). Under "Install and run a connector", copy the token string after') }} <code>--token</code>.</li>
                             <li>{{ __('Paste the token above into the') }} <strong>{{ __('Cloudflare Tunnel Token') }}</strong> {{ __('field.') }}</li>
                             <li>{{ __('In Cloudflare, click Next to configure the Public Hostname: Subdomain = e.g. "pos", Domain = your domain, Service Type = HTTP, URL =') }} <code>localhost:8000</code>.</li>
