@@ -24,7 +24,7 @@
         </div>
         <div class="col-12 col-md-4">
             <div class="mb-4">
-                <label class="my-1 me-2">{{ __('Category*') }}</label>
+                <label>{{ __('Category*') }}</label>
                 <select wire:model="category_id" required class="form-select">
                     <option value="null" selected="selected" disabled>{{ __('Select Category') }}</option>
                     @foreach ($categories as $category)
@@ -35,7 +35,7 @@
         </div>
         <div class="col-12 col-md-4">
             <div class="mb-4">
-                <label class="my-1 me-2">{{ __('Brand*') }}</label>
+                <label>{{ __('Brand*') }}</label>
                 <select wire:model="brand_id" required class="form-select">
                     <option value="null" selected="selected" disabled>{{ __('Select Brand') }}</option>
                     @foreach ($brands as $brand)
@@ -109,7 +109,7 @@
         <div class="col-12 col-md-4">
             <div class="mb-4">
                 <label>Quantity*</label>
-                <input wire:model="quantity" required type="number" class="input-date form-control form-control-sm">
+                <input wire:model="quantity" required type="number" class="form-control form-control-sm">
             </div>
         </div>
 
@@ -118,13 +118,13 @@
         <div class="col-12 col-md-4">
             <div class="mb-4">
                 <label>Purchase Date</label>
-                <input wire:model="purchase_date" type="date" class="input-date form-control form-control-sm">
+                <input wire:model="purchase_date" type="date" class="form-control form-control-sm">
             </div>
         </div>
 
         <div class="col-12 col-md-4">
             <div class="mb-4">
-                <label for="brand">Supplier</label>
+                <label>Supplier</label>
                 <select wire:model="supplier_id" class="form-select">
                     <option value="null" selected="selected" disabled>Select Supplier</option>
                     @foreach ($suppliers as $supplier)

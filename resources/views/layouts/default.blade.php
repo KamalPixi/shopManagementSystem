@@ -24,8 +24,51 @@
       <link href="{{asset('/assets/fontawesome/css/all.min.css') }}" rel="stylesheet" />
 
       <style>
-        .input-date {
-          height: 1rem;
+        /* Global Form Standards */
+        .form-control,
+        .form-select,
+        .form-control-sm,
+        .form-select-sm {
+          height: 40px !important;
+          min-height: 40px !important;
+          padding: 0.5rem 0.85rem !important;
+          font-size: 0.9rem !important;
+          line-height: 1.5 !important;
+          border-radius: 0.375rem !important;
+          border-color: #d1d5db;
+        }
+
+        /* Allow multi-line textareas to size naturally without being forced to 40px */
+        textarea.form-control,
+        textarea.form-control-sm {
+          height: auto !important;
+          min-height: 52px !important;
+          padding: 0.55rem 0.85rem !important;
+        }
+
+        /* Form labels standard typography & spacing */
+        form label:not(.form-check-label) {
+          display: inline-block;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 0.35rem !important;
+        }
+
+        /* Compact form controls inside compact data tables (e.g. POS cart line-items) */
+        .table .form-control-sm,
+        .table .form-select-sm {
+          height: 32px !important;
+          min-height: 32px !important;
+          padding: 0.25rem 0.5rem !important;
+          font-size: 0.82rem !important;
+          border-radius: 0.25rem !important;
+        }
+
+        /* Ensure date and number inputs align vertically with standard inputs */
+        input[type="date"].form-control,
+        input[type="date"].form-control-sm {
+          line-height: 1.5 !important;
         }
 
         /* to fix old laptop large display issue */
