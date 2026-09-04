@@ -30,7 +30,7 @@
                         </div>
                         <div class="col-md-3 col-12 mt-3 mt-md-0 text-md-end">
                             <button wire:click="openCustomModal" type="button" class="btn btn-sm btn-info text-white w-100">
-                                <i class="fa-solid fa-screwdriver-wrench me-1"></i> + Custom / Repair Item
+                                <i class="fa-solid fa-plus-circle me-1"></i> + Custom Item
                             </button>
                         </div>
                     </div>
@@ -39,14 +39,14 @@
         </div>
     </div>
 
-    {{-- Custom / Repair Item Modal --}}
+    {{-- Custom Item Modal --}}
     @if ($showCustomModal)
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px);" aria-modal="true" role="dialog">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 620px;">
             <div class="modal-content border-0 shadow-lg rounded-3">
                 <div class="modal-header bg-gray-800 text-white py-3 px-4 rounded-top-3">
                     <h5 class="modal-title h6 mb-0 text-white d-flex align-items-center">
-                        <i class="fa-solid fa-screwdriver-wrench me-2 text-primary"></i> Add On-The-Fly / Custom Item
+                        <i class="fa-solid fa-tag me-2 text-primary"></i> Add Custom Item
                     </h5>
                     <button wire:click="closeCustomModal" type="button" class="btn-close btn-close-white" aria-label="Close"></button>
                 </div>
@@ -54,7 +54,7 @@
                     <div class="modal-body p-4">
                         <div class="mb-3">
                             <label class="form-label fw-bold small mb-1">Item / Service Name <span class="text-danger">*</span></label>
-                            <input wire:model="custom_item_name" type="text" class="form-control" placeholder="e.g. Mobile Screen Repair / Service" required>
+                            <input wire:model="custom_item_name" type="text" class="form-control" placeholder="e.g. Service / Item Name" required>
                             @error('custom_item_name') <span class="text-danger small">{{ $message }}</span> @enderror
                         </div>
 

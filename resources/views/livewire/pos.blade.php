@@ -22,7 +22,7 @@
                         </div>
                         <div class="col-lg-3 col-md-4 col-12">
                             <button wire:click="openCustomModal" type="button" class="btn btn-info text-white w-100 d-inline-flex align-items-center justify-content-center text-nowrap shadow-sm m-0" style="height: 42px; line-height: 1; box-sizing: border-box; white-space: nowrap;">
-                                <i class="fa-solid fa-screwdriver-wrench me-2"></i> {{ __('+ Custom / Repair Item') }}
+                                <i class="fa-solid fa-plus-circle me-2"></i> {{ __('+ Custom Item') }}
                             </button>
                         </div>
                     </div>
@@ -31,14 +31,14 @@
         </div>
     </div>
 
-    {{-- Custom / Repair Item Modal --}}
+    {{-- Custom Item Modal --}}
     @if ($showCustomModal)
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px);" aria-modal="true" role="dialog">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 620px;">
             <div class="modal-content border-0 shadow-lg rounded-3">
                 <div class="modal-header bg-gray-800 text-white py-3 px-4 rounded-top-3">
                     <h5 class="modal-title h6 mb-0 text-white d-flex align-items-center">
-                        <i class="fa-solid fa-screwdriver-wrench me-2 text-primary"></i> {{ __('Add On-The-Fly / Custom Item') }}
+                        <i class="fa-solid fa-tag me-2 text-primary"></i> {{ __('Add Custom Item') }}
                     </h5>
                     <button wire:click="closeCustomModal" type="button" class="btn-close btn-close-white" aria-label="{{ __('Cancel') }}"></button>
                 </div>
@@ -46,7 +46,7 @@
                     <div class="modal-body p-4">
                         <div class="mb-3">
                             <label class="form-label fw-bold small mb-1">{{ __('Item / Service Name') }} <span class="text-danger">*</span></label>
-                            <input wire:model="custom_item_name" type="text" class="form-control" placeholder="{{ __('e.g. Mobile Screen Repair / Service') }}" required>
+                            <input wire:model="custom_item_name" type="text" class="form-control" placeholder="{{ __('e.g. Service / Item Name') }}" required>
                             @error('custom_item_name') <span class="text-danger small">{{ $message }}</span> @enderror
                         </div>
 
@@ -215,7 +215,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="text-center text-muted py-4">{{ __('Scan a barcode or click + Custom / Repair Item to add items to the cart.') }}</td>
+                            <td colspan="9" class="text-center text-muted py-4">{{ __('Scan a barcode or click + Custom Item to add items to the cart.') }}</td>
                         </tr>
                         @endforelse
                     </tbody>
