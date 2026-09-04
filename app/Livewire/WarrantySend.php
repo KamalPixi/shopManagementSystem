@@ -79,7 +79,7 @@ class WarrantySend extends Component
         WarrantySendModel::create($validated);
         
         $this->resetExcept('products');
-        session()->flash('success', 'Warranty send success.');
+        session()->flash('success', __('Warranty send success.'));
     }
 
     public function edit($id) {
@@ -104,7 +104,7 @@ class WarrantySend extends Component
         $b->update($validated);
 
         $this->resetExcept('products');
-        session()->flash('success', 'Updated.');
+        session()->flash('success', __('Updated.'));
     }
 
     public function setProductName($name) {
@@ -114,13 +114,13 @@ class WarrantySend extends Component
 
     public function delete($id) {
         if (!auth()->user()->hasPermissionTo('warranty-send:delete')) {
-            session()->flash('failed', 'Access denied!');
+            session()->flash('failed', __('Access denied!'));
             return;
         }
 
         $w = WarrantySendModel::findOrFail($id);
         $w->delete();
-        session()->flash('success', 'Warranty record deleted.');
+        session()->flash('success', __('Warranty record deleted.'));
     }
 
 
@@ -139,7 +139,7 @@ class WarrantySend extends Component
         $validated['status'] = 'received';
         $w->update($validated);
         $this->mark_receive_warranty_id = null;
-        session()->flash('success', 'Marked as received ' . $w->product_name);
+        session()->flash('success', __('Marked as received :name', ['name' => $w->product_name]));
     }
 
     public function render()

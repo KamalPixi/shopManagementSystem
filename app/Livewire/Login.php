@@ -34,7 +34,7 @@ class Login extends Component
             return redirect()->intended('dashboard');
         }
 
-        session()->flash('failed', 'Invalid Credentials!');
+        session()->flash('failed', __('Invalid Credentials!'));
     }
 
     public function seedDB() {
@@ -42,7 +42,7 @@ class Login extends Component
         if (!$system) {
             $seeder = new DatabaseSeeder();
             $seeder->run();
-            session()->flash('success', 'Database seed completed.');
+            session()->flash('success', __('Database seed completed.'));
             return;
         }
     }

@@ -95,7 +95,7 @@ class StockAdd extends Component
             ['name' => '','values' => '']
         ];
 
-        session()->flash('success', 'Product added.');
+        session()->flash('success', __('Product added.'));
     }
     
     public function addAttributeField() {

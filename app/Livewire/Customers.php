@@ -41,7 +41,7 @@ class Customers extends Component
         $validated = $this->validate();
         Customer::create($validated);
         $this->reset();
-        session()->flash('success', 'Customer created.');
+        session()->flash('success', __('Customer created.'));
     }
 
     public function edit($id)
@@ -57,18 +57,18 @@ class Customers extends Component
         $c = Customer::findOrFail($this->customerIdEdit);
         $c->update($validated);
         $this->reset();
-        session()->flash('success', 'Customer updated.');
+        session()->flash('success', __('Customer updated.'));
     }
 
     public function delete($id)
     {
         if (!auth()->user()->hasPermissionTo('customer:delete')) {
-            session()->flash('failed', 'Access denied!');
+            session()->flash('failed', __('Access denied!'));
             return;
         }
 
         Customer::findOrFail($id)->delete();
-        session()->flash('success', 'Customer deleted.');
+        session()->flash('success', __('Customer deleted.'));
     }
 
     public function render()

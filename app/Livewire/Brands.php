@@ -25,7 +25,7 @@ class Brands extends Component
         Brand::create($validated);
         
         $this->reset();
-        session()->flash('success', 'Brand created.');
+        session()->flash('success', __('Brand created.'));
     }
 
     public function edit($id) {
@@ -53,18 +53,18 @@ class Brands extends Component
         $b->update($validated);
 
         $this->reset();
-        session()->flash('success', 'Brand updated.');
+        session()->flash('success', __('Brand updated.'));
     }
 
     public function delete($id) {
         if (!auth()->user()->hasPermissionTo('brand:delete')) {
-            session()->flash('failed', 'Access denied!');
+            session()->flash('failed', __('Access denied!'));
             return;
         }
 
         $b = Brand::findOrFail($id);
         $b->delete();
-        session()->flash('success', 'Brand deleted.');
+        session()->flash('success', __('Brand deleted.'));
     }
 
     public function render()

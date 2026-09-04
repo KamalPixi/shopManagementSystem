@@ -88,7 +88,7 @@ class Pos extends Component
                 $qty = (int) $this->sale_items[$itemKey]['quantity'];
                 if ($qty < 1) {
                     $this->sale_items[$itemKey]['quantity'] = 1;
-                    $this->errorMessage = 'Quantity must be at least 1.';
+                    $this->errorMessage = __('Quantity must be at least 1.');
                 } elseif (!empty($this->sale_items[$itemKey]['product_id'])) {
                     $product = collect($this->products)->firstWhere('id', $this->sale_items[$itemKey]['product_id']);
                     if (!$product) {
@@ -96,7 +96,7 @@ class Pos extends Component
                     }
                     if ($product && $qty > $product->quantity) {
                         $this->sale_items[$itemKey]['quantity'] = max(1, $product->quantity);
-                        $this->errorMessage = "Cannot exceed available stock! Only {$product->quantity} in stock for [{$product->name}].";
+                        $this->errorMessage = __('Cannot exceed available stock! Only :qty in stock for [:name].', ['qty' => $product->quantity, 'name' => $product->name]);
                     }
                 }
             }
@@ -116,12 +116,12 @@ class Pos extends Component
         $product = Product::findBySkuSerialOrModel($this->identifier);
 
         if (empty($product)) {
-            session()->flash('failed', "No product found [{$this->identifier}]");
+            session()->flash('failed', __('No product found [:id]', ['id' => $this->identifier]));
             return;
         }
 
         if ($product->quantity < 1) {
-            session()->flash('failed', 'Out of stock!');
+            session()->flash('failed', __('Out of stock!'));
             return;
         }
 
@@ -131,7 +131,7 @@ class Pos extends Component
         if (isset($this->sale_items[$itemKey])) {
             $qtyLeft = $product->quantity - (int) $this->sale_items[$itemKey]['quantity'];
             if ($qtyLeft < 1) {
-                return session()->flash('failed', 'Quantity out of stock!');
+                return session()->flash('failed', __('Quantity out of stock!'));
             }
             $this->sale_items[$itemKey]['quantity'] += 1;
         } else {
@@ -223,7 +223,7 @@ class Pos extends Component
         }
 
         if (empty($this->sale_items)) {
-            session()->flash('failed', 'No items in cart to sell!');
+            session()->flash('failed', __('No items in cart to sell!'));
             return;
         }
 
@@ -247,11 +247,15 @@ class Pos extends Component
             if (!empty($item['product_id'])) {
                 $product = Product::find($item['product_id']);
                 if (!$product) {
-                    session()->flash('failed', "Product not found for item [{$item['item_name']}].");
+                    session()->flash('failed', __('Product not found for item [:name].', ['name' => $item['item_name']]));
                     return;
                 }
                 if ($product->quantity < $item['quantity']) {
-                    session()->flash('failed', "Insufficient stock for [{$product->name}]. Requested: {$item['quantity']}, In stock: {$product->quantity}.");
+                    session()->flash('failed', __('Insufficient stock for [:name]. Requested: :req, In stock: :stock.', [
+                        'name' => $product->name,
+                        'req' => $item['quantity'],
+                        'stock' => $product->quantity,
+                    ]));
                     return;
                 }
             }

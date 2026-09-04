@@ -110,7 +110,7 @@ class StockEdit extends Component
             ]);
         }
 
-        session()->flash('success', 'Product updated.');
+        session()->flash('success', __('Product updated.'));
     }
     
     public function addAttributeField() {

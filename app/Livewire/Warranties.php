@@ -25,7 +25,7 @@ class Warranties extends Component
         Warranty::create($validated);
         
         $this->reset();
-        session()->flash('success', 'Warranty created.');
+        session()->flash('success', __('Warranty created.'));
     }
 
     public function edit($id) {
@@ -53,18 +53,18 @@ class Warranties extends Component
         $b->update($validated);
 
         $this->reset();
-        session()->flash('success', 'Warranty updated.');
+        session()->flash('success', __('Warranty updated.'));
     }
 
     public function delete($id) {
         if (!auth()->user()->hasPermissionTo('warranties:delete')) {
-            session()->flash('failed', 'Access denied!');
+            session()->flash('failed', __('Access denied!'));
             return;
         }
 
         $b = Warranty::findOrFail($id);
         $b->delete();
-        session()->flash('success', 'Warranty deleted.');
+        session()->flash('success', __('Warranty deleted.'));
     }
 
     public function render()

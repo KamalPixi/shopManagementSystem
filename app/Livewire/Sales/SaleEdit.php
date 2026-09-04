@@ -136,7 +136,7 @@ class SaleEdit extends Component
                 $qty = (int) $this->sale_items[$itemKey]['quantity'];
                 if ($qty < 1) {
                     $this->sale_items[$itemKey]['quantity'] = 1;
-                    $this->errorMessage = 'Quantity must be at least 1.';
+                    $this->errorMessage = __('Quantity must be at least 1.');
                 } elseif (!empty($this->sale_items[$itemKey]['product_id'])) {
                     $productId = $this->sale_items[$itemKey]['product_id'];
                     $product = Product::find($productId);
@@ -147,7 +147,12 @@ class SaleEdit extends Component
 
                         if ($qty > $maxAllowed) {
                             $this->sale_items[$itemKey]['quantity'] = max(1, $maxAllowed);
-                            $this->errorMessage = "Cannot exceed available stock! Current stock: {$product->quantity}, already in this sale: {$originalQty} (Max: {$maxAllowed}) for [{$product->name}].";
+                            $this->errorMessage = __('Cannot exceed available stock! Current stock: :qty, already in this sale: :orig (Max: :max) for [:name].', [
+                                'qty' => $product->quantity,
+                                'orig' => $originalQty,
+                                'max' => $maxAllowed,
+                                'name' => $product->name,
+                            ]);
                         }
                     }
                 }
@@ -162,7 +167,7 @@ class SaleEdit extends Component
         $product = Product::findBySkuSerialOrModel($this->identifier);
 
         if (empty($product)) {
-            session()->flash('failed', "No product found [{$this->identifier}]");
+            session()->flash('failed', __('No product found [:id]', ['id' => $this->identifier]));
             return;
         }
 
@@ -173,13 +178,18 @@ class SaleEdit extends Component
         if (isset($this->sale_items[$itemKey])) {
             $currentCartQty = (int) $this->sale_items[$itemKey]['quantity'];
             if ($currentCartQty >= $maxAllowed) {
-                session()->flash('failed', "Cannot add more. Max available stock is {$maxAllowed} (Stock: {$product->quantity} + In Sale: {$originalQty}) for [{$product->name}].");
+                session()->flash('failed', __('Cannot add more. Max available stock is :max (Stock: :stock + In Sale: :orig) for [:name].', [
+                    'max' => $maxAllowed,
+                    'stock' => $product->quantity,
+                    'orig' => $originalQty,
+                    'name' => $product->name,
+                ]));
                 return;
             }
             $this->sale_items[$itemKey]['quantity'] += 1;
         } else {
             if ($maxAllowed < 1) {
-                session()->flash('failed', "Product [{$product->name}] is out of stock!");
+                session()->flash('failed', __('Product [:name] is out of stock!', ['name' => $product->name]));
                 return;
             }
 
@@ -324,7 +334,7 @@ class SaleEdit extends Component
         }
 
         if (empty($this->sale_items)) {
-            session()->flash('failed', 'Cannot update sale with an empty cart. If you want to cancel the sale, use Delete Sale.');
+            session()->flash('failed', __('Cannot update sale with an empty cart. If you want to cancel the sale, use Delete Sale.'));
             return;
         }
 
@@ -354,7 +364,7 @@ class SaleEdit extends Component
         foreach ($newQuantitiesByProduct as $pid => $newTotalQty) {
             $product = Product::find($pid);
             if (!$product) {
-                session()->flash('failed', "Product ID {$pid} not found.");
+                session()->flash('failed', __('Product ID :id not found.', ['id' => $pid]));
                 return;
             }
 
@@ -362,7 +372,13 @@ class SaleEdit extends Component
             $maxAllowed = $product->quantity + $originalQty;
 
             if ($newTotalQty > $maxAllowed) {
-                session()->flash('failed', "Insufficient stock for [{$product->name}]. Requested: {$newTotalQty}, Max Available: {$maxAllowed} (Stock: {$product->quantity} + In Sale: {$originalQty}).");
+                session()->flash('failed', __('Insufficient stock for [:name]. Requested: :req, Max Available: :max (Stock: :stock + In Sale: :orig).', [
+                    'name' => $product->name,
+                    'req' => $newTotalQty,
+                    'max' => $maxAllowed,
+                    'stock' => $product->quantity,
+                    'orig' => $originalQty,
+                ]));
                 return;
             }
         }
@@ -445,7 +461,7 @@ class SaleEdit extends Component
             ]);
         });
 
-        session()->flash('success', "Sale #{$this->sale->receipt_no} updated successfully with inventory synced!");
+        session()->flash('success', __('Sale #:receipt updated successfully with inventory synced!', ['receipt' => $this->sale->receipt_no]));
         return redirect()->route('sales.index');
     }
 

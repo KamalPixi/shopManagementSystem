@@ -40,7 +40,7 @@ class Suppliers extends Component
         $validated = $this->validate();
         Supplier::create($validated);
         $this->reset();
-        session()->flash('success', 'Supplier created.');
+        session()->flash('success', __('Supplier created.'));
     }
 
     public function edit($id)
@@ -56,18 +56,18 @@ class Suppliers extends Component
         $s = Supplier::findOrFail($this->supplierIdEdit);
         $s->update($validated);
         $this->reset();
-        session()->flash('success', 'Supplier updated.');
+        session()->flash('success', __('Supplier updated.'));
     }
 
     public function delete($id)
     {
         if (!auth()->user()->hasPermissionTo('supplier:delete')) {
-            session()->flash('failed', 'Access denied!');
+            session()->flash('failed', __('Access denied!'));
             return;
         }
 
         Supplier::findOrFail($id)->delete();
-        session()->flash('success', 'Supplier deleted.');
+        session()->flash('success', __('Supplier deleted.'));
     }
 
     public function render()

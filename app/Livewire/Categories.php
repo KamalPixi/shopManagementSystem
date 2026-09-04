@@ -25,7 +25,7 @@ class Categories extends Component
         Category::create($validated);
         
         $this->reset();
-        session()->flash('success', 'Category created.');
+        session()->flash('success', __('Category created.'));
     }
 
     public function edit($id) {
@@ -53,18 +53,18 @@ class Categories extends Component
         $b->update($validated);
 
         $this->reset();
-        session()->flash('success', 'Brand updated.');
+        session()->flash('success', __('Category updated.'));
     }
 
     public function delete($id) {
         if (!auth()->user()->hasPermissionTo('category:delete')) {
-            session()->flash('failed', 'Access denied!');
+            session()->flash('failed', __('Access denied!'));
             return;
         }
 
         $b = Category::findOrFail($id);
         $b->delete();
-        session()->flash('success', 'Brand deleted.');
+        session()->flash('success', __('Category deleted.'));
     }
 
     public function render()

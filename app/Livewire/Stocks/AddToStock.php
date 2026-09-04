@@ -150,7 +150,7 @@ class AddToStock extends Component
             'purchase_price' => $validated['purchase_price'],
         ]);
 
-        session()->flash('success', 'Added to stock.');
+        session()->flash('success', __('Added to stock.'));
     }
     
 

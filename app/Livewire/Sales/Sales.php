@@ -126,7 +126,7 @@ class Sales extends Component
             $sale->delete();
         });
 
-        session()->flash('success', 'Sale has been deleted and product quantities have been returned to stock.');
+        session()->flash('success', __('Sale has been deleted and product quantities have been returned to stock.'));
     }
 
     public function render()

@@ -31,7 +31,7 @@ class Profile extends Component
         }
 
         auth()->user()->update($validated);
-        return session()->flash('success', 'Profile updated.');
+        return session()->flash('success', __('Profile updated.'));
     }
 
     public function render()

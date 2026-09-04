@@ -158,13 +158,13 @@ class Stocks extends Component
 
     public function delete($id) {
         if (!auth()->user()->hasPermissionTo('stock:delete')) {
-            session()->flash('failed', 'Access denied!');
+            session()->flash('failed', __('Access denied!'));
             return;
         }
 
         $p = Product::find($id);
 
-        session()->flash('success', 'Product deleted. ' . $p->name);
+        session()->flash('success', __('Product deleted.'));
         $p->delete();
     }
 

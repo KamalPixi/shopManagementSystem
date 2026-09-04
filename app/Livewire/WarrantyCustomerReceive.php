@@ -45,7 +45,7 @@ class WarrantyCustomerReceive extends Component
         $w->update($validated);
 
         $this->warranty_id = null;
-        session()->flash('success', 'Customer has received success.');
+        session()->flash('success', __('Customer has received success.'));
     }
     public function customerReceive($id) {
         $this->warranty_id = $id;
