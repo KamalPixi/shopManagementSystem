@@ -176,6 +176,14 @@ class Pos extends Component
         $this->showCustomModal = false;
     }
 
+    public function setCustomSalePrice($amount) {
+        $this->custom_price = $amount;
+    }
+
+    public function setCustomPurchasePrice($amount) {
+        $this->custom_purchase_price = $amount;
+    }
+
     public function addCustomItem() {
         $this->validate([
             'custom_item_name' => 'required|string|max:255',

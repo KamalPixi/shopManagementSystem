@@ -62,11 +62,25 @@
                             <div class="col-md-6 col-12">
                                 <label class="form-label fw-bold small mb-1">Sale Price <span class="text-danger">*</span></label>
                                 <input wire:model="custom_price" type="number" step="0.01" min="0" class="form-control text-end" placeholder="0.00" required>
+                                <div class="d-flex flex-wrap gap-1 mt-1">
+                                    @foreach ([10, 20, 30, 40, 50, 100] as $preset)
+                                        <button type="button" wire:click="setCustomSalePrice({{ $preset }})" class="btn btn-xs btn-outline-primary rounded-1 py-0 px-2" style="font-size: 0.72rem;">
+                                            {{ $preset }}
+                                        </button>
+                                    @endforeach
+                                </div>
                                 @error('custom_price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-md-6 col-12">
                                 <label class="form-label fw-bold small mb-1">Cost / Purchase Price <small class="text-muted fw-normal">(Optional)</small></label>
                                 <input wire:model="custom_purchase_price" type="number" step="0.01" min="0" class="form-control text-end" placeholder="0.00">
+                                <div class="d-flex flex-wrap gap-1 mt-1">
+                                    @foreach ([0, 5, 10, 15, 20, 30] as $preset)
+                                        <button type="button" wire:click="setCustomPurchasePrice({{ $preset }})" class="btn btn-xs btn-outline-secondary rounded-1 py-0 px-2" style="font-size: 0.72rem;">
+                                            {{ $preset }}
+                                        </button>
+                                    @endforeach
+                                </div>
                                 @error('custom_purchase_price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>
