@@ -100,27 +100,13 @@ function getNightwatchToken(appPath: string) {
 }
 
 async function getPhpPort() {
-    // Try get-port first (fast path)
-    const suggestedPort = await getPort({
-        host: '127.0.0.1',
-        port: portNumbers(8100, 9000),
-    });
+    const targetPort = process.env.NATIVEPHP_PORT ? parseInt(process.env.NATIVEPHP_PORT, 10) : 8000;
 
-    // Validate that we can actually bind to this port
-    if (await canBindToPort(suggestedPort)) {
-        return suggestedPort;
+    if (await canBindToPort(targetPort)) {
+        return targetPort;
     }
 
-    // If get-port gave us a bad port, manually search starting from suggestedPort + 1
-    console.warn(`Port ${suggestedPort} is not bindable, manually searching...`);
-
-    for (let port = suggestedPort + 1; port < 9000; port++) {
-        if (await canBindToPort(port)) {
-            return port;
-        }
-    }
-
-    throw new Error('Could not find an available port in range 8100-9000');
+    throw new Error(`Port ${targetPort} is already in use. Application will not run.`);
 }
 
 function canBindToPort(port: number): Promise<boolean> {

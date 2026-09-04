@@ -9,9 +9,11 @@ export default defineConfig({
                     {
                         name: 'watch-external',
                         buildStart() {
-                            this.addWatchFile(
-                                join(process.env.APP_PATH, 'app', 'Providers', 'NativeAppServiceProvider.php'),
-                            );
+                            if (process.env.APP_PATH) {
+                                this.addWatchFile(
+                                    join(process.env.APP_PATH, 'app', 'Providers', 'NativeAppServiceProvider.php'),
+                                );
+                            }
                         },
                     },
                 ],
