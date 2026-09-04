@@ -106,7 +106,7 @@
                         <div class="mb-4">
                             <label>{{ __('Language') }}</label>
                             <select wire:model="language" class="form-select">
-                                <option value="en">{{ __('English (EN)') }}</option>
+                                <option value="en">English (EN)</option>
                                 <option value="fr">{{ __('French (FR)') }}</option>
                             </select>
                         </div>
