@@ -249,8 +249,8 @@
             <div class="row rounded pt-2 mb-4" style="background-color: rgb(228, 228, 228); margin-left:0.01rem;margin-right:0.01rem;">
                 <div class="col">
                     <div class="mb-4 position-relative">
-                        <label>{{ __('Customer name*') }}</label>
-                        <input wire:model.live="customer_name" type="text" class="form-control form-control-sm" required>
+                        <label>{{ __('Customer name') }} <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
+                        <input wire:model.live="customer_name" type="text" class="form-control form-control-sm" placeholder="{{ __('Walk In') }}">
 
                         @if (collect($customers)->count())
                         <div wire:key="customer_div" class="position-absolute rounded w-100 shadow mt-1 border overflow-scroll" style="background-color: rgb(243, 243, 243); max-height: 10rem;">
@@ -265,8 +265,8 @@
                 </div>
                 <div class="col">
                     <div class="mb-4">
-                        <label>{{ __('Phone No.*') }}</label>
-                        <input wire:model="customer_phone_no" type="text" class="form-control form-control-sm" required>
+                        <label>{{ __('Phone No.') }} <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
+                        <input wire:model="customer_phone_no" type="text" class="form-control form-control-sm" placeholder="{{ __('Optional') }}">
                     </div>
                 </div>
             </div>

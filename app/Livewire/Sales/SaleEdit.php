@@ -318,8 +318,8 @@ class SaleEdit extends Component
     {
         if (empty($this->customer_id)) {
             $this->validate([
-                'customer_name' => 'required|string|max:255',
-                'customer_phone_no' => 'required|string|max:255',
+                'customer_name' => 'nullable|string|max:255',
+                'customer_phone_no' => 'nullable|string|max:255',
             ]);
         }
 
@@ -423,12 +423,16 @@ class SaleEdit extends Component
 
             // 3. Update customer if newly entered
             $customerId = $this->customer_id;
-            if (empty($customerId)) {
+            if (empty($customerId) && (!empty(trim($this->customer_name ?? '')) || !empty(trim($this->customer_phone_no ?? '')))) {
+                $custName = trim($this->customer_name ?? '');
+                $custPhone = trim($this->customer_phone_no ?? '');
                 $customer = Customer::create([
-                    'name' => $this->customer_name,
-                    'phone_no' => $this->customer_phone_no,
+                    'name' => $custName ?: ($custPhone ?: 'Customer'),
+                    'phone_no' => $custPhone ?: null,
                 ]);
                 $customerId = $customer->id;
+            } elseif (empty($customerId)) {
+                $customerId = null;
             }
 
             // 4. Update sale header

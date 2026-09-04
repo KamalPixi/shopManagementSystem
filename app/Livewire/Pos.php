@@ -24,8 +24,8 @@ class Pos extends Component
     public $gst = 0;
     public $grand_total = 0;
 
-    public $customer_name = 'Walk In';
-    public $customer_phone_no = '000000000';
+    public $customer_name = '';
+    public $customer_phone_no = '';
 
     // for suggestion & selection
     public $customers;
@@ -217,8 +217,8 @@ class Pos extends Component
 
         if (empty($this->customer_id)) {
             $this->validate([
-                'customer_name' => 'required|string|max:255',
-                'customer_phone_no' => 'required|string|max:255',
+                'customer_name' => 'nullable|string|max:255',
+                'customer_phone_no' => 'nullable|string|max:255',
             ]);
         }
 
@@ -315,12 +315,16 @@ class Pos extends Component
 
         if (!empty($this->customer_id)) {
             $sale->update(['customer_id' => $this->customer_id]);
-        } else {
+        } elseif (!empty(trim($this->customer_name ?? '')) || !empty(trim($this->customer_phone_no ?? ''))) {
+            $custName = trim($this->customer_name ?? '');
+            $custPhone = trim($this->customer_phone_no ?? '');
             $customer = Customer::create([
-                'name' => $this->customer_name,
-                'phone_no' => $this->customer_phone_no,
+                'name' => $custName ?: ($custPhone ?: 'Customer'),
+                'phone_no' => $custPhone ?: null,
             ]);
             $sale->update(['customer_id' => $customer->id]);
+        } else {
+            $sale->update(['customer_id' => null]);
         }
 
         $this->clearPos();

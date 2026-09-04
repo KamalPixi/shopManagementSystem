@@ -123,7 +123,7 @@
     <div class="receipt-header">
         <h1>Sales Receipt</h1>
         <p>Receipt Number: #{{ $sale->id }}</p>
-        <p>Customer: {{ $sale->customer?->name }} @if($sale->customer?->phone_no) | {{ $sale->customer?->phone_no }} @endif</p>
+        <p>Customer: {{ $sale->customer?->name ?: '-' }} @if($sale->customer?->phone_no) | {{ $sale->customer->phone_no }} @endif</p>
     </div>
 
     <table class="receipt-details" border="0" cellpadding="1" cellspacing="0">

@@ -107,13 +107,13 @@
     <table class="w-100 customer">
         <tr>
             <td style="width: 10%;">To</td>
-            <td style="width: 70%;">:  {{ $sale->customer?->name }}</td>
+            <td style="width: 70%;">: {{ $sale->customer?->name ?: '-' }}</td>
             <td style="width: 10%;">Receipt No.</td>
             <td>: #{{ $sale->id }}</td>
         </tr>
         <tr>
             <td style="width: 10%;">Mobile No.</td>
-            <td style="width: 70%;">:  {{ $sale->customer?->phone_no }}</td>
+            <td style="width: 70%;">: {{ $sale->customer?->phone_no ?: '-' }}</td>
             <td style="width: 10%;">Date</td>
             <td>: {{ $sale->created_at->format('Y-m-d') }}</td>
         </tr>
