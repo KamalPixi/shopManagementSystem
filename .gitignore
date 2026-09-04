@@ -23,4 +23,5 @@ yarn-error.log
 /shopManagementFrontEnd
 /dist
 /node_modules
-/nativephp
+/nativephp/electron/node_modules
+/nativephp/electron/dist
