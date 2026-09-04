@@ -142,7 +142,7 @@ return [
     ],
 
     'postbuild' => [
-        'sh -c \'if [ -d "nativephp/electron/dist/mac-arm64/TECH PARISIEN.app" ]; then codesign --force --deep --sign - "nativephp/electron/dist/mac-arm64/TECH PARISIEN.app" && xattr -cr "nativephp/electron/dist/mac-arm64/TECH PARISIEN.app"; fi; if [ -d "nativephp/electron/dist/mac/TECH PARISIEN.app" ]; then codesign --force --deep --sign - "nativephp/electron/dist/mac/TECH PARISIEN.app" && xattr -cr "nativephp/electron/dist/mac/TECH PARISIEN.app"; fi\'',
+        // 'rm -rf public/build',
     ],
 
     /**

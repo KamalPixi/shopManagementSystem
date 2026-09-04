@@ -3,7 +3,11 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "native:build:mac": "CSC_IDENTITY_AUTO_DISCOVERY=false php artisan native:build mac arm64",
+        "native:build:mac:x64": "CSC_IDENTITY_AUTO_DISCOVERY=false php artisan native:build mac x64",
+        "native:build:win": "php artisan native:build win",
+        "native:reset": "php artisan native:reset"
     },
     "devDependencies": {
         "autoprefixer": "^10.4.20",
