@@ -137,7 +137,6 @@ class SaleEdit extends Component
                 if ($qty < 1) {
                     $this->sale_items[$itemKey]['quantity'] = 1;
                     $this->errorMessage = 'Quantity must be at least 1.';
-                    session()->flash('failed', $this->errorMessage);
                 } elseif (!empty($this->sale_items[$itemKey]['product_id'])) {
                     $productId = $this->sale_items[$itemKey]['product_id'];
                     $product = Product::find($productId);
@@ -149,7 +148,6 @@ class SaleEdit extends Component
                         if ($qty > $maxAllowed) {
                             $this->sale_items[$itemKey]['quantity'] = max(1, $maxAllowed);
                             $this->errorMessage = "Cannot exceed available stock! Current stock: {$product->quantity}, already in this sale: {$originalQty} (Max: {$maxAllowed}) for [{$product->name}].";
-                            session()->flash('failed', $this->errorMessage);
                         }
                     }
                 }

@@ -89,7 +89,6 @@ class Pos extends Component
                 if ($qty < 1) {
                     $this->sale_items[$itemKey]['quantity'] = 1;
                     $this->errorMessage = 'Quantity must be at least 1.';
-                    session()->flash('failed', $this->errorMessage);
                 } elseif (!empty($this->sale_items[$itemKey]['product_id'])) {
                     $product = collect($this->products)->firstWhere('id', $this->sale_items[$itemKey]['product_id']);
                     if (!$product) {
@@ -98,7 +97,6 @@ class Pos extends Component
                     if ($product && $qty > $product->quantity) {
                         $this->sale_items[$itemKey]['quantity'] = max(1, $product->quantity);
                         $this->errorMessage = "Cannot exceed available stock! Only {$product->quantity} in stock for [{$product->name}].";
-                        session()->flash('failed', $this->errorMessage);
                     }
                 }
             }
