@@ -14,11 +14,18 @@ class SaleItem extends Model
         'price' => 'decimal:2',
         'total' => 'decimal:2',
         'profit' => 'decimal:2',
+        'is_vatable' => 'boolean',
+        'show_warranty_on_receipt' => 'boolean',
+        'show_serial_on_receipt' => 'boolean',
         'attributes_and_values' => 'array',
     ];
 
     public function product() {
         return $this->belongsTo(Product::class, 'product_id');
+    }
+
+    public function productVariation() {
+        return $this->belongsTo(ProductVariation::class, 'product_variation_id');
     }
 
     public function sale() {
@@ -34,4 +41,3 @@ class SaleItem extends Model
         return $this->item_name ?: ($this->product?->name ?? 'Item');
     }
 }
-

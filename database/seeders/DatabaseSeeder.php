@@ -115,12 +115,44 @@ class DatabaseSeeder extends Seeder
             'customer:read',
             'customer:update',
             'customer:delete',
+
+            'money-movements:create',
+            'money-movements:read',
+            'money-movements:delete',
+
+            'cash-register:create',
+            'cash-register:read',
+            'cash-register:update',
+
+            'audit-logs:read',
         ];
         foreach ($permissions as $p) {
             Permission::firstOrCreate(['name' => $p]);
         }
         $roleAdmin->syncPermissions(Permission::get());
         $userAdmin->assignRole($roleAdmin);
+
+        // Seed default money movement categories
+        $defaultCategories = [
+            ['name' => 'Capital Investment', 'type' => 'in', 'description' => 'Business capital injection'],
+            ['name' => 'Owner Deposit', 'type' => 'in', 'description' => 'Owner deposited cash into business'],
+            ['name' => 'Bank Withdrawal to Cash', 'type' => 'in', 'description' => 'Withdrew cash from bank for drawer'],
+            ['name' => 'Customer Debt Repayment', 'type' => 'in', 'description' => 'Outstanding payment received'],
+            ['name' => 'Other Cash In', 'type' => 'in', 'description' => 'Miscellaneous cash receipt'],
+            ['name' => 'Daily Shop Expense', 'type' => 'out', 'description' => 'Daily operating expenses'],
+            ['name' => 'Owner Withdrawal', 'type' => 'out', 'description' => 'Owner drew money from business'],
+            ['name' => 'Supplier Payment', 'type' => 'out', 'description' => 'Paid cash to supplier'],
+            ['name' => 'Utility / Bills', 'type' => 'out', 'description' => 'Electricity, internet, water, etc.'],
+            ['name' => 'Refund to Customer', 'type' => 'out', 'description' => 'Cash refund'],
+            ['name' => 'Petty Cash', 'type' => 'out', 'description' => 'Small miscellaneous cash out'],
+        ];
+
+        foreach ($defaultCategories as $cat) {
+            \App\Models\MoneyCategory::firstOrCreate(
+                ['name' => $cat['name']],
+                ['type' => $cat['type'], 'description' => $cat['description'], 'created_by' => $userAdmin->id]
+            );
+        }
 
         $s = SystemMeta::first();
         if ($s) {

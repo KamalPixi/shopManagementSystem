@@ -4,18 +4,23 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use App\Models\Shop;
 
 class DashboardController extends Controller
 {
     public function dashboard() {
-        $lowStockThreshold = 10;
-        $products = Product::with('category')
-                        ->where('quantity', '<', $lowStockThreshold)
-                        ->where('status', 1)
-                        ->orderBy('quantity', 'asc')
-                        ->paginate(5); // Paginate for links() and firstItem()
+        $shop = Shop::first();
+        $defaultThreshold = (int) ($shop?->low_stock_threshold ?? 10);
 
-        $lowStockCount = Product::where('quantity', '<', $lowStockThreshold)->where('status', 1)->count();
+        $products = Product::with('category')
+                        ->where('status', 1)
+                        ->whereRaw('quantity <= COALESCE(low_stock_threshold, ?)', [$defaultThreshold])
+                        ->orderBy('quantity', 'asc')
+                        ->paginate(10);
+
+        $lowStockCount = Product::where('status', 1)
+                        ->whereRaw('quantity <= COALESCE(low_stock_threshold, ?)', [$defaultThreshold])
+                        ->count();
 
         return view('dashboard', compact('products', 'lowStockCount'));
     }
@@ -72,6 +77,10 @@ class DashboardController extends Controller
         return view('sales.sales');
     }
 
+    public function salesReports() {
+        return redirect()->route('sales.index');
+    }
+
     public function saleEdit($sale_id) {
         return view('sales.edit', compact('sale_id'));
     }
@@ -98,5 +107,17 @@ class DashboardController extends Controller
 
     public function dbImportExport() {
         return view('db-import-export');
+    }
+
+    public function cashRegister() {
+        return view('cash-register');
+    }
+
+    public function moneyMovements() {
+        return view('money-movements');
+    }
+
+    public function auditLogs() {
+        return view('audit-logs');
     }
 }

@@ -4,13 +4,13 @@ namespace App\Livewire\Stocks;
 
 use Livewire\Component;
 use App\Models\Product;
+use App\Models\ProductVariation;
 use App\Models\Category;
 use App\Models\Brand;
 use App\Models\Supplier;
 use App\Models\Warranty;
-use App\Models\Attribute;
+use App\Services\AuditLogger;
 use Illuminate\Validation\Rule;
-
 
 class StockEdit extends Component
 {
@@ -37,8 +37,14 @@ class StockEdit extends Component
     public $supplier_id = null;
     public $purchase_date;
 
+    // Enhancements
+    public $is_vatable = 1;
+    public $low_stock_threshold = null;
+    public $has_variations = false;
+    public $variations = [];
+
     public function rules() {
-        return [
+        $rules = [
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
             'category_id' => 'nullable|integer|exists:categories,id',
@@ -55,6 +61,9 @@ class StockEdit extends Component
             'price' => 'required|numeric|min:0',
             'purchase_price' => 'nullable|numeric|min:0',
             'quantity' => 'nullable|numeric|min:0',
+            'is_vatable' => 'boolean',
+            'low_stock_threshold' => 'nullable|integer|min:0',
+            'has_variations' => 'boolean',
             'remark' => 'nullable|string|max:255',
             'status' => 'nullable|numeric|in:0,1',
             'supplier_id' => 'nullable|integer|exists:suppliers,id',
@@ -64,61 +73,173 @@ class StockEdit extends Component
             'productAttributes.*.name' => 'nullable|string|max:100',
             'productAttributes.*.values' => 'required_with:productAttributes.*.name|string|max:255',
         ];
+
+        if ($this->has_variations) {
+            $rules['variations'] = 'required|array|min:1';
+            $rules['variations.*.variation_name'] = 'required|string|max:255';
+            $rules['variations.*.sku'] = 'nullable|string|max:100';
+            $rules['variations.*.serial_no'] = 'nullable|string|max:100';
+            $rules['variations.*.price'] = 'required|numeric|min:0';
+            $rules['variations.*.purchase_price'] = 'nullable|numeric|min:0';
+            $rules['variations.*.quantity'] = 'required|integer|min:0';
+            $rules['variations.*.low_stock_threshold'] = 'nullable|integer|min:0';
+        }
+
+        return $rules;
     }
 
     public function mount($product_id) {
         $this->product_id = $product_id;
-        $this->product = Product::findOrFail($product_id);
+        $this->product = Product::with('variations')->findOrFail($product_id);
         $this->fill($this->product->toArray());
-        $this->productAttributes = collect($this->product->attributes_and_values)->map(fn($attVal) => [
-            'name' => $attVal['name'],
-            'values' => implode(',', $attVal['values']),
-        ])->toArray();
-        $this->status = $this->product->status == 'Active' ? 1 : 0;
 
+        $this->is_vatable = $this->product->is_vatable ? 1 : 0;
+        $this->low_stock_threshold = $this->product->low_stock_threshold;
+        $this->has_variations = (bool) $this->product->has_variations;
+
+        $this->productAttributes = collect($this->product->attributes_and_values)->map(fn($attVal) => [
+            'name' => $attVal['name'] ?? '',
+            'values' => is_array($attVal['values'] ?? null) ? implode(',', $attVal['values']) : '',
+        ])->toArray();
+
+        $this->status = $this->product->status == 'Active' ? 1 : 0;
         $this->supplier_id = $this->product->productPurchases()->orderBy('created_at', 'desc')->first()?->supplier_id;
         $this->purchase_date = $this->product->productPurchases()->orderBy('created_at', 'desc')->first()?->purchase_date?->format('Y-m-d');
+
+        // Load variations
+        $this->variations = $this->product->variations->map(fn($v) => [
+            'id' => $v->id,
+            'variation_name' => $v->variation_name,
+            'sku' => $v->sku,
+            'serial_no' => $v->serial_no,
+            'price' => $v->price,
+            'purchase_price' => $v->purchase_price,
+            'quantity' => $v->quantity,
+            'low_stock_threshold' => $v->low_stock_threshold,
+        ])->toArray();
+    }
+
+    public function addVariationField()
+    {
+        $this->variations[] = [
+            'id' => null,
+            'variation_name' => '',
+            'sku' => '',
+            'serial_no' => '',
+            'price' => $this->price ?: 0,
+            'purchase_price' => $this->purchase_price ?: 0,
+            'quantity' => 1,
+            'low_stock_threshold' => $this->low_stock_threshold,
+        ];
+    }
+
+    public function deleteVariationField($index)
+    {
+        $varId = $this->variations[$index]['id'] ?? null;
+        if ($varId) {
+            ProductVariation::where('id', $varId)->where('product_id', $this->product->id)->delete();
+        }
+        unset($this->variations[$index]);
+        $this->variations = array_values($this->variations);
     }
 
     public function update() {
         $validated = $this->validate();
 
         $attributeArray = collect($this->productAttributes)->map(function ($att) {
-            $values = collect(explode(',', strtolower($att['values'])))
+            $values = collect(explode(',', strtolower($att['values'] ?? '')))
             ->filter(fn($v) => !empty($v))
             ->toArray();
 
             return [
-                'name' => strtolower($att['name']),
+                'name' => strtolower($att['name'] ?? ''),
                 'values' => $values,
             ];
-        })->toArray();
+        })->filter(fn($a) => !empty($a['name']))->values()->toArray();
         
-        // Create the product
+        if ($this->has_variations && count($this->variations) > 0) {
+            $validated['quantity'] = collect($this->variations)->sum('quantity');
+        }
+
         $validated['attributes_and_values'] = $attributeArray;
+        $validated['updated_by'] = auth()->id();
+        $validated['is_vatable'] = (bool) $this->is_vatable;
+        $validated['has_variations'] = (bool) $this->has_variations;
+        $validated['low_stock_threshold'] = !is_null($this->low_stock_threshold) && $this->low_stock_threshold !== '' ? (int) $this->low_stock_threshold : null;
+
         $this->product->update($validated);
+
+        // Sync variations
+        if ($this->has_variations && count($this->variations) > 0) {
+            $keptIds = [];
+            foreach ($this->variations as $var) {
+                if (!empty($var['id'])) {
+                    $existing = ProductVariation::find($var['id']);
+                    if ($existing) {
+                        $existing->update([
+                            'variation_name' => trim($var['variation_name']),
+                            'sku' => !empty($var['sku']) ? trim($var['sku']) : null,
+                            'serial_no' => !empty($var['serial_no']) ? trim($var['serial_no']) : null,
+                            'price' => (float) $var['price'],
+                            'purchase_price' => (float) ($var['purchase_price'] ?? 0),
+                            'quantity' => (int) $var['quantity'],
+                            'low_stock_threshold' => !empty($var['low_stock_threshold']) ? (int) $var['low_stock_threshold'] : null,
+                        ]);
+                        $keptIds[] = $existing->id;
+                    }
+                } else {
+                    $newVar = $this->product->variations()->create([
+                        'variation_name' => trim($var['variation_name']),
+                        'sku' => !empty($var['sku']) ? trim($var['sku']) : null,
+                        'serial_no' => !empty($var['serial_no']) ? trim($var['serial_no']) : null,
+                        'price' => (float) $var['price'],
+                        'purchase_price' => (float) ($var['purchase_price'] ?? 0),
+                        'quantity' => (int) $var['quantity'],
+                        'low_stock_threshold' => !empty($var['low_stock_threshold']) ? (int) $var['low_stock_threshold'] : null,
+                        'created_by' => auth()->id(),
+                    ]);
+                    $keptIds[] = $newVar->id;
+                }
+            }
+            // Remove deleted variations
+            $this->product->variations()->whereNotIn('id', $keptIds)->delete();
+        }
 
         $productPurchase = $this->product->productPurchases()->orderBy('created_at', 'desc')->first();
         if ($productPurchase) {
-            $productPurchase?->update([
+            $productPurchase->update([
                 'supplier_id' => !empty($validated['supplier_id']) ? $validated['supplier_id'] : null,
                 'purchase_date' => !empty($validated['purchase_date']) ? $validated['purchase_date'] : null,
-                'purchase_price' => !empty($validated['purchase_price']) ? $validated['purchase_price'] : null,
+                'purchase_price' => !empty($validated['purchase_price']) ? $validated['purchase_price'] : 0,
                 'sale_price' => $validated['price'],
                 'quantity' => $validated['quantity'],
                 'attributes_and_values' => $attributeArray,
             ]);
         }
 
-        session()->flash('success', __('Product updated.'));
+        AuditLogger::log(
+            'updated_product',
+            __(':user updated product [:name] (SKU: :sku, Qty: :qty, VAT: :vat)', [
+                'user' => auth()->user()->name,
+                'name' => $this->product->name,
+                'sku' => $this->product->sku,
+                'qty' => $this->product->quantity,
+                'vat' => $this->product->is_vatable ? 'Yes' : 'No'
+            ]),
+            $this->product,
+            ['price' => $this->product->price, 'quantity' => $this->product->quantity]
+        );
+
+        session()->flash('success', __('Product updated successfully.'));
     }
     
     public function addAttributeField() {
         $this->productAttributes[] = [
             'name' => '',
-            'value' => '',
+            'values' => '',
         ];
     }
+
     public function deleteAttributeField($index) {
         unset($this->productAttributes[$index]);
         $this->productAttributes = array_values($this->productAttributes);

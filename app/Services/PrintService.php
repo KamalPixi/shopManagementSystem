@@ -133,7 +133,11 @@ final class PrintService
 
             $printer->text("Receipt No.: " . $sale?->receipt_no . "\n");
             $printer->text("Date       : " . $sale?->created_at->timezone($shopTimezone)->format('d/m/Y h:i:s A') . "\n");
-            $printer->text("Cashier    : " . ($sale?->createdBy?->username ?? '-') . "\n");
+            $printer->text("Cashier    : " . ($sale?->createdBy?->name ?? ($sale?->createdBy?->username ?? '-')) . "\n");
+            $printer->text("Payment    : " . ucfirst(str_replace('_', ' ', $sale?->payment_method ?: 'Cash')) . "\n");
+            if ($sale?->payment_reference) {
+                $printer->text("Ref        : " . $sale->payment_reference . "\n");
+            }
             $printer->text($divider);
 
             // Table Header
@@ -153,6 +157,11 @@ final class PrintService
                 $productName = mb_strimwidth($item->name ?? 'Item', 0, $printWidth - 1, "...");
                 $printer->text($productName . "\n");
 
+                $sn = $item->productVariation?->serial_no ?: $item->product?->serial_no;
+                if ($sn && $item->show_serial_on_receipt) {
+                    $printer->text("  SN: " . $sn . "\n");
+                }
+
                 $unit = $item->quantity . ' Unit *';
                 $price = number_format($item->price, 2);
                 $discount = number_format(($item->discount ?? 0), 2);
@@ -166,7 +175,7 @@ final class PrintService
                 );
 
                 $warrantyText = $item->warranty_description ?: ($item->warranty?->description ?: $item->warranty?->name);
-                if ($warrantyText) {
+                if ($warrantyText && $item->show_warranty_on_receipt) {
                     $wText = mb_strimwidth("  * Warranty: " . $warrantyText, 0, $printWidth - 1, "...");
                     $printer->text($wText . "\n");
                 }
@@ -267,7 +276,11 @@ final class PrintService
 
             $printer->text("Receipt No.: " . $sale?->receipt_no . "\n");
             $printer->text("Date       : " . $sale?->created_at->timezone($shopTimezone)->format('d/m/Y h:i:s A') . "\n");
-            $printer->text("Cashier    : " . ($sale?->createdBy?->username ?? '-') . "\n");
+            $printer->text("Cashier    : " . ($sale?->createdBy?->name ?? ($sale?->createdBy?->username ?? '-')) . "\n");
+            $printer->text("Payment    : " . ucfirst(str_replace('_', ' ', $sale?->payment_method ?: 'Cash')) . "\n");
+            if ($sale?->payment_reference) {
+                $printer->text("Ref        : " . $sale->payment_reference . "\n");
+            }
             $printer->text($divider);
 
             // Table Header
@@ -287,6 +300,11 @@ final class PrintService
                 $productName = mb_strimwidth($item->name ?? 'Item', 0, $printWidth - 1, "...");
                 $printer->text($productName . "\n");
 
+                $sn = $item->productVariation?->serial_no ?: $item->product?->serial_no;
+                if ($sn && $item->show_serial_on_receipt) {
+                    $printer->text("  SN: " . $sn . "\n");
+                }
+
                 $unit = $item->quantity . ' Unit *';
                 $price = number_format($item->price, 2);
                 $discount = number_format(($item->discount ?? 0), 2);
@@ -300,7 +318,7 @@ final class PrintService
                 );
 
                 $warrantyText = $item->warranty_description ?: ($item->warranty?->description ?: $item->warranty?->name);
-                if ($warrantyText) {
+                if ($warrantyText && $item->show_warranty_on_receipt) {
                     $wText = mb_strimwidth("  * Warranty: " . $warrantyText, 0, $printWidth - 1, "...");
                     $printer->text($wText . "\n");
                 }

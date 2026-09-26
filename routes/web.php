@@ -40,5 +40,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/customers', 'customers')->name('customers');
         Route::get('/profile', 'profile')->name('profile');
         Route::get('/db-import-export', 'dbImportExport')->name('dbImportExport');
+        Route::get('/cash-register', 'cashRegister')->name('cashRegister');
+        Route::get('/money-movements', 'moneyMovements')->name('moneyMovements');
+        Route::get('/audit-logs', 'auditLogs')->name('auditLogs');
     });
 });

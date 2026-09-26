@@ -163,9 +163,22 @@ class Stocks extends Component
         }
 
         $p = Product::find($id);
+        if ($p) {
+            $name = $p->name;
+            $sku = $p->sku;
+            $p->delete();
+
+            \App\Services\AuditLogger::log(
+                'deleted_product',
+                __(':user deleted product [:name] (SKU: :sku)', [
+                    'user' => auth()->user()->name,
+                    'name' => $name,
+                    'sku' => $sku
+                ])
+            );
+        }
 
         session()->flash('success', __('Product deleted.'));
-        $p->delete();
     }
 
     private function buildQuery()

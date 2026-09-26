@@ -8,7 +8,8 @@ use App\Models\Brand;
 use App\Models\Supplier;
 use App\Models\Warranty;
 use App\Models\Product;
-use App\Models\Attribute;
+use App\Models\ProductVariation;
+use App\Services\AuditLogger;
 
 class StockAdd extends Component
 {
@@ -32,78 +33,170 @@ class StockAdd extends Component
     public $supplier_id = null;
     public $purchase_date;
 
-    protected $rules = [
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string|max:1000',
-        'category_id' => 'nullable|integer|exists:categories,id',
-        'brand_id' => 'nullable|integer|exists:brands,id',
-        'warranty_id' => 'nullable|integer|exists:warranties,id',
-        'model_no' => 'nullable|string|max:100',
-        'serial_no' => 'nullable|string|max:100',
-        'sku' => 'required|string|max:100|unique:products,sku',
-        'price' => 'required|numeric|min:0',
-        'purchase_price' => 'required|numeric|min:0',
-        'quantity' => 'nullable|numeric|min:0',
-        'remark' => 'nullable|string|max:255',
-        'status' => 'nullable|numeric|in:0,1',
-        'supplier_id' => 'nullable|integer|exists:suppliers,id',
-        'purchase_date' => 'nullable|date_format:Y-m-d',
-        'productAttributes' => 'nullable|array',
-        'productAttributes.*' => 'nullable|array',
-        'productAttributes.*.name' => 'nullable|string|max:100',
-        'productAttributes.*.values' => 'required_with:productAttributes.*.name|string|max:255',
-    ];
+    // New requested fields
+    public $is_vatable = 1; // 1 = VATable, 0 = Non-VATable
+    public $low_stock_threshold = null; // null uses shop default
+    public $has_variations = false;
+    public $variations = [];
+
+    protected function rules()
+    {
+        $rules = [
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'category_id' => 'nullable|integer|exists:categories,id',
+            'brand_id' => 'nullable|integer|exists:brands,id',
+            'warranty_id' => 'nullable|integer|exists:warranties,id',
+            'model_no' => 'nullable|string|max:100',
+            'serial_no' => 'nullable|string|max:100',
+            'sku' => 'required|string|max:100|unique:products,sku',
+            'price' => 'required|numeric|min:0',
+            'purchase_price' => 'required|numeric|min:0',
+            'quantity' => 'nullable|numeric|min:0',
+            'is_vatable' => 'boolean',
+            'low_stock_threshold' => 'nullable|integer|min:0',
+            'has_variations' => 'boolean',
+            'remark' => 'nullable|string|max:255',
+            'status' => 'nullable|numeric|in:0,1',
+            'supplier_id' => 'nullable|integer|exists:suppliers,id',
+            'purchase_date' => 'nullable|date_format:Y-m-d',
+            'productAttributes' => 'nullable|array',
+            'productAttributes.*' => 'nullable|array',
+            'productAttributes.*.name' => 'nullable|string|max:100',
+            'productAttributes.*.values' => 'required_with:productAttributes.*.name|string|max:255',
+        ];
+
+        if ($this->has_variations) {
+            $rules['variations'] = 'required|array|min:1';
+            $rules['variations.*.variation_name'] = 'required|string|max:255';
+            $rules['variations.*.sku'] = 'nullable|string|max:100';
+            $rules['variations.*.serial_no'] = 'nullable|string|max:100';
+            $rules['variations.*.price'] = 'required|numeric|min:0';
+            $rules['variations.*.purchase_price'] = 'nullable|numeric|min:0';
+            $rules['variations.*.quantity'] = 'required|integer|min:0';
+            $rules['variations.*.low_stock_threshold'] = 'nullable|integer|min:0';
+        }
+
+        return $rules;
+    }
 
     public function mount() {
         $this->purchase_date = date('Y-m-d');
+        $this->is_vatable = 1;
+    }
+
+    public function addVariationField()
+    {
+        $this->variations[] = [
+            'variation_name' => '',
+            'sku' => '',
+            'serial_no' => '',
+            'price' => $this->price ?: 0,
+            'purchase_price' => $this->purchase_price ?: 0,
+            'quantity' => 1,
+            'low_stock_threshold' => $this->low_stock_threshold,
+        ];
+    }
+
+    public function deleteVariationField($index)
+    {
+        unset($this->variations[$index]);
+        $this->variations = array_values($this->variations);
+    }
+
+    public function updatedHasVariations()
+    {
+        if ($this->has_variations && empty($this->variations)) {
+            $this->addVariationField();
+        }
     }
 
     public function create() {
         $validated = $this->validate();
 
         $attributeArray = collect($this->productAttributes)->map(function ($att) {
-            $values = collect(explode(',', strtolower($att['values'])))
+            $values = collect(explode(',', strtolower($att['values'] ?? '')))
             ->filter(fn($v) => !empty($v))
             ->toArray();
 
             return [
-                'name' => strtolower($att['name']),
+                'name' => strtolower($att['name'] ?? ''),
                 'values' => $values,
             ];
-        })->toArray();
+        })->filter(fn($a) => !empty($a['name']))->values()->toArray();
         
+        // If variations are present, product total quantity can be sum of variations
+        if ($this->has_variations && count($this->variations) > 0) {
+            $validated['quantity'] = collect($this->variations)->sum('quantity');
+        }
+
         // Create the product
         $validated['attributes_and_values'] = $attributeArray;
-        $validated['created_by'] = auth()->user()->id;
+        $validated['created_by'] = auth()->id();
+        $validated['is_vatable'] = (bool) $this->is_vatable;
+        $validated['has_variations'] = (bool) $this->has_variations;
+        $validated['low_stock_threshold'] = !is_null($this->low_stock_threshold) && $this->low_stock_threshold !== '' ? (int) $this->low_stock_threshold : null;
 
         $product = Product::create($validated);
 
-        // create purchase record
+        // Save variations if enabled
+        if ($this->has_variations && count($this->variations) > 0) {
+            foreach ($this->variations as $var) {
+                $product->variations()->create([
+                    'variation_name' => trim($var['variation_name']),
+                    'sku' => !empty($var['sku']) ? trim($var['sku']) : null,
+                    'serial_no' => !empty($var['serial_no']) ? trim($var['serial_no']) : null,
+                    'price' => (float) $var['price'],
+                    'purchase_price' => (float) ($var['purchase_price'] ?? 0),
+                    'quantity' => (int) $var['quantity'],
+                    'low_stock_threshold' => !empty($var['low_stock_threshold']) ? (int) $var['low_stock_threshold'] : null,
+                    'created_by' => auth()->id(),
+                ]);
+            }
+        }
+
+        // Create purchase record
         $product->productPurchases()->create([
             'supplier_id' => !empty($validated['supplier_id']) ? $validated['supplier_id'] : null,
             'purchase_date' => !empty($validated['purchase_date']) ? $validated['purchase_date'] : null,
-            'purchase_price' => !empty($validated['purchase_price']) ? $validated['purchase_price'] : null,
+            'purchase_price' => !empty($validated['purchase_price']) ? $validated['purchase_price'] : 0,
             'sale_price' => $validated['price'],
-            'quantity' => $validated['quantity'],
+            'quantity' => $validated['quantity'] ?? 0,
             'attributes_and_values' => $attributeArray,
-            'created_by' => auth()->user()->id,
-
+            'created_by' => auth()->id(),
         ]);
 
+        AuditLogger::log(
+            'created_product',
+            __(':user created new product [:name] (SKU: :sku, Qty: :qty, VAT: :vat)', [
+                'user' => auth()->user()->name,
+                'name' => $product->name,
+                'sku' => $product->sku,
+                'qty' => $product->quantity,
+                'vat' => $product->is_vatable ? 'Yes' : 'No'
+            ]),
+            $product,
+            ['price' => $product->price, 'quantity' => $product->quantity, 'has_variations' => $this->has_variations]
+        );
+
         $this->reset();
-        $this->productAttribute = [
+        $this->productAttributes = [
             ['name' => '','values' => '']
         ];
+        $this->variations = [];
+        $this->is_vatable = 1;
+        $this->purchase_date = date('Y-m-d');
 
-        session()->flash('success', __('Product added.'));
+        session()->flash('success', __('Product added successfully with inventory records.'));
     }
     
     public function addAttributeField() {
         $this->productAttributes[] = [
             'name' => '',
-            'value' => '',
+            'values' => '',
         ];
     }
+
     public function deleteAttributeField($index) {
         unset($this->productAttributes[$index]);
         $this->productAttributes = array_values($this->productAttributes);

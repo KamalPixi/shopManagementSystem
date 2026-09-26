@@ -10,6 +10,9 @@ class Product extends Model
         'price' => 'decimal:2',
         'purchase_price' => 'decimal:2',
         'attributes_and_values' => 'array',
+        'is_vatable' => 'boolean',
+        'has_variations' => 'boolean',
+        'low_stock_threshold' => 'integer',
     ];
 
     protected $fillable = [
@@ -24,18 +27,46 @@ class Product extends Model
         'price',
         'purchase_price',
         'quantity',
+        'low_stock_threshold',
+        'is_vatable',
+        'has_variations',
         'attributes_and_values',
         'remark',
         'status',
         'created_by',
+        'updated_by',
     ];
 
     public static function findBySkuSerialOrModel(string $value): ?self
     {
-        $lowerValue = strtolower($value); // Convert search term to lowercase
-        return self::whereRaw('LOWER(sku) = ?', [$lowerValue])
+        $lowerValue = strtolower(trim($value));
+        $product = self::whereRaw('LOWER(sku) = ?', [$lowerValue])
+            ->orWhereRaw('LOWER(serial_no) = ?', [$lowerValue])
+            ->orWhereRaw('LOWER(model_no) = ?', [$lowerValue])
+            ->first();
+
+        if ($product) {
+            return $product;
+        }
+
+        // Check product variations
+        $variation = ProductVariation::whereRaw('LOWER(sku) = ?', [$lowerValue])
             ->orWhereRaw('LOWER(serial_no) = ?', [$lowerValue])
             ->first();
+
+        if ($variation) {
+            $prod = $variation->product;
+            if ($prod) {
+                $prod->setRelation('matchedVariation', $variation);
+                return $prod;
+            }
+        }
+
+        return null;
+    }
+
+    public function variations() {
+        return $this->hasMany(ProductVariation::class);
     }
 
     public function category() {
@@ -58,6 +89,10 @@ class Product extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function updatedBy() {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
     public function productPurchases() {
         return $this->hasMany(ProductPurchase::class);
     }
@@ -69,5 +104,25 @@ class Product extends Model
     public function getStatusAttribute()
     {
         return $this->attributes['status'] ? 'Active' : 'Inactive';
+    }
+
+    /**
+     * Get effective low stock threshold (falls back to shop setting or default 10)
+     */
+    public function getEffectiveLowStockThresholdAttribute(): int
+    {
+        if (!is_null($this->low_stock_threshold)) {
+            return (int) $this->low_stock_threshold;
+        }
+        $shop = Shop::first();
+        return (int) ($shop?->low_stock_threshold ?? 10);
+    }
+
+    /**
+     * Check if product is in low stock condition
+     */
+    public function getIsLowStockAttribute(): bool
+    {
+        return (int) $this->quantity <= $this->effective_low_stock_threshold;
     }
 }

@@ -19,14 +19,13 @@ class Sale extends Model
         parent::boot();
 
         static::creating(function ($sale) {
-            // Get the last number used (starting from 1000)
-            $lastNumber = self::max('id') ? (self::max('id') + 999) : 999;
-
-            $nextNumber = $lastNumber + 1; // e.g. 1000, 1001, etc.
-            $sale->receipt_no = 'SALE-' . $nextNumber;
+            if (empty($sale->receipt_no)) {
+                $lastId = self::max('id') ?? 0;
+                $nextNumber = $lastId + 1;
+                $sale->receipt_no = sprintf('TP-%06d', $nextNumber);
+            }
         });
     }
-
 
     public function saleItems() {
         return $this->hasMany(SaleItem::class);
@@ -38,5 +37,13 @@ class Sale extends Model
 
     public function createdBy() {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy() {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function cashRegisterSession() {
+        return $this->belongsTo(CashRegisterSession::class, 'cash_register_session_id');
     }
 }

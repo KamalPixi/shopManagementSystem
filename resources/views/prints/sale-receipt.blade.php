@@ -122,8 +122,10 @@
 
     <div class="receipt-header">
         <h1>Sales Receipt</h1>
-        <p>Receipt Number: #{{ $sale->id }}</p>
-        <p>Customer: {{ $sale->customer?->name ?: '-' }} @if($sale->customer?->phone_no) | {{ $sale->customer->phone_no }} @endif</p>
+        <p>Receipt Number: <b>{{ $sale->receipt_no }}</b></p>
+        <p>Date: {{ $sale->created_at->format('d/m/Y h:i A') }} | Cashier: {{ $sale->createdBy?->name ?? '-' }}</p>
+        <p>Payment: {{ ucfirst(str_replace('_', ' ', $sale->payment_method ?: 'Cash')) }} @if($sale->payment_reference)| Ref: {{ $sale->payment_reference }}@endif</p>
+        <p>Customer: {{ $sale->customer?->name ?: 'Walk In' }} @if($sale->customer?->phone_no) | {{ $sale->customer->phone_no }} @endif</p>
     </div>
 
     <table class="receipt-details" border="0" cellpadding="1" cellspacing="0">
@@ -141,9 +143,16 @@
                 <tr>
                     <td>{{ $loop->index + 1 }}</td>
                     <td style="line-height: 1;">
-                        <b>{{ $item->name }}</b> <br>
-                        @if ($item->product?->serial_no)
-                            <small class="text-muted">SN:{{ $item->product->serial_no }}</small> <br>
+                        <b>{{ $item->name }}</b>
+                        @if ($item->is_vatable)
+                            <small style="font-size: 6px; color: #28a745;">(VAT)</small>
+                        @endif
+                        <br>
+                        @php
+                            $sn = $item->productVariation?->serial_no ?: $item->product?->serial_no;
+                        @endphp
+                        @if ($sn && $item->show_serial_on_receipt)
+                            <small class="text-muted">SN:{{ $sn }}</small> <br>
                         @endif
                         @if ($item->product?->sku || $item->product?->model_no)
                             <small class="text-muted">Model: {{ $item->product?->model_no }} | SKU: {{ $item->product?->sku }}</small><br>
@@ -161,7 +170,7 @@
                 @php
                     $warrantyText = $item->warranty_description ?: ($item->warranty?->description ?: $item->warranty?->name);
                 @endphp
-                @if ($warrantyText)
+                @if ($warrantyText && $item->show_warranty_on_receipt)
                 <tr>
                     <td></td>
                     <td colspan="4" style="font-size: 7px; color: #555; padding-bottom: 4px; font-style: italic;">

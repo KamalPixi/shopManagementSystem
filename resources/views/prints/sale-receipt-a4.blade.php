@@ -107,15 +107,21 @@
     <table class="w-100 customer">
         <tr>
             <td style="width: 10%;">To</td>
-            <td style="width: 70%;">: {{ $sale->customer?->name ?: '-' }}</td>
-            <td style="width: 10%;">Receipt No.</td>
-            <td>: #{{ $sale->id }}</td>
+            <td style="width: 50%;">: {{ $sale->customer?->name ?: 'Walk In' }}</td>
+            <td style="width: 15%;">Receipt No.</td>
+            <td style="width: 25%;">: <b>{{ $sale->receipt_no }}</b></td>
         </tr>
         <tr>
             <td style="width: 10%;">Mobile No.</td>
-            <td style="width: 70%;">: {{ $sale->customer?->phone_no ?: '-' }}</td>
-            <td style="width: 10%;">Date</td>
-            <td>: {{ $sale->created_at->format('Y-m-d') }}</td>
+            <td style="width: 50%;">: {{ $sale->customer?->phone_no ?: '-' }}</td>
+            <td style="width: 15%;">Date</td>
+            <td style="width: 25%;">: {{ $sale->created_at->format('Y-m-d h:i A') }}</td>
+        </tr>
+        <tr>
+            <td style="width: 10%;">Cashier</td>
+            <td style="width: 50%;">: {{ $sale->createdBy?->name ?? '-' }}</td>
+            <td style="width: 15%;">Payment</td>
+            <td style="width: 25%;">: {{ ucfirst(str_replace('_', ' ', $sale->payment_method ?: 'Cash')) }} @if($sale->payment_reference)<br><small class="text-muted">Ref: {{ $sale->payment_reference }}</small>@endif</td>
         </tr>
     </table>
 
@@ -135,13 +141,20 @@
             @foreach($sale->saleItems as $item)
                 <tr>
                     <td>{{ $loop->index + 1 }}</td>
-                    <td style="line-height: 1;">
-                        {{ $item->name }} <br>
-                        @if ($item->product?->model_no)
-                            <small style="font-size: 8px;">{{ $item->product?->model_no }}</small> 
+                    <td style="line-height: 1.2;">
+                        <b>{{ $item->name }}</b>
+                        @if ($item->is_vatable)
+                            <small style="font-size: 7px; color: #16a34a;">(VAT)</small>
                         @endif
-                        @if ($item->product?->serial_no)
-                            <small style="font-size: 8px;">{{ $item->product?->serial_no }}</small> <br>
+                        <br>
+                        @if ($item->product?->model_no)
+                            <small style="font-size: 8px;">Model: {{ $item->product?->model_no }}</small> 
+                        @endif
+                        @php
+                            $sn = $item->productVariation?->serial_no ?: $item->product?->serial_no;
+                        @endphp
+                        @if ($sn && $item->show_serial_on_receipt)
+                            <small style="font-size: 8px;">SN: {{ $sn }}</small> <br>
                         @endif
                         @foreach ($item->attributes_and_values ?? [] as $att => $value)
                         <small style="font-size: 8px;">
@@ -156,7 +169,7 @@
                 @php
                     $warrantyText = $item->warranty_description ?: ($item->warranty?->description ?: $item->warranty?->name);
                 @endphp
-                @if ($warrantyText)
+                @if ($warrantyText && $item->show_warranty_on_receipt)
                 <tr>
                     <td></td>
                     <td colspan="4" style="font-size: 8px; color: #4b5563; padding-bottom: 5px; font-style: italic;">

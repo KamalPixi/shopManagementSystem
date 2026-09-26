@@ -148,7 +148,20 @@ class AddToStock extends Component
             'quantity' => $product->quantity + $validated['quantity'],
             'attributes_and_values' => $attributes,
             'purchase_price' => $validated['purchase_price'],
+            'updated_by' => auth()->id(),
         ]);
+
+        \App\Services\AuditLogger::log(
+            'added_to_stock',
+            __(':user added :qty units to stock for [:name] (SKU: :sku)', [
+                'user' => auth()->user()->name,
+                'qty' => $validated['quantity'],
+                'name' => $product->name,
+                'sku' => $product->sku
+            ]),
+            $product,
+            ['added_qty' => $validated['quantity'], 'new_total_qty' => $product->quantity]
+        );
 
         session()->flash('success', __('Added to stock.'));
     }

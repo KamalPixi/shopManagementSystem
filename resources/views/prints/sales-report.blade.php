@@ -60,6 +60,12 @@
         <p>
             <strong>Report Date:</strong> <small>{{ $report_date ?: '-' }} @if($report_date) ({{ $report_date_filter_type }}) @endif</small> | 
             <strong>Print Date:</strong> <small>{{ $report_print_date }}</small>
+            @if(!empty($selected_staff))
+                | <strong>Staff:</strong> <small>{{ $selected_staff }}</small>
+            @endif
+            @if(!empty($receipt_filter))
+                | <strong>Receipt Filter:</strong> <small>{{ $receipt_filter }}</small>
+            @endif
         </p>
     </div>
 
@@ -83,6 +89,12 @@
             <tr>
                 <td class="text-center">{{ $loop->index + 1 }}</td>
                 <td>
+                    <div style="background-color: #f1f3f5; padding: 2px 4px; margin-bottom: 3px; font-size: 8px;">
+                        <strong>Receipt:</strong> {{ $sale->receipt_no ?? sprintf('TP-%06d', $sale->id) }} &nbsp;|&nbsp;
+                        <strong>Cashier:</strong> {{ $sale->user?->name ?? 'Staff' }} &nbsp;|&nbsp;
+                        <strong>Payment:</strong> {{ ucfirst($sale->payment_method ?? 'Cash') }}@if($sale->payment_reference) ({{ $sale->payment_reference }})@endif &nbsp;|&nbsp;
+                        <strong>Date:</strong> {{ $sale->created_at?->format('d/m/Y H:i') }}
+                    </div>
                     <table class="table-product w-100" border="0" cellpadding="1" cellspacing="0">
                         @foreach ($sale->saleItems as $item)
                         <tr>

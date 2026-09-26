@@ -47,6 +47,26 @@
                 </a>
             </li>
 
+            {{-- Cash Register --}}
+            <li class="nav-item {{ request()->routeIs('cashRegister') ? 'active' : '' }}">
+                <a href="{{ route('cashRegister') }}" class="nav-link {{ request()->routeIs('cashRegister') ? 'active' : '' }} d-flex align-items-center">
+                    <span class="sidebar-icon">
+                        <i class="fa-solid fa-cash-register"></i>
+                    </span>
+                    <span class="sidebar-text">{{ __('Cash Register') }}</span>
+                </a>
+            </li>
+
+            {{-- Money Movements --}}
+            <li class="nav-item {{ request()->routeIs('moneyMovements') ? 'active' : '' }}">
+                <a href="{{ route('moneyMovements') }}" class="nav-link {{ request()->routeIs('moneyMovements') ? 'active' : '' }} d-flex align-items-center">
+                    <span class="sidebar-icon">
+                        <i class="fa-solid fa-money-bill-transfer"></i>
+                    </span>
+                    <span class="sidebar-text">{{ __('Money In / Out') }}</span>
+                </a>
+            </li>
+
             {{-- Stock App --}}
             @php $isStockActive = request()->routeIs('stocks.*'); @endphp
             <li class="nav-item">
@@ -217,6 +237,16 @@
                         <i class="fa-solid fa-sliders"></i>
                     </span>
                     <span class="sidebar-text">{{ __('Settings') }}</span>
+                </a>
+            </li>
+
+            {{-- Audit Logs --}}
+            <li class="nav-item {{ request()->routeIs('auditLogs') ? 'active' : '' }}">
+                <a href="{{ route('auditLogs') }}" class="nav-link {{ request()->routeIs('auditLogs') ? 'active' : '' }} d-flex align-items-center">
+                    <span class="sidebar-icon">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </span>
+                    <span class="sidebar-text">{{ __('Audit Logs') }}</span>
                 </a>
             </li>
 

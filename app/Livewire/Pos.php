@@ -3,17 +3,23 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use App\Models\Product;
+use App\Models\ProductVariation;
 use App\Models\Warranty;
 use App\Models\Shop;
 use App\Models\Sale;
 use App\Models\Customer;
+use App\Models\CashRegisterSession;
 use App\Services\SaleService;
 use App\Services\PrintService;
-
+use App\Services\AuditLogger;
+use Illuminate\Support\Str;
 
 class Pos extends Component
 {
+    use WithFileUploads;
+
     public $identifier = '';
 
     public $products = [];
@@ -33,12 +39,20 @@ class Pos extends Component
 
     public $gst_percent = 0;
 
+    // Payment methods & reference
+    public $payment_method = 'cash'; // cash, card, bank_transfer
+    public $payment_reference = '';
+    public $payment_attachment;
+
+    // Custom Item Modal
     public $custom_item_name = '';
     public $custom_price = '';
     public $custom_purchase_price = 0;
     public $custom_quantity = 1;
     public $custom_warranty_id = '';
     public $custom_warranty_description = '';
+    public $custom_is_vatable = 1;
+    public $custom_show_warranty_on_receipt = 1;
     public $showCustomModal = false;
     public $errorMessage = '';
 
@@ -74,6 +88,7 @@ class Pos extends Component
                 if (!empty($wid)) {
                     $warranty = Warranty::find($wid);
                     $this->sale_items[$itemKey]['warranty_description'] = $warranty?->description ?? '';
+                    $this->sale_items[$itemKey]['show_warranty_on_receipt'] = true;
                 } else {
                     $this->sale_items[$itemKey]['warranty_description'] = '';
                 }
@@ -89,6 +104,12 @@ class Pos extends Component
                 if ($qty < 1) {
                     $this->sale_items[$itemKey]['quantity'] = 1;
                     $this->errorMessage = __('Quantity must be at least 1.');
+                } elseif (!empty($this->sale_items[$itemKey]['product_variation_id'])) {
+                    $variation = ProductVariation::find($this->sale_items[$itemKey]['product_variation_id']);
+                    if ($variation && $qty > $variation->quantity) {
+                        $this->sale_items[$itemKey]['quantity'] = max(1, $variation->quantity);
+                        $this->errorMessage = __('Cannot exceed available variation stock! Only :qty in stock.', ['qty' => $variation->quantity]);
+                    }
                 } elseif (!empty($this->sale_items[$itemKey]['product_id'])) {
                     $product = collect($this->products)->firstWhere('id', $this->sale_items[$itemKey]['product_id']);
                     if (!$product) {
@@ -120,36 +141,87 @@ class Pos extends Component
             return;
         }
 
-        if ($product->quantity < 1) {
-            session()->flash('failed', __('Out of stock!'));
-            return;
-        }
+        // Check if a specific variation was matched
+        $matchedVariation = $product->relationLoaded('matchedVariation') ? $product->matchedVariation : null;
 
-        $itemKey = 'prod_' . $product->id;
-
-        // increment count if already in cart
-        if (isset($this->sale_items[$itemKey])) {
-            $qtyLeft = $product->quantity - (int) $this->sale_items[$itemKey]['quantity'];
-            if ($qtyLeft < 1) {
-                return session()->flash('failed', __('Quantity out of stock!'));
+        if ($matchedVariation) {
+            if ($matchedVariation->quantity < 1) {
+                session()->flash('failed', __('Variation [:name] is out of stock!', ['name' => $matchedVariation->variation_name]));
+                return;
             }
-            $this->sale_items[$itemKey]['quantity'] += 1;
+
+            $itemKey = 'var_' . $matchedVariation->id;
+
+            if (isset($this->sale_items[$itemKey])) {
+                $qtyLeft = $matchedVariation->quantity - (int) $this->sale_items[$itemKey]['quantity'];
+                if ($qtyLeft < 1) {
+                    return session()->flash('failed', __('Variation quantity out of stock!'));
+                }
+                $this->sale_items[$itemKey]['quantity'] += 1;
+            } else {
+                $this->products[] = $product;
+                $this->sale_items[$itemKey] = [
+                    'key' => $itemKey,
+                    'product_id' => $product->id,
+                    'product_variation_id' => $matchedVariation->id,
+                    'variation_name' => $matchedVariation->variation_name,
+                    'item_name' => $product->name . ' (' . $matchedVariation->variation_name . ')',
+                    'serial_no' => $matchedVariation->serial_no ?: $product->serial_no,
+                    'sku' => $matchedVariation->sku ?: $product->sku,
+                    'warranty_id' => $product->warranty?->id,
+                    'warranty_description' => $product->warranty?->description ?? '',
+                    'price' => (float) $matchedVariation->price,
+                    'purchase_price' => (float) $matchedVariation->purchase_price,
+                    'discount' => 0,
+                    'quantity' => 1,
+                    'attributes_and_values' => $matchedVariation->attributes_and_values ?? ($product->attributes_and_values ?? []),
+                    'total' => 0.00,
+                    'is_vatable' => (bool) $product->is_vatable,
+                    'show_warranty_on_receipt' => true,
+                    'show_serial_on_receipt' => !empty($matchedVariation->serial_no ?: $product->serial_no),
+                    'is_custom' => false,
+                ];
+            }
         } else {
-            $this->products[] = $product;
-            $this->sale_items[$itemKey] = [
-                'key' => $itemKey,
-                'product_id' => $product->id,
-                'item_name' => $product->name,
-                'warranty_id' => $product->warranty?->id,
-                'warranty_description' => $product->warranty?->description ?? '',
-                'price' => $product->price,
-                'purchase_price' => $product->purchase_price,
-                'discount' => 0,
-                'quantity' => 1,
-                'attributes_and_values' => [],
-                'total' => 0.00,
-                'is_custom' => false,
-            ];
+            // Standalone product or master product
+            if ($product->quantity < 1) {
+                session()->flash('failed', __('Out of stock!'));
+                return;
+            }
+
+            $itemKey = 'prod_' . $product->id;
+
+            // increment count if already in cart
+            if (isset($this->sale_items[$itemKey])) {
+                $qtyLeft = $product->quantity - (int) $this->sale_items[$itemKey]['quantity'];
+                if ($qtyLeft < 1) {
+                    return session()->flash('failed', __('Quantity out of stock!'));
+                }
+                $this->sale_items[$itemKey]['quantity'] += 1;
+            } else {
+                $this->products[] = $product;
+                $this->sale_items[$itemKey] = [
+                    'key' => $itemKey,
+                    'product_id' => $product->id,
+                    'product_variation_id' => null,
+                    'variation_name' => null,
+                    'item_name' => $product->name,
+                    'serial_no' => $product->serial_no,
+                    'sku' => $product->sku,
+                    'warranty_id' => $product->warranty?->id,
+                    'warranty_description' => $product->warranty?->description ?? '',
+                    'price' => (float) $product->price,
+                    'purchase_price' => (float) $product->purchase_price,
+                    'discount' => 0,
+                    'quantity' => 1,
+                    'attributes_and_values' => [],
+                    'total' => 0.00,
+                    'is_vatable' => (bool) $product->is_vatable,
+                    'show_warranty_on_receipt' => true,
+                    'show_serial_on_receipt' => !empty($product->serial_no),
+                    'is_custom' => false,
+                ];
+            }
         }
 
         $this->reset(['identifier']);
@@ -164,9 +236,13 @@ class Pos extends Component
             'custom_quantity',
             'custom_warranty_id',
             'custom_warranty_description',
+            'custom_is_vatable',
+            'custom_show_warranty_on_receipt',
         ]);
         $this->custom_quantity = 1;
         $this->custom_purchase_price = 0;
+        $this->custom_is_vatable = 1;
+        $this->custom_show_warranty_on_receipt = 1;
         $this->showCustomModal = true;
     }
 
@@ -197,7 +273,11 @@ class Pos extends Component
         $this->sale_items[$itemKey] = [
             'key' => $itemKey,
             'product_id' => null,
+            'product_variation_id' => null,
+            'variation_name' => null,
             'item_name' => trim($this->custom_item_name),
+            'serial_no' => null,
+            'sku' => null,
             'warranty_id' => !empty($this->custom_warranty_id) ? $this->custom_warranty_id : null,
             'warranty_description' => trim($this->custom_warranty_description),
             'price' => (float) $this->custom_price,
@@ -206,6 +286,9 @@ class Pos extends Component
             'quantity' => (int) $this->custom_quantity,
             'attributes_and_values' => [],
             'total' => 0.00,
+            'is_vatable' => (bool) $this->custom_is_vatable,
+            'show_warranty_on_receipt' => (bool) $this->custom_show_warranty_on_receipt,
+            'show_serial_on_receipt' => false,
             'is_custom' => true,
         ];
 
@@ -214,7 +297,6 @@ class Pos extends Component
     }
 
     public function sale() {
-
         if (empty($this->customer_id)) {
             $this->validate([
                 'customer_name' => 'nullable|string|max:255',
@@ -227,11 +309,15 @@ class Pos extends Component
             return;
         }
 
-        // validate sale items
+        // Validate sale items
         $this->validate([
+            'payment_method' => 'required|in:cash,card,bank_transfer',
+            'payment_reference' => 'nullable|string|max:255',
+            'payment_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:3072',
             'sale_items' => 'required|array',
             'sale_items.*' => 'required|array',
             'sale_items.*.product_id' => 'nullable|exists:products,id',
+            'sale_items.*.product_variation_id' => 'nullable|exists:product_variations,id',
             'sale_items.*.item_name' => 'required|string|max:255',
             'sale_items.*.warranty_id' => 'nullable|exists:warranties,id',
             'sale_items.*.attributes_and_values' => 'nullable|array',
@@ -242,9 +328,19 @@ class Pos extends Component
             'sale_items.*.total' => 'required|numeric',
         ]);
 
-        // Pre-validate that all catalog products have sufficient stock
+        // Pre-validate stock for catalog products & variations
         foreach ($this->sale_items as $item) {
-            if (!empty($item['product_id'])) {
+            if (!empty($item['product_variation_id'])) {
+                $variation = ProductVariation::find($item['product_variation_id']);
+                if (!$variation || $variation->quantity < $item['quantity']) {
+                    session()->flash('failed', __('Insufficient stock for variation [:name]. Requested: :req, Available: :stock.', [
+                        'name' => $item['item_name'],
+                        'req' => $item['quantity'],
+                        'stock' => $variation ? $variation->quantity : 0,
+                    ]));
+                    return;
+                }
+            } elseif (!empty($item['product_id'])) {
                 $product = Product::find($item['product_id']);
                 if (!$product) {
                     session()->flash('failed', __('Product not found for item [:name].', ['name' => $item['item_name']]));
@@ -261,46 +357,70 @@ class Pos extends Component
             }
         }
 
+        // Handle payment attachment upload
+        $attachmentPath = null;
+        if ($this->payment_attachment) {
+            $directory = 'uploads/payments';
+            if (!is_dir(public_path($directory))) {
+                mkdir(public_path($directory), 0755, true);
+            }
+            $ext = $this->payment_attachment->getClientOriginalExtension();
+            $filename = Str::random(40) . '.' . $ext;
+            $attachmentPath = $this->payment_attachment->storeAs($directory, $filename, 'public_direct');
+        }
+
+        $currentSession = CashRegisterSession::currentOpenSession();
+
         $sale = Sale::create([
             'total_price' => $this->grand_total,
             'gst' => $this->gst,
             'discount' => $this->discount,
             'created_by' => auth()->user()->id,
+            'payment_method' => $this->payment_method,
+            'payment_reference' => !empty(trim($this->payment_reference)) ? trim($this->payment_reference) : null,
+            'payment_attachment' => $attachmentPath,
+            'cash_register_session_id' => $currentSession?->id,
         ]);
 
         $profit_total = 0;
         foreach ($this->sale_items as $item) {
             $purchase_price = 0;
 
-            if (!empty($item['product_id'])) {
-                // Catalog product
-                $product = Collect($this->products)->firstWhere('id', $item['product_id']);
-                if (!$product) {
-                    $product = Product::find($item['product_id']);
-                }
-                $purchase_price = $product ? $product->purchase_price : ($item['purchase_price'] ?? 0);
+            if (!empty($item['product_variation_id'])) {
+                $variation = ProductVariation::find($item['product_variation_id']);
+                $purchase_price = $variation ? (float) $variation->purchase_price : ($item['purchase_price'] ?? 0);
 
-                // Decrease product quantity in stock
+                if ($variation) {
+                    $variation->decrement('quantity', (int) $item['quantity']);
+                }
+
+                // Also decrease total product stock
+                if (!empty($item['product_id'])) {
+                    $product = Product::find($item['product_id']);
+                    if ($product) {
+                        $product->decrement('quantity', (int) $item['quantity']);
+                    }
+                }
+            } elseif (!empty($item['product_id'])) {
+                $product = collect($this->products)->firstWhere('id', $item['product_id']) ?: Product::find($item['product_id']);
+                $purchase_price = $product ? (float) $product->purchase_price : ($item['purchase_price'] ?? 0);
+
                 if ($product) {
-                    $product->update([
-                        'quantity' => $product->quantity - $item['quantity']
-                    ]);
+                    $product->decrement('quantity', (int) $item['quantity']);
                 }
             } else {
-                // Custom / On-the-fly item
                 $purchase_price = (float) ($item['purchase_price'] ?? 0);
             }
 
-            // Calculate the profit for the item
+            // Calculate profit for item
             $profit_per_unit = $item['price'] - $purchase_price;
             $profit_total_for_item = ($profit_per_unit * $item['quantity']) - $item['discount'];
-
-            // Add this item's profit to total sale profit
             $profit_total += $profit_total_for_item;
 
             // Create the sale item entry
             $sale->saleItems()->create([
                 'product_id' => $item['product_id'] ?? null,
+                'product_variation_id' => $item['product_variation_id'] ?? null,
                 'item_name' => $item['item_name'] ?? null,
                 'warranty_id' => empty($item['warranty_id']) ? null : $item['warranty_id'],
                 'warranty_description' => !empty($item['warranty_description']) ? $item['warranty_description'] : null,
@@ -311,10 +431,13 @@ class Pos extends Component
                 'discount' => $item['discount'],
                 'total' => $item['total'],
                 'profit' => $profit_total_for_item,
+                'is_vatable' => !empty($item['is_vatable']),
+                'show_warranty_on_receipt' => !empty($item['show_warranty_on_receipt']),
+                'show_serial_on_receipt' => !empty($item['show_serial_on_receipt']),
             ]);
         }
 
-        // Update the sale with the total profit
+        // Update the sale with total profit
         $sale->update(['profit' => $profit_total]);
 
         if (!empty($this->customer_id)) {
@@ -331,9 +454,29 @@ class Pos extends Component
             $sale->update(['customer_id' => null]);
         }
 
+        // Record Audit Log for who performed the sale
+        AuditLogger::log(
+            'pos_sale',
+            __(':user completed sale :receipt for :total via :payment (Items: :items)', [
+                'user' => auth()->user()->name,
+                'receipt' => $sale->receipt_no,
+                'total' => number_format($sale->total_price, 2),
+                'payment' => ucfirst(str_replace('_', ' ', $sale->payment_method)),
+                'items' => count($this->sale_items)
+            ]),
+            $sale,
+            [
+                'receipt_no' => $sale->receipt_no,
+                'total_price' => $sale->total_price,
+                'payment_method' => $sale->payment_method,
+                'payment_reference' => $sale->payment_reference,
+                'items_count' => count($this->sale_items)
+            ]
+        );
+
         $this->clearPos();
 
-        // Send raw print command to physical/virtual POS printer
+        // Print physical/virtual receipt
         $printService = new PrintService();
         $msg = $printService->printReceipt($sale);
 
@@ -342,13 +485,17 @@ class Pos extends Component
 
     protected function calculate() {
         $this->subtotal = 0;
+        $taxableSubtotal = 0;
 
-        $this->sale_items = collect($this->sale_items)->map(function ($item) {
+        $this->sale_items = collect($this->sale_items)->map(function ($item) use (&$taxableSubtotal) {
             try {
-                // Single unit total for the item
                 $item['total'] = number_format($item['price'] * $item['quantity'], '2', '.', '');
                 $item['total'] -= $item['discount'];
-                $this->subtotal += $item['total'];
+                $this->subtotal += (float) $item['total'];
+
+                if (!empty($item['is_vatable'])) {
+                    $taxableSubtotal += (float) $item['total'];
+                }
             } catch (\Throwable $th) {
                 return $item;
             }
@@ -356,19 +503,17 @@ class Pos extends Component
         })->toArray();
 
         try {
-            // Calculate GST and Grand Total after mapping
-            $this->subtotal     = (float) $this->subtotal;
-            $this->discount     = (float) collect($this->sale_items)->sum('discount');
-            $this->gst_percent  = (float) $this->gst_percent;
+            $this->subtotal = (float) $this->subtotal;
+            $this->discount = (float) collect($this->sale_items)->sum('discount');
+            $this->gst_percent = (float) $this->gst_percent;
 
-            $this->gst = $this->subtotal * ($this->gst_percent / 100);
+            // Only calculate GST on items flagged as VATable!
+            $this->gst = $taxableSubtotal * ($this->gst_percent / 100);
             $this->grand_total = ($this->subtotal) + $this->gst;
-
         } catch (\Throwable $th) {
             return;
         }
 
-        // Format numbers (2 decimal places)
         $this->subtotal = number_format($this->subtotal, 2, '.', '');
         $this->gst = number_format($this->gst, 2, '.', '');
         $this->grand_total = number_format($this->grand_total, 2, '.', '');
@@ -377,16 +522,10 @@ class Pos extends Component
     public function printSaleReceipt($sale_id) {
         $s = new SaleService();
         $url = $s->generateSaleReceipt($sale_id);
-        
         $this->dispatch('print-pdf', ['url' => $url]);
     }
 
     public function delete($key) {
-        $item = $this->sale_items[$key] ?? null;
-        if ($item && !empty($item['product_id'])) {
-            $productId = $item['product_id'];
-            $this->products = Collect($this->products)->filter(fn($p) => $p->id != $productId);
-        }
         unset($this->sale_items[$key]);
         $this->calculate();
     }
@@ -415,15 +554,22 @@ class Pos extends Component
             'custom_purchase_price',
             'custom_quantity',
             'custom_warranty_id',
+            'payment_method',
+            'payment_reference',
+            'payment_attachment',
             'showCustomModal',
         ]);
+        $this->payment_method = 'cash';
     }
 
     public function render()
     {
+        $currentSession = CashRegisterSession::currentOpenSession();
+
         return view('livewire.pos', [
             'warranties' => Warranty::all(),
             'shop' => Shop::first(),
+            'currentSession' => $currentSession,
         ]);
     }
 }

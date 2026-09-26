@@ -3,16 +3,22 @@
 namespace App\Livewire\Sales;
 
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\Product;
+use App\Models\ProductVariation;
 use App\Models\Warranty;
 use App\Models\Shop;
 use App\Models\Customer;
+use App\Services\AuditLogger;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SaleEdit extends Component
 {
+    use WithFileUploads;
+
     public $sale_id;
     public $sale;
 
@@ -36,6 +42,12 @@ class SaleEdit extends Component
     public $gst_percent = 0;
     public $errorMessage = '';
 
+    // Payment fields
+    public $payment_method = 'cash';
+    public $payment_reference = '';
+    public $payment_attachment;
+    public $existing_attachment;
+
     // For adding custom item
     public $showCustomModal = false;
     public $custom_item_name = '';
@@ -44,11 +56,13 @@ class SaleEdit extends Component
     public $custom_quantity = 1;
     public $custom_warranty_id = '';
     public $custom_warranty_description = '';
+    public $custom_is_vatable = 1;
+    public $custom_show_warranty_on_receipt = 1;
 
     public function mount($sale_id)
     {
         $this->sale_id = $sale_id;
-        $this->sale = Sale::with(['saleItems.product', 'customer'])->findOrFail($sale_id);
+        $this->sale = Sale::with(['saleItems.product', 'saleItems.productVariation', 'customer'])->findOrFail($sale_id);
 
         $shop = Shop::first();
         if ($shop) {
@@ -57,12 +71,16 @@ class SaleEdit extends Component
 
         $this->customer_id = $this->sale->customer_id;
         $this->customer_name = $this->sale->customer?->name ?? 'Walk In';
-        $this->customer_phone_no = $this->sale->customer?->phone_no ?? '000000000';
+        $this->customer_phone_no = $this->sale->customer?->phone_no ?? '';
+
+        $this->payment_method = $this->sale->payment_method ?: 'cash';
+        $this->payment_reference = $this->sale->payment_reference ?: '';
+        $this->existing_attachment = $this->sale->payment_attachment;
 
         $this->original_stock_quantities = [];
 
         foreach ($this->sale->saleItems as $item) {
-            $itemKey = !empty($item->product_id) ? 'prod_' . $item->product_id : 'custom_' . $item->id;
+            $itemKey = !empty($item->product_id) ? 'prod_' . $item->product_id . ($item->product_variation_id ? '_' . $item->product_variation_id : '') : 'custom_' . $item->id;
 
             if ($item->product) {
                 $this->products[] = $item->product;
@@ -73,7 +91,11 @@ class SaleEdit extends Component
                 'key' => $itemKey,
                 'sale_item_id' => $item->id,
                 'product_id' => $item->product_id,
+                'product_variation_id' => $item->product_variation_id,
+                'variation_name' => $item->productVariation?->variation_name,
                 'item_name' => $item->name,
+                'serial_no' => $item->productVariation?->serial_no ?: $item->product?->serial_no,
+                'sku' => $item->productVariation?->sku ?: $item->product?->sku,
                 'warranty_id' => $item->warranty_id,
                 'warranty_description' => $item->warranty_description ?? ($item->warranty?->description ?? ''),
                 'price' => (float) $item->price,
@@ -82,6 +104,9 @@ class SaleEdit extends Component
                 'quantity' => (int) $item->quantity,
                 'attributes_and_values' => $item->attributes_and_values ?? [],
                 'total' => (float) $item->total,
+                'is_vatable' => (bool) $item->is_vatable,
+                'show_warranty_on_receipt' => (bool) $item->show_warranty_on_receipt,
+                'show_serial_on_receipt' => (bool) $item->show_serial_on_receipt,
                 'is_custom' => empty($item->product_id),
             ];
         }
@@ -114,7 +139,7 @@ class SaleEdit extends Component
             return;
         }
 
-        // When warranty_id changes for a cart line item, auto-fill its warranty_description
+        // When warranty_id changes for a cart line item, auto-fill warranty_description
         if (preg_match('/^sale_items\.(.+)\.warranty_id$/', $propertyName, $matches)) {
             $itemKey = $matches[1];
             if (isset($this->sale_items[$itemKey])) {
@@ -122,6 +147,7 @@ class SaleEdit extends Component
                 if (!empty($wid)) {
                     $warranty = Warranty::find($wid);
                     $this->sale_items[$itemKey]['warranty_description'] = $warranty?->description ?? '';
+                    $this->sale_items[$itemKey]['show_warranty_on_receipt'] = true;
                 } else {
                     $this->sale_items[$itemKey]['warranty_description'] = '';
                 }
@@ -129,7 +155,7 @@ class SaleEdit extends Component
             return;
         }
 
-        // Validate stock on quantity change
+        // Validate stock if item quantity changed
         if (preg_match('/^sale_items\.(.+)\.quantity$/', $propertyName, $matches)) {
             $itemKey = $matches[1];
             if (isset($this->sale_items[$itemKey])) {
@@ -138,22 +164,17 @@ class SaleEdit extends Component
                     $this->sale_items[$itemKey]['quantity'] = 1;
                     $this->errorMessage = __('Quantity must be at least 1.');
                 } elseif (!empty($this->sale_items[$itemKey]['product_id'])) {
-                    $productId = $this->sale_items[$itemKey]['product_id'];
-                    $product = Product::find($productId);
+                    $pid = $this->sale_items[$itemKey]['product_id'];
+                    $product = collect($this->products)->firstWhere('id', $pid) ?: Product::find($pid);
+                    $originalQty = $this->original_stock_quantities[$pid] ?? 0;
+                    $availableTotal = ($product ? $product->quantity : 0) + $originalQty;
 
-                    if ($product) {
-                        $originalQty = $this->original_stock_quantities[$productId] ?? 0;
-                        $maxAllowed = $product->quantity + $originalQty;
-
-                        if ($qty > $maxAllowed) {
-                            $this->sale_items[$itemKey]['quantity'] = max(1, $maxAllowed);
-                            $this->errorMessage = __('Cannot exceed available stock! Current stock: :qty, already in this sale: :orig (Max: :max) for [:name].', [
-                                'qty' => $product->quantity,
-                                'orig' => $originalQty,
-                                'max' => $maxAllowed,
-                                'name' => $product->name,
-                            ]);
-                        }
+                    if ($qty > $availableTotal) {
+                        $this->sale_items[$itemKey]['quantity'] = max(1, $availableTotal);
+                        $this->errorMessage = __('Cannot exceed available stock (:avail in stock + :orig original)!', [
+                            'avail' => $product ? $product->quantity : 0,
+                            'orig' => $originalQty,
+                        ]);
                     }
                 }
             }
@@ -171,44 +192,66 @@ class SaleEdit extends Component
             return;
         }
 
-        $itemKey = 'prod_' . $product->id;
-        $originalQty = $this->original_stock_quantities[$product->id] ?? 0;
-        $maxAllowed = $product->quantity + $originalQty;
+        $matchedVariation = $product->relationLoaded('matchedVariation') ? $product->matchedVariation : null;
 
-        if (isset($this->sale_items[$itemKey])) {
-            $currentCartQty = (int) $this->sale_items[$itemKey]['quantity'];
-            if ($currentCartQty >= $maxAllowed) {
-                session()->flash('failed', __('Cannot add more. Max available stock is :max (Stock: :stock + In Sale: :orig) for [:name].', [
-                    'max' => $maxAllowed,
-                    'stock' => $product->quantity,
-                    'orig' => $originalQty,
-                    'name' => $product->name,
-                ]));
-                return;
+        if ($matchedVariation) {
+            $itemKey = 'var_' . $matchedVariation->id;
+            if (isset($this->sale_items[$itemKey])) {
+                $this->sale_items[$itemKey]['quantity'] += 1;
+            } else {
+                $this->products[] = $product;
+                $this->sale_items[$itemKey] = [
+                    'key' => $itemKey,
+                    'sale_item_id' => null,
+                    'product_id' => $product->id,
+                    'product_variation_id' => $matchedVariation->id,
+                    'variation_name' => $matchedVariation->variation_name,
+                    'item_name' => $product->name . ' (' . $matchedVariation->variation_name . ')',
+                    'serial_no' => $matchedVariation->serial_no ?: $product->serial_no,
+                    'sku' => $matchedVariation->sku ?: $product->sku,
+                    'warranty_id' => $product->warranty?->id,
+                    'warranty_description' => $product->warranty?->description ?? '',
+                    'price' => (float) $matchedVariation->price,
+                    'purchase_price' => (float) $matchedVariation->purchase_price,
+                    'discount' => 0,
+                    'quantity' => 1,
+                    'attributes_and_values' => $matchedVariation->attributes_and_values ?? ($product->attributes_and_values ?? []),
+                    'total' => 0.00,
+                    'is_vatable' => (bool) $product->is_vatable,
+                    'show_warranty_on_receipt' => true,
+                    'show_serial_on_receipt' => !empty($matchedVariation->serial_no ?: $product->serial_no),
+                    'is_custom' => false,
+                ];
             }
-            $this->sale_items[$itemKey]['quantity'] += 1;
         } else {
-            if ($maxAllowed < 1) {
-                session()->flash('failed', __('Product [:name] is out of stock!', ['name' => $product->name]));
-                return;
+            $itemKey = 'prod_' . $product->id;
+            if (isset($this->sale_items[$itemKey])) {
+                $this->sale_items[$itemKey]['quantity'] += 1;
+            } else {
+                $this->products[] = $product;
+                $this->sale_items[$itemKey] = [
+                    'key' => $itemKey,
+                    'sale_item_id' => null,
+                    'product_id' => $product->id,
+                    'product_variation_id' => null,
+                    'variation_name' => null,
+                    'item_name' => $product->name,
+                    'serial_no' => $product->serial_no,
+                    'sku' => $product->sku,
+                    'warranty_id' => $product->warranty?->id,
+                    'warranty_description' => $product->warranty?->description ?? '',
+                    'price' => (float) $product->price,
+                    'purchase_price' => (float) $product->purchase_price,
+                    'discount' => 0,
+                    'quantity' => 1,
+                    'attributes_and_values' => [],
+                    'total' => 0.00,
+                    'is_vatable' => (bool) $product->is_vatable,
+                    'show_warranty_on_receipt' => true,
+                    'show_serial_on_receipt' => !empty($product->serial_no),
+                    'is_custom' => false,
+                ];
             }
-
-            $this->products[] = $product;
-            $this->sale_items[$itemKey] = [
-                'key' => $itemKey,
-                'sale_item_id' => null,
-                'product_id' => $product->id,
-                'item_name' => $product->name,
-                'warranty_id' => $product->warranty?->id,
-                'warranty_description' => $product->warranty?->description ?? '',
-                'price' => (float) $product->price,
-                'purchase_price' => (float) $product->purchase_price,
-                'discount' => 0,
-                'quantity' => 1,
-                'attributes_and_values' => [],
-                'total' => 0.00,
-                'is_custom' => false,
-            ];
         }
 
         $this->reset(['identifier']);
@@ -227,6 +270,8 @@ class SaleEdit extends Component
         ]);
         $this->custom_quantity = 1;
         $this->custom_purchase_price = 0;
+        $this->custom_is_vatable = 1;
+        $this->custom_show_warranty_on_receipt = 1;
         $this->showCustomModal = true;
     }
 
@@ -262,7 +307,11 @@ class SaleEdit extends Component
             'key' => $itemKey,
             'sale_item_id' => null,
             'product_id' => null,
+            'product_variation_id' => null,
+            'variation_name' => null,
             'item_name' => trim($this->custom_item_name),
+            'serial_no' => null,
+            'sku' => null,
             'warranty_id' => !empty($this->custom_warranty_id) ? $this->custom_warranty_id : null,
             'warranty_description' => trim($this->custom_warranty_description),
             'price' => (float) $this->custom_price,
@@ -271,6 +320,9 @@ class SaleEdit extends Component
             'quantity' => (int) $this->custom_quantity,
             'attributes_and_values' => [],
             'total' => 0.00,
+            'is_vatable' => (bool) $this->custom_is_vatable,
+            'show_warranty_on_receipt' => (bool) $this->custom_show_warranty_on_receipt,
+            'show_serial_on_receipt' => false,
             'is_custom' => true,
         ];
 
@@ -296,12 +348,17 @@ class SaleEdit extends Component
     protected function calculate()
     {
         $this->subtotal = 0;
+        $taxableSubtotal = 0;
 
-        $this->sale_items = collect($this->sale_items)->map(function ($item) {
+        $this->sale_items = collect($this->sale_items)->map(function ($item) use (&$taxableSubtotal) {
             try {
                 $item['total'] = number_format($item['price'] * $item['quantity'], 2, '.', '');
-                $item['total'] -= $item['discount'];
-                $this->subtotal += $item['total'];
+                $item['total'] -= (float) $item['discount'];
+                $this->subtotal += (float) $item['total'];
+
+                if (!empty($item['is_vatable'])) {
+                    $taxableSubtotal += (float) $item['total'];
+                }
             } catch (\Throwable $th) {
                 return $item;
             }
@@ -309,18 +366,18 @@ class SaleEdit extends Component
         })->toArray();
 
         try {
-            $this->subtotal    = (float) $this->subtotal;
-            $this->discount    = (float) collect($this->sale_items)->sum('discount');
+            $this->subtotal = (float) $this->subtotal;
+            $this->discount = (float) collect($this->sale_items)->sum('discount');
             $this->gst_percent = (float) $this->gst_percent;
 
-            $this->gst = $this->subtotal * ($this->gst_percent / 100);
-            $this->grand_total = ($this->subtotal) + $this->gst;
+            $this->gst = $taxableSubtotal * ($this->gst_percent / 100);
+            $this->grand_total = $this->subtotal + $this->gst;
         } catch (\Throwable $th) {
             return;
         }
 
-        $this->subtotal    = number_format($this->subtotal, 2, '.', '');
-        $this->gst         = number_format($this->gst, 2, '.', '');
+        $this->subtotal = number_format($this->subtotal, 2, '.', '');
+        $this->gst = number_format($this->gst, 2, '.', '');
         $this->grand_total = number_format($this->grand_total, 2, '.', '');
     }
 
@@ -334,25 +391,23 @@ class SaleEdit extends Component
         }
 
         if (empty($this->sale_items)) {
-            session()->flash('failed', __('Cannot update sale with an empty cart. If you want to cancel the sale, use Delete Sale.'));
+            session()->flash('failed', __('No items in the sale!'));
             return;
         }
 
         $this->validate([
+            'payment_method' => 'required|in:cash,card,bank_transfer',
+            'payment_reference' => 'nullable|string|max:255',
+            'payment_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:3072',
             'sale_items' => 'required|array',
-            'sale_items.*' => 'required|array',
-            'sale_items.*.product_id' => 'nullable|exists:products,id',
             'sale_items.*.item_name' => 'required|string|max:255',
-            'sale_items.*.warranty_id' => 'nullable|exists:warranties,id',
-            'sale_items.*.attributes_and_values' => 'nullable|array',
             'sale_items.*.quantity' => 'required|integer|min:1',
-            'sale_items.*.discount' => 'required|numeric',
-            'sale_items.*.price' => 'required|numeric',
-            'sale_items.*.purchase_price' => 'nullable|numeric',
+            'sale_items.*.price' => 'required|numeric|min:0',
+            'sale_items.*.discount' => 'required|numeric|min:0',
             'sale_items.*.total' => 'required|numeric',
         ]);
 
-        // Pre-validate stock availability for all items
+        // Calculate new quantities per catalog product
         $newQuantitiesByProduct = [];
         foreach ($this->sale_items as $item) {
             if (!empty($item['product_id'])) {
@@ -361,31 +416,37 @@ class SaleEdit extends Component
             }
         }
 
-        foreach ($newQuantitiesByProduct as $pid => $newTotalQty) {
-            $product = Product::find($pid);
-            if (!$product) {
-                session()->flash('failed', __('Product ID :id not found.', ['id' => $pid]));
-                return;
-            }
-
+        // Validate stock
+        foreach ($newQuantitiesByProduct as $pid => $newQty) {
             $originalQty = $this->original_stock_quantities[$pid] ?? 0;
-            $maxAllowed = $product->quantity + $originalQty;
+            $product = collect($this->products)->firstWhere('id', $pid) ?: Product::find($pid);
+            $availableTotal = ($product ? $product->quantity : 0) + $originalQty;
 
-            if ($newTotalQty > $maxAllowed) {
-                session()->flash('failed', __('Insufficient stock for [:name]. Requested: :req, Max Available: :max (Stock: :stock + In Sale: :orig).', [
-                    'name' => $product->name,
-                    'req' => $newTotalQty,
-                    'max' => $maxAllowed,
-                    'stock' => $product->quantity,
-                    'orig' => $originalQty,
+            if ($newQty > $availableTotal) {
+                session()->flash('failed', __('Insufficient stock for [:name]! Requested: :req, Available: :avail.', [
+                    'name' => $product ? $product->name : "Product #$pid",
+                    'req' => $newQty,
+                    'avail' => $availableTotal,
                 ]));
                 return;
             }
         }
 
+        // Handle attachment upload
+        $attachmentPath = $this->existing_attachment;
+        if ($this->payment_attachment) {
+            $directory = 'uploads/payments';
+            if (!is_dir(public_path($directory))) {
+                mkdir(public_path($directory), 0755, true);
+            }
+            $ext = $this->payment_attachment->getClientOriginalExtension();
+            $filename = Str::random(40) . '.' . $ext;
+            $attachmentPath = $this->payment_attachment->storeAs($directory, $filename, 'public_direct');
+        }
+
         // Perform atomic update
-        DB::transaction(function () use ($newQuantitiesByProduct) {
-            // 1. Adjust inventory stock for differences
+        DB::transaction(function () use ($newQuantitiesByProduct, $attachmentPath) {
+            // Adjust inventory stock for differences
             $allProductIds = array_unique(array_merge(
                 array_keys($this->original_stock_quantities),
                 array_keys($newQuantitiesByProduct)
@@ -404,7 +465,7 @@ class SaleEdit extends Component
                 }
             }
 
-            // 2. Remove old sale items and recreate fresh items
+            // Remove old sale items and recreate fresh items
             $this->sale->saleItems()->delete();
 
             $profit_total = 0;
@@ -424,6 +485,7 @@ class SaleEdit extends Component
 
                 $this->sale->saleItems()->create([
                     'product_id' => $item['product_id'] ?? null,
+                    'product_variation_id' => $item['product_variation_id'] ?? null,
                     'item_name' => $item['item_name'] ?? null,
                     'warranty_id' => empty($item['warranty_id']) ? null : $item['warranty_id'],
                     'warranty_description' => !empty($item['warranty_description']) ? $item['warranty_description'] : null,
@@ -434,10 +496,13 @@ class SaleEdit extends Component
                     'discount' => $item['discount'],
                     'total' => $item['total'],
                     'profit' => $profit_total_for_item,
+                    'is_vatable' => !empty($item['is_vatable']),
+                    'show_warranty_on_receipt' => !empty($item['show_warranty_on_receipt']),
+                    'show_serial_on_receipt' => !empty($item['show_serial_on_receipt']),
                 ]);
             }
 
-            // 3. Update customer if newly entered
+            // Update customer
             $customerId = $this->customer_id;
             if (empty($customerId) && (!empty(trim($this->customer_name ?? '')) || !empty(trim($this->customer_phone_no ?? '')))) {
                 $custName = trim($this->customer_name ?? '');
@@ -451,17 +516,33 @@ class SaleEdit extends Component
                 $customerId = null;
             }
 
-            // 4. Update sale header
+            // Update sale header
             $this->sale->update([
                 'total_price' => $this->grand_total,
                 'gst' => $this->gst,
                 'discount' => $this->discount,
                 'profit' => $profit_total,
                 'customer_id' => $customerId,
+                'payment_method' => $this->payment_method,
+                'payment_reference' => !empty(trim($this->payment_reference)) ? trim($this->payment_reference) : null,
+                'payment_attachment' => $attachmentPath,
+                'updated_by' => auth()->id(),
             ]);
         });
 
-        session()->flash('success', __('Sale #:receipt updated successfully with inventory synced!', ['receipt' => $this->sale->receipt_no]));
+        AuditLogger::log(
+            'updated_sale',
+            __(':user updated sale :receipt (Total: :total, Payment: :payment)', [
+                'user' => auth()->user()->name,
+                'receipt' => $this->sale->receipt_no,
+                'total' => number_format($this->sale->total_price, 2),
+                'payment' => ucfirst(str_replace('_', ' ', $this->payment_method))
+            ]),
+            $this->sale,
+            ['receipt_no' => $this->sale->receipt_no, 'total_price' => $this->sale->total_price]
+        );
+
+        session()->flash('success', __('Sale :receipt updated successfully!', ['receipt' => $this->sale->receipt_no]));
         return redirect()->route('sales.index');
     }
 

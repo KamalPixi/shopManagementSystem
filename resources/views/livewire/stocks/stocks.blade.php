@@ -122,7 +122,18 @@
                                 <input type="checkbox" wire:model="productIds.{{$product->id}}">
                                 {{ $products->firstItem() + $loop->index }}
                             </td>
-                            <td class="px-0 fw-bold align-items-center lh-1"> {{ $product->name }} <br> <span class="small text-muted">{{$product->sku}}</span></td>
+                            <td class="px-0 fw-bold align-items-center lh-1"> 
+                                {{ $product->name }} 
+                                @if ($product->is_vatable)
+                                    <span class="badge bg-success ms-1" style="font-size: 0.65rem;">VAT</span>
+                                @else
+                                    <span class="badge bg-secondary ms-1" style="font-size: 0.65rem;">No VAT</span>
+                                @endif
+                                @if ($product->has_variations && $product->variations->count() > 0)
+                                    <span class="badge bg-info text-white ms-1" style="font-size: 0.65rem;">{{ $product->variations->count() }} Variations</span>
+                                @endif
+                                <br> <span class="small text-muted">{{$product->sku}}</span>
+                            </td>
                             <td class="px-0 fw-bold align-items-center text-center lh-1">
                                 <table class="table table-striped w-100">
                                     @foreach ($product->attributes_and_values ?? [] as $att_value)
@@ -131,7 +142,6 @@
                                         <td class="text-start" style="padding:0.2rem;"> <small> {{ implode(', ', $att_value['values']) }}</small></td>
                                     </tr>
                                     @endforeach
-
                                 </table>
                             </td>
                             <td class="px-0 fw-bold align-items-center text-center"> {{ $product->category?->name }} </td>
@@ -140,7 +150,15 @@
                             <td class="px-0 fw-bold align-items-center text-center"> {{ $product->serial_no }} </td>
                             <td class="px-0 fw-bold align-items-center text-center"> {{ $product->warranty?->name }} </td>
                             <td class="px-0 fw-bold align-items-center text-center"> {{ $product->price }} </td>
-                            <td class="px-0 fw-bold align-items-center text-center"> {{ $product->quantity }} </td>
+                            <td class="px-0 fw-bold align-items-center text-center">
+                                @if ($product->is_low_stock)
+                                    <span class="badge bg-danger py-1 px-2" title="{{ __('Low Stock Alert Threshold: :thresh', ['thresh' => $product->effective_low_stock_threshold]) }}">
+                                        <i class="fa-solid fa-triangle-exclamation me-1"></i>{{ $product->quantity }}
+                                    </span>
+                                @else
+                                    <span class="badge bg-light text-dark border py-1 px-2">{{ $product->quantity }}</span>
+                                @endif
+                            </td>
                             <td class="px-0 fw-bold align-items-center text-center"> {{ $product->status }} </td>
                             <td class="px-0 fw-bold align-items-center text-center"> {{ $product->createdBy?->name }} </td>
                             <td class="px-0 text-end">
