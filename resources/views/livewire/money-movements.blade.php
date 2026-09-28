@@ -312,25 +312,47 @@
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px);" aria-modal="true" role="dialog">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg rounded-3">
-                <div class="modal-header bg-gray-800 text-white py-3 px-4 rounded-top-3">
-                    <h5 class="modal-title h6 mb-0 text-white">
-                        <i class="fa-solid fa-tags me-2 text-warning"></i> {{ __('Money Movement Categories') }}
+                <div class="modal-header bg-white border-bottom py-3 px-4 rounded-top-3 d-flex justify-content-between align-items-center">
+                    <h5 class="modal-title h6 mb-0 fw-bold text-dark d-flex align-items-center">
+                        <i class="fa-solid fa-tags me-2 text-primary"></i> {{ __('Money Movement Categories') }}
                     </h5>
-                    <button wire:click="closeCategoryModal" type="button" class="btn-close btn-close-white"></button>
+                    <button wire:click="closeCategoryModal" type="button" class="btn-close" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
-                    {{-- Add New Category Form --}}
-                    <div class="border rounded p-3 bg-light mb-4">
-                        <h6 class="fw-bold mb-3">{{ __('Add New Source / Expense Category') }}</h6>
+                    {{-- Modal Alert --}}
+                    @if (session()->has('category_success'))
+                        <div class="alert alert-success-subtle border border-success-subtle py-2 px-3 mb-3 small text-success-emphasis rounded d-flex align-items-center justify-content-between">
+                            <span><i class="fa-solid fa-circle-check me-2"></i>{{ session('category_success') }}</span>
+                            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    @endif
+
+                    {{-- Add / Edit Category Form --}}
+                    <div class="border rounded p-3 mb-4 {{ $editingCategoryId ? 'bg-primary-subtle border-primary-subtle' : 'bg-light' }}">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0 text-dark">
+                                @if ($editingCategoryId)
+                                    <i class="fa-solid fa-pen-to-square text-primary me-1"></i> {{ __('Edit Category') }}
+                                @else
+                                    <i class="fa-solid fa-plus-circle text-primary me-1"></i> {{ __('Add New Category') }}
+                                @endif
+                            </h6>
+                            @if ($editingCategoryId)
+                                <button type="button" wire:click="cancelEditCategory" class="btn btn-xs btn-outline-secondary">
+                                    <i class="fa-solid fa-times me-1"></i> {{ __('Cancel Edit') }}
+                                </button>
+                            @endif
+                        </div>
+
                         <form wire:submit.prevent="saveCategory">
-                            <div class="row g-2 mb-2">
+                            <div class="row g-2 mb-3">
                                 <div class="col-md-5 col-12">
-                                    <label class="small fw-bold mb-1">{{ __('Category Name') }} <span class="text-danger">*</span></label>
+                                    <label class="form-label small fw-bold text-gray-700 mb-1">{{ __('Category Name') }} <span class="text-danger">*</span></label>
                                     <input wire:model="category_name" type="text" class="form-control form-control-sm" placeholder="{{ __('e.g. Partner Investment, Utility...') }}" required>
                                     @error('category_name') <span class="text-danger small">{{ $message }}</span> @enderror
                                 </div>
                                 <div class="col-md-3 col-12">
-                                    <label class="small fw-bold mb-1">{{ __('Type') }} <span class="text-danger">*</span></label>
+                                    <label class="form-label small fw-bold text-gray-700 mb-1">{{ __('Type') }} <span class="text-danger">*</span></label>
                                     <select wire:model="category_type" class="form-select form-select-sm">
                                         <option value="both">{{ __('Both (In & Out)') }}</option>
                                         <option value="in">{{ __('Cash In Only') }}</option>
@@ -338,57 +360,80 @@
                                     </select>
                                 </div>
                                 <div class="col-md-4 col-12">
-                                    <label class="small fw-bold mb-1">{{ __('Description') }}</label>
+                                    <label class="form-label small fw-bold text-gray-700 mb-1">{{ __('Description') }}</label>
                                     <input wire:model="category_description" type="text" class="form-control form-control-sm" placeholder="{{ __('Optional notes...') }}">
                                 </div>
                             </div>
-                            <div class="text-end">
-                                <button type="submit" class="btn btn-sm btn-primary px-3">
-                                    <i class="fa-solid fa-plus me-1"></i> {{ __('Add Category') }}
-                                </button>
+                            <div class="d-flex justify-content-end gap-2">
+                                @if ($editingCategoryId)
+                                    <button type="button" wire:click="cancelEditCategory" class="btn btn-sm btn-outline-secondary px-3">
+                                        {{ __('Cancel') }}
+                                    </button>
+                                    <button type="submit" class="btn btn-sm btn-primary px-3 shadow-sm">
+                                        <i class="fa-solid fa-check me-1"></i> {{ __('Update Category') }}
+                                    </button>
+                                @else
+                                    <button type="submit" class="btn btn-sm btn-primary px-3 shadow-sm">
+                                        <i class="fa-solid fa-plus me-1"></i> {{ __('Add Category') }}
+                                    </button>
+                                @endif
                             </div>
                         </form>
                     </div>
 
                     {{-- Existing Categories List --}}
-                    <h6 class="fw-bold mb-2">{{ __('Existing Categories') }}</h6>
-                    <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
-                        <table class="table table-sm table-striped">
-                            <thead>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold mb-0 text-dark">{{ __('Existing Categories') }}</h6>
+                        <span class="badge bg-gray-200 text-gray-800">{{ $allCategories->count() }} {{ __('Total') }}</span>
+                    </div>
+
+                    <div class="table-responsive border rounded" style="max-height: 280px; overflow-y: auto;">
+                        <table class="table table-sm table-hover mb-0 align-middle">
+                            <thead class="thead-light">
                                 <tr>
-                                    <th>{{ __('Name') }}</th>
-                                    <th>{{ __('Type') }}</th>
-                                    <th>{{ __('Description') }}</th>
-                                    <th class="text-end">{{ __('Action') }}</th>
+                                    <th class="border-0 px-3 py-2">{{ __('Name') }}</th>
+                                    <th class="border-0 py-2">{{ __('Type') }}</th>
+                                    <th class="border-0 py-2">{{ __('Description') }}</th>
+                                    <th class="border-0 px-3 py-2 text-end">{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($allCategories as $c)
-                                <tr>
-                                    <td class="fw-bold">{{ $c->name }}</td>
-                                    <td>
+                                @forelse ($allCategories as $c)
+                                <tr class="{{ $editingCategoryId === $c->id ? 'table-primary' : '' }}">
+                                    <td class="px-3 py-2 fw-semibold text-dark">{{ $c->name }}</td>
+                                    <td class="py-2">
                                         @if ($c->type === 'in')
-                                            <span class="badge bg-success">{{ __('In') }}</span>
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">{{ __('In') }}</span>
                                         @elseif ($c->type === 'out')
-                                            <span class="badge bg-danger">{{ __('Out') }}</span>
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">{{ __('Out') }}</span>
                                         @else
-                                            <span class="badge bg-info text-white">{{ __('Both') }}</span>
+                                            <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1">{{ __('Both') }}</span>
                                         @endif
                                     </td>
-                                    <td class="text-muted small">{{ $c->description ?: '-' }}</td>
-                                    <td class="text-end">
-                                        <button wire:click="deleteCategory({{ $c->id }})" wire:confirm="{{ __('Delete category?') }}" class="btn btn-xs btn-link text-danger p-0">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
+                                    <td class="py-2 text-muted small">{{ $c->description ?: '-' }}</td>
+                                    <td class="px-3 py-2 text-end">
+                                        <div class="d-inline-flex align-items-center gap-1">
+                                            <button wire:click="editCategory({{ $c->id }})" type="button" class="btn btn-xs {{ $editingCategoryId === $c->id ? 'btn-primary' : 'btn-outline-primary' }} px-2" title="{{ __('Edit Category') }}">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </button>
+                                            <button wire:click="deleteCategory({{ $c->id }})" wire:confirm="{{ __('Delete category :name?', ['name' => $c->name]) }}" type="button" class="btn btn-xs btn-outline-danger px-2" title="{{ __('Delete Category') }}">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
-                                @endforeach
+                                @empty
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">{{ __('No categories found.') }}</td>
+                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div class="modal-footer bg-light py-2 px-4 rounded-bottom-3">
-                    <button wire:click="closeCategoryModal" type="button" class="btn btn-outline-secondary">{{ __('Close') }}</button>
+                <div class="modal-footer bg-light py-2 px-4 rounded-bottom-3 d-flex justify-content-between align-items-center">
+                    <small class="text-muted">{{ __('Categories appear in Cash In / Cash Out dropdowns.') }}</small>
+                    <button wire:click="closeCategoryModal" type="button" class="btn btn-sm btn-outline-secondary px-3">{{ __('Close') }}</button>
                 </div>
             </div>
         </div>

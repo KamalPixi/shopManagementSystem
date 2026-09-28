@@ -26,6 +26,7 @@ class MoneyMovements extends Component
 
     // Category Management Modal
     public $showCategoryModal = false;
+    public $editingCategoryId = null;
     public $category_name = '';
     public $category_type = 'both';
     public $category_description = '';
@@ -127,14 +128,30 @@ class MoneyMovements extends Component
 
     public function openCategoryModal()
     {
-        $this->reset(['category_name', 'category_type', 'category_description']);
+        $this->reset(['editingCategoryId', 'category_name', 'category_type', 'category_description']);
         $this->category_type = 'both';
         $this->showCategoryModal = true;
     }
 
     public function closeCategoryModal()
     {
+        $this->reset(['editingCategoryId', 'category_name', 'category_type', 'category_description']);
         $this->showCategoryModal = false;
+    }
+
+    public function editCategory($id)
+    {
+        $cat = MoneyCategory::findOrFail($id);
+        $this->editingCategoryId = $cat->id;
+        $this->category_name = $cat->name;
+        $this->category_type = $cat->type;
+        $this->category_description = $cat->description ?? '';
+    }
+
+    public function cancelEditCategory()
+    {
+        $this->reset(['editingCategoryId', 'category_name', 'category_type', 'category_description']);
+        $this->category_type = 'both';
     }
 
     public function saveCategory()
@@ -145,27 +162,54 @@ class MoneyMovements extends Component
             'category_description' => 'nullable|string|max:500',
         ]);
 
-        $cat = MoneyCategory::create([
-            'name' => trim($this->category_name),
-            'type' => $this->category_type,
-            'description' => trim($this->category_description),
-            'created_by' => auth()->id(),
-        ]);
+        if ($this->editingCategoryId) {
+            $cat = MoneyCategory::findOrFail($this->editingCategoryId);
+            $oldName = $cat->name;
+            $cat->update([
+                'name' => trim($this->category_name),
+                'type' => $this->category_type,
+                'description' => trim($this->category_description),
+            ]);
 
-        AuditLogger::log(
-            'created_money_category',
-            __(':user created money category [:name]', ['user' => auth()->user()->name, 'name' => $cat->name]),
-            $cat
-        );
+            AuditLogger::log(
+                'updated_money_category',
+                __(':user updated money category [:name]', ['user' => auth()->user()->name, 'name' => $cat->name]),
+                $cat,
+                ['old_name' => $oldName, 'new_name' => $cat->name, 'type' => $cat->type]
+            );
 
-        $this->showCategoryModal = false;
-        session()->flash('success', __('Money category created.'));
+            $this->cancelEditCategory();
+            session()->flash('category_success', __('Money category updated successfully.'));
+        } else {
+            $cat = MoneyCategory::create([
+                'name' => trim($this->category_name),
+                'type' => $this->category_type,
+                'description' => trim($this->category_description),
+                'created_by' => auth()->id(),
+            ]);
+
+            AuditLogger::log(
+                'created_money_category',
+                __(':user created money category [:name]', ['user' => auth()->user()->name, 'name' => $cat->name]),
+                $cat
+            );
+
+            $this->reset(['editingCategoryId', 'category_name', 'category_type', 'category_description']);
+            $this->category_type = 'both';
+            session()->flash('category_success', __('Money category created successfully.'));
+        }
     }
 
     public function deleteCategory($id)
     {
         $cat = MoneyCategory::findOrFail($id);
         $catName = $cat->name;
+
+        // If currently editing this category, cancel editing first
+        if ($this->editingCategoryId === $id) {
+            $this->cancelEditCategory();
+        }
+
         $cat->delete();
 
         AuditLogger::log(
@@ -173,7 +217,7 @@ class MoneyMovements extends Component
             __(':user deleted money category [:name]', ['user' => auth()->user()->name, 'name' => $catName])
         );
 
-        session()->flash('success', __('Category deleted.'));
+        session()->flash('category_success', __('Category deleted successfully.'));
     }
 
     public function deleteMovement($id)
