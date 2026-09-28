@@ -107,8 +107,92 @@ class StockAdd extends Component
     public function updatedHasVariations()
     {
         if ($this->has_variations && empty($this->variations)) {
-            $this->addVariationField();
+            // Check if attributes exist to generate from, otherwise add 1 empty row
+            $validAttributes = collect($this->productAttributes)->filter(fn($a) => !empty(trim($a['name'] ?? '')) && !empty(trim($a['values'] ?? '')));
+            if ($validAttributes->count() > 0) {
+                $this->generateVariationsFromAttributes();
+            } else {
+                $this->addVariationField();
+            }
         }
+    }
+
+    /**
+     * Option B: Generate / Combine variations automatically from entered attributes
+     */
+    public function generateVariationsFromAttributes()
+    {
+        $attributeSets = [];
+        foreach ($this->productAttributes as $attr) {
+            $name = trim($attr['name'] ?? '');
+            $valuesStr = trim($attr['values'] ?? '');
+            if (!empty($name) && !empty($valuesStr)) {
+                $vals = array_filter(array_map('trim', explode(',', $valuesStr)));
+                if (!empty($vals)) {
+                    $attributeSets[$name] = $vals;
+                }
+            }
+        }
+
+        if (empty($attributeSets)) {
+            session()->flash('variation_error', __('Please enter at least one attribute with values (e.g. Color: Black, Blue) before generating variations.'));
+            return;
+        }
+
+        // Compute Cartesian product of all attribute values
+        $combinations = [[]];
+        foreach ($attributeSets as $attrName => $attrValues) {
+            $newCombinations = [];
+            foreach ($combinations as $combo) {
+                foreach ($attrValues as $val) {
+                    $newCombinations[] = array_merge($combo, [$val]);
+                }
+            }
+            $combinations = $newCombinations;
+        }
+
+        // Map existing variations by name to preserve prices / skus if already entered
+        $existingMap = [];
+        foreach ($this->variations as $var) {
+            if (!empty($var['variation_name'])) {
+                $existingMap[$var['variation_name']] = $var;
+            }
+        }
+
+        $generated = [];
+        $baseSku = trim($this->sku ?? '');
+
+        foreach ($combinations as $idx => $combo) {
+            $varName = implode(' / ', $combo);
+            if (isset($existingMap[$varName])) {
+                $generated[] = $existingMap[$varName];
+            } else {
+                // Generate clean suggested SKU if product SKU is present
+                $suggestedSku = '';
+                if (!empty($baseSku)) {
+                    $suffix = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', implode('-', $combo)), 0, 8));
+                    $suggestedSku = $baseSku . '-' . ($suffix ?: ($idx + 1));
+                }
+
+                $generated[] = [
+                    'variation_name' => $varName,
+                    'sku' => $suggestedSku,
+                    'serial_no' => '',
+                    'price' => $this->price ?: 0,
+                    'purchase_price' => $this->purchase_price ?: 0,
+                    'quantity' => 1,
+                    'low_stock_threshold' => $this->low_stock_threshold,
+                ];
+            }
+        }
+
+        $this->variations = $generated;
+        session()->flash('variation_success', __(':count variations generated from attributes.', ['count' => count($generated)]));
+    }
+
+    public function clearVariations()
+    {
+        $this->variations = [];
     }
 
     public function create() {

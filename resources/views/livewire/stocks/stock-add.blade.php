@@ -129,28 +129,98 @@
                         </div>
                     </div>
 
-                    {{-- Variations Section --}}
+                    {{-- Attributes Section --}}
+                    <div class="card border border-light shadow-sm rounded-3 mb-4 bg-light">
+                        <div class="card-body p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <label class="mb-0 fw-bold text-dark fs-6 d-flex align-items-center">
+                                        <i class="fa-solid fa-layer-group text-primary me-2"></i> {{ __('Product Attributes (e.g. Color, Storage, Size)') }}
+                                    </label>
+                                    <small class="text-muted d-block">{{ __('Define attributes and comma-separated options. Example: Storage: 128GB, 256GB | Color: Black, Blue') }}</small>
+                                </div>
+                                <button type="button" wire:click="addAttributeField" class="btn btn-outline-primary btn-xs px-2 py-1">
+                                    <i class="fa-solid fa-plus me-1"></i> {{ __('+ Add Another Attribute') }}
+                                </button>
+                            </div>
+
+                            @foreach ($productAttributes as $k => $productAttribute)
+                                <div wire:key="key_{{ $k }}" class="row g-2 align-items-center mb-2">
+                                    <div class="col-12 col-md-4">
+                                        <input wire:model="productAttributes.{{$loop->index}}.name" type="text" class="form-control form-control-sm" placeholder="{{ __('Attribute Name (e.g. Color or Storage)') }}">
+                                    </div>
+                                    <div class="col-12 col-md-7">
+                                        <input wire:model="productAttributes.{{$loop->index}}.values" type="text" class="form-control form-control-sm" placeholder="{{ __('Comma-separated options: Black, Blue, Gold') }}">
+                                    </div>
+                                    <div class="col-12 col-md-1 text-center">
+                                        @if ($k != 0)
+                                            <button type="button" wire:click="deleteAttributeField('{{ $k }}')" class="btn btn-xs btn-outline-danger p-1" title="{{ __('Delete') }}">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>            
+                            @endforeach
+
+                            @if ($has_variations)
+                                <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <span class="small text-muted">
+                                        <i class="fa-solid fa-wand-magic-sparkles text-warning me-1"></i>
+                                        {{ __('Click generate to combine all attribute values into variations automatically.') }}
+                                    </span>
+                                    <button type="button" wire:click="generateVariationsFromAttributes" class="btn btn-sm btn-primary px-3 shadow-sm">
+                                        <i class="fa-solid fa-bolt me-1"></i> {{ __('Generate Variations From Attributes') }}
+                                    </button>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Variations Table Section --}}
                     @if ($has_variations)
-                    <div class="card border border-info mb-4 bg-light">
-                        <div class="card-header bg-gray-800 text-white py-2 px-3 d-flex justify-content-between align-items-center">
-                            <h6 class="mb-0 text-white small fw-bold">
-                                <i class="fa-solid fa-boxes-stacked me-1 text-warning"></i> {{ __('Product Variations') }}
+                    <div class="card border border-light shadow-sm mb-4">
+                        <div class="card-header bg-white border-bottom py-2 px-3 d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 text-dark small fw-bold d-flex align-items-center">
+                                <i class="fa-solid fa-boxes-stacked me-2 text-primary"></i> {{ __('Generated Variations & Inventory') }}
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-2">{{ count($variations) }} {{ __('Variants') }}</span>
                             </h6>
-                            <button type="button" wire:click="addVariationField" class="btn btn-xs btn-primary">
-                                <i class="fa-solid fa-plus me-1"></i> {{ __('+ Add Variation') }}
-                            </button>
+                            <div class="d-flex gap-2">
+                                <button type="button" wire:click="generateVariationsFromAttributes" class="btn btn-xs btn-outline-primary" title="{{ __('Regenerate from attributes') }}">
+                                    <i class="fa-solid fa-rotate me-1"></i> {{ __('Sync from Attributes') }}
+                                </button>
+                                <button type="button" wire:click="addVariationField" class="btn btn-xs btn-outline-secondary">
+                                    <i class="fa-solid fa-plus me-1"></i> {{ __('+ Add Manual Row') }}
+                                </button>
+                                @if (count($variations) > 0)
+                                    <button type="button" wire:click="clearVariations" wire:confirm="{{ __('Clear all variations?') }}" class="btn btn-xs btn-outline-danger">
+                                        <i class="fa-solid fa-trash me-1"></i> {{ __('Clear') }}
+                                    </button>
+                                @endif
+                            </div>
                         </div>
                         <div class="card-body p-3">
+                            {{-- Variation Alerts --}}
+                            @if (session()->has('variation_success'))
+                                <div class="alert alert-success-subtle border border-success-subtle py-2 px-3 mb-3 small text-success-emphasis rounded">
+                                    <i class="fa-solid fa-circle-check me-1"></i> {{ session('variation_success') }}
+                                </div>
+                            @endif
+                            @if (session()->has('variation_error'))
+                                <div class="alert alert-warning-subtle border border-warning-subtle py-2 px-3 mb-3 small text-warning-emphasis rounded">
+                                    <i class="fa-solid fa-triangle-exclamation me-1"></i> {{ session('variation_error') }}
+                                </div>
+                            @endif
+
                             <div class="table-responsive">
-                                <table class="table table-sm table-bordered bg-white mb-0">
+                                <table class="table table-sm table-centered table-bordered bg-white mb-0 align-middle">
                                     <thead class="thead-light">
                                         <tr>
-                                            <th style="width: 25%;">{{ __('Variation Name* (e.g. Red / 128GB)') }}</th>
-                                            <th style="width: 15%;">{{ __('SKU / Barcode') }}</th>
-                                            <th style="width: 15%;">{{ __('Serial No / IMEI') }}</th>
-                                            <th style="width: 12%;" class="text-end">{{ __('Sale Price*') }}</th>
+                                            <th style="width: 24%;">{{ __('Variation Name / Option') }} <span class="text-danger">*</span></th>
+                                            <th style="width: 16%;">{{ __('SKU / Barcode') }}</th>
+                                            <th style="width: 16%;">{{ __('Serial No / IMEI') }}</th>
+                                            <th style="width: 12%;" class="text-end">{{ __('Sale Price') }} <span class="text-danger">*</span></th>
                                             <th style="width: 12%;" class="text-end">{{ __('Cost Price') }}</th>
-                                            <th style="width: 10%;" class="text-center">{{ __('Stock*') }}</th>
+                                            <th style="width: 9%;" class="text-center">{{ __('Stock') }} <span class="text-danger">*</span></th>
                                             <th style="width: 8%;" class="text-center">{{ __('Low Alert') }}</th>
                                             <th style="width: 3%;" class="text-center">-</th>
                                         </tr>
@@ -159,22 +229,22 @@
                                         @forelse ($variations as $idx => $v)
                                         <tr wire:key="var_row_{{ $idx }}">
                                             <td>
-                                                <input wire:model="variations.{{ $idx }}.variation_name" type="text" class="form-control form-control-sm" placeholder="{{ __('e.g. 128GB Black') }}" required>
+                                                <input wire:model="variations.{{ $idx }}.variation_name" type="text" class="form-control form-control-sm font-monospace fw-bold" placeholder="{{ __('e.g. 128GB / Black') }}" required>
                                             </td>
                                             <td>
-                                                <input wire:model="variations.{{ $idx }}.sku" type="text" class="form-control form-control-sm" placeholder="{{ __('Variation SKU') }}">
+                                                <input wire:model="variations.{{ $idx }}.sku" type="text" class="form-control form-control-sm font-monospace" placeholder="{{ __('Auto or Barcode') }}">
                                             </td>
                                             <td>
-                                                <input wire:model="variations.{{ $idx }}.serial_no" type="text" class="form-control form-control-sm" placeholder="{{ __('Serial Number') }}">
+                                                <input wire:model="variations.{{ $idx }}.serial_no" type="text" class="form-control form-control-sm font-monospace" placeholder="{{ __('Optional Serial/IMEI') }}">
                                             </td>
                                             <td>
-                                                <input wire:model="variations.{{ $idx }}.price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0.00" required>
+                                                <input wire:model="variations.{{ $idx }}.price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end fw-semibold" placeholder="0.00" required>
                                             </td>
                                             <td>
                                                 <input wire:model="variations.{{ $idx }}.purchase_price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0.00">
                                             </td>
                                             <td>
-                                                <input wire:model="variations.{{ $idx }}.quantity" type="number" min="0" class="form-control form-control-sm text-center" required>
+                                                <input wire:model="variations.{{ $idx }}.quantity" type="number" min="0" class="form-control form-control-sm text-center fw-bold" required>
                                             </td>
                                             <td>
                                                 <input wire:model="variations.{{ $idx }}.low_stock_threshold" type="number" min="0" class="form-control form-control-sm text-center" placeholder="{{ __('10') }}">
@@ -187,7 +257,10 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="8" class="text-center text-muted py-2">{{ __('No variations added yet. Click "+ Add Variation" above.') }}</td>
+                                            <td colspan="8" class="text-center text-muted py-4">
+                                                <i class="fa-solid fa-boxes-stacked fs-4 d-block mb-2 text-gray-400"></i>
+                                                {{ __('No variations created yet. Enter attributes above and click "Generate Variations From Attributes".') }}
+                                            </td>
                                         </tr>
                                         @endforelse
                                     </tbody>
@@ -196,31 +269,6 @@
                         </div>
                     </div>
                     @endif
-
-                    {{-- General Attributes --}}
-                    <div class="row rounded py-2 mb-4" style="background-color: rgb(240, 243, 246); margin-left:0.01rem;margin-right:0.01rem;">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label class="mb-0 fw-bold">{{ __('Attributes (e.g. Color, Size):') }}</label>
-                            <button type="button" wire:click="addAttributeField" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-plus me-1"></i> {{ __('Add Attribute') }}</button>
-                        </div>
-                        @foreach ($productAttributes as $k => $productAttribute)
-                            <div wire:key="key_{{ $k }}" class="row px-0 mx-0 mb-2">
-                                <div class="col-12 col-md-6">
-                                    <input wire:model="productAttributes.{{$loop->index}}.name" type="text" class="form-control form-control-sm" placeholder="Ex: Color">
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <input wire:model="productAttributes.{{$loop->index}}.values" type="text" class="form-control form-control-sm" placeholder="Ex: Green,Blue,White">
-                                        @if ($k != 0)
-                                            <button type="button" wire:click="deleteAttributeField('{{ $k }}')" class="btn btn-xs btn-link text-danger p-0">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </button>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>            
-                        @endforeach
-                    </div>
 
                     <div class="row">
                         <div class="col-12 col-md-4">

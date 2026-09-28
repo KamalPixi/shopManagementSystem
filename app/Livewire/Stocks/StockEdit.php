@@ -143,6 +143,87 @@ class StockEdit extends Component
         $this->variations = array_values($this->variations);
     }
 
+    /**
+     * Option B: Generate / Combine variations automatically from entered attributes
+     */
+    public function generateVariationsFromAttributes()
+    {
+        $attributeSets = [];
+        foreach ($this->productAttributes as $attr) {
+            $name = trim($attr['name'] ?? '');
+            $valuesStr = trim($attr['values'] ?? '');
+            if (!empty($name) && !empty($valuesStr)) {
+                $vals = array_filter(array_map('trim', explode(',', $valuesStr)));
+                if (!empty($vals)) {
+                    $attributeSets[$name] = $vals;
+                }
+            }
+        }
+
+        if (empty($attributeSets)) {
+            session()->flash('variation_error', __('Please enter at least one attribute with values (e.g. Color: Black, Blue) before generating variations.'));
+            return;
+        }
+
+        $combinations = [[]];
+        foreach ($attributeSets as $attrName => $attrValues) {
+            $newCombinations = [];
+            foreach ($combinations as $combo) {
+                foreach ($attrValues as $val) {
+                    $newCombinations[] = array_merge($combo, [$val]);
+                }
+            }
+            $combinations = $newCombinations;
+        }
+
+        $existingMap = [];
+        foreach ($this->variations as $var) {
+            if (!empty($var['variation_name'])) {
+                $existingMap[$var['variation_name']] = $var;
+            }
+        }
+
+        $generated = [];
+        $baseSku = trim($this->sku ?? '');
+
+        foreach ($combinations as $idx => $combo) {
+            $varName = implode(' / ', $combo);
+            if (isset($existingMap[$varName])) {
+                $generated[] = $existingMap[$varName];
+            } else {
+                $suggestedSku = '';
+                if (!empty($baseSku)) {
+                    $suffix = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', implode('-', $combo)), 0, 8));
+                    $suggestedSku = $baseSku . '-' . ($suffix ?: ($idx + 1));
+                }
+
+                $generated[] = [
+                    'id' => null,
+                    'variation_name' => $varName,
+                    'sku' => $suggestedSku,
+                    'serial_no' => '',
+                    'price' => $this->price ?: 0,
+                    'purchase_price' => $this->purchase_price ?: 0,
+                    'quantity' => 1,
+                    'low_stock_threshold' => $this->low_stock_threshold,
+                ];
+            }
+        }
+
+        $this->variations = $generated;
+        session()->flash('variation_success', __(':count variations generated from attributes.', ['count' => count($generated)]));
+    }
+
+    public function clearVariations()
+    {
+        foreach ($this->variations as $var) {
+            if (!empty($var['id'])) {
+                ProductVariation::where('id', $var['id'])->where('product_id', $this->product->id)->delete();
+            }
+        }
+        $this->variations = [];
+    }
+
     public function update() {
         $validated = $this->validate();
 

@@ -35,7 +35,6 @@
                     <div class="p-2 rounded" style="background: #1e293b; color: #f8fafc; font-size: 0.74rem;">
                         <div><span class="text-info">"name"</span>: <span class="text-light fw-bold">"Md Kamal Uddin"</span>,</div>
                         <div><span class="text-info">"tel_bd"</span>: <a href="tel:+8801811329970" class="text-decoration-none" style="color: #4ade80 !important; font-weight: 500;">"+8801811329970"</a>,</div>
-                        <div><span class="text-info">"tel_my"</span>: <a href="https://wa.me/601111085061" target="_blank" class="text-decoration-none" style="color: #4ade80 !important; font-weight: 500;">"+601111085061"</a>,</div>
                         <div><span class="text-info">"email"</span>: <a href="mailto:kamalpixi@gmail.com" class="text-decoration-none" style="color: #38bdf8 !important; font-weight: 500;">"kamalpixi@gmail.com"</a></div>
                     </div>
                 </div>
