@@ -33,11 +33,15 @@ final class SaleService
     }    
 
     public function generateSaleReceiptA4($sale_id): string {   
-        $sale = Sale::findOrFail($sale_id); 
+        $sale = Sale::with(['saleItems.product', 'saleItems.productVariation', 'saleItems.warranty', 'customer', 'createdBy'])->findOrFail($sale_id); 
         
         $pdf = Pdf::loadView('prints.sale-receipt-a4', [
             'sale' => $sale,
             'shop' => Shop::first(),
+        ])->setPaper('a4', 'portrait')->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isRemoteEnabled' => true,
+            'defaultFont' => 'sans-serif'
         ]);
             
         if (!is_dir(public_path('sales'))) {
