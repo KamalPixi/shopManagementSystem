@@ -280,15 +280,6 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
     {{-- Items List Card --}}
     <div class="card border-0 shadow mb-4">
         <div class="card-body">
-            @if (!empty($errorMessage))
-                <div x-data="{ show: true }" x-init="setTimeout(() => { show = false; $wire.set('errorMessage', ''); }, 5000)" x-show="show" class="alert alert-danger alert-dismissible fade show d-flex align-items-center justify-content-between mb-3" role="alert">
-                    <div class="d-flex align-items-center">
-                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
-                        <div>{{ $errorMessage }}</div>
-                    </div>
-                    <button type="button" wire:click="$set('errorMessage', '')" class="btn-close" aria-label="Close"></button>
-                </div>
-            @endif
 
             <div class="mb-4 table-responsive">
                 <table class="table table-centered table-nowrap mb-2 rounded align-middle">
