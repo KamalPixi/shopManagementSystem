@@ -136,6 +136,125 @@
     </div>
     @endif
 
+    {{-- Daily Cash Register Opening Balance Modal (Mandatory to Proceed) --}}
+    @if ($showOpenRegisterModal)
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(15, 23, 42, 0.65); backdrop-filter: blur(3px);" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+            <div class="modal-content border-0 shadow-lg rounded-3">
+                <div class="modal-header bg-gray-800 text-white py-3 px-4 rounded-top-3">
+                    <h5 class="modal-title h6 mb-0 text-white d-flex align-items-center">
+                        <i class="fa-solid fa-cash-register me-2 text-warning"></i> {{ __('Enter Today\'s Opening Balance') }}
+                    </h5>
+                    <button wire:click="closeRegisterModal" type="button" class="btn-close btn-close-white" aria-label="{{ __('Close') }}"></button>
+                </div>
+                <form wire:submit.prevent="submitOpeningBalance">
+                    <div class="modal-body p-4">
+                        <div class="alert alert-warning d-flex align-items-center mb-3 py-2 px-3 small" role="alert">
+                            <i class="fa-solid fa-triangle-exclamation me-2 fs-6"></i>
+                            <div>{{ __('You must enter today\'s opening cash balance before you can process sales.') }}</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small mb-1">{{ __('Opening Cash in Drawer (:currency)', ['currency' => $currencySymbol]) }} <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light fw-bold">{{ $currencySymbol }}</span>
+                                <input wire:model="pos_opening_balance" type="number" step="0.01" min="0" class="form-control form-control-lg text-end fw-bold" placeholder="0.00" autofocus required>
+                            </div>
+                            @error('pos_opening_balance') <span class="text-danger small">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label fw-bold small mb-1">{{ __('Opening Notes / Remark') }} <small class="text-muted">({{ __('Optional') }})</small></label>
+                            <textarea wire:model="pos_opening_note" class="form-control" rows="2" placeholder="{{ __('e.g. Starting float in coins & small notes') }}"></textarea>
+                            @error('pos_opening_note') <span class="text-danger small">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light py-2 px-4 rounded-bottom-3 d-flex justify-content-between">
+                        <button wire:click="closeRegisterModal" type="button" class="btn btn-outline-secondary px-4">{{ __('Cancel') }}</button>
+                        <button type="submit" class="btn btn-success text-white px-4 fw-bold shadow-sm">
+                            <i class="fa-solid fa-check me-1"></i> {{ __('Open Register & Continue') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Option B: Force Close Previous Day's Unclosed Register Modal --}}
+    @if ($showClosePreviousDayModal)
+    @php
+        $overdueSession = \App\Models\CashRegisterSession::previousDayUnclosedSession();
+        $overdueExpected = $overdueSession ? $overdueSession->calculateExpectedCash() : 0;
+    @endphp
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(15, 23, 42, 0.7); backdrop-filter: blur(3px);" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 520px;">
+            <div class="modal-content border-0 shadow-lg rounded-3">
+                <div class="modal-header bg-danger text-white py-3 px-4 rounded-top-3">
+                    <h5 class="modal-title h6 mb-0 text-white d-flex align-items-center">
+                        <i class="fa-solid fa-lock me-2"></i> {{ __('Unclosed Register From Previous Day') }}
+                    </h5>
+                    <button wire:click="closeClosePreviousDayModal" type="button" class="btn-close btn-close-white" aria-label="{{ __('Close') }}"></button>
+                </div>
+                <form wire:submit.prevent="submitClosePreviousDay">
+                    <div class="modal-body p-4">
+                        <div class="alert alert-danger d-flex align-items-center mb-3 py-2 px-3 small" role="alert">
+                            <i class="fa-solid fa-triangle-exclamation me-2 fs-5"></i>
+                            <div>
+                                <strong>{{ __('Action Required:') }}</strong>
+                                {{ __('A cash register opened on :date (:time) was left unclosed. You must count and close that drawer before opening today\'s register or processing new sales.', [
+                                    'date' => $overdueSession?->opened_at->format('d M Y') ?? 'Yesterday',
+                                    'time' => $overdueSession?->opened_at->format('h:i A') ?? ''
+                                ]) }}
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info py-2 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">{{ __('Expected Cash From Yesterday:') }}</span>
+                                <span class="fs-5 fw-bold">{{ $currencySymbol }}{{ number_format($overdueExpected, 2) }}</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small mb-1">{{ __('Actual Counted Cash In Drawer') }} <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light fw-bold">{{ $currencySymbol }}</span>
+                                <input wire:model.live="pos_closing_balance" type="number" step="0.01" min="0" class="form-control form-control-lg text-end fw-bold" placeholder="0.00" autofocus required>
+                            </div>
+                            @php
+                                $diff = round((float)$pos_closing_balance - (float)$overdueExpected, 2);
+                            @endphp
+                            <div class="mt-2">
+                                @if ($diff == 0)
+                                    <span class="badge bg-success">{{ __('Balances perfectly (Diff: 0.00)') }}</span>
+                                @elseif ($diff > 0)
+                                    <span class="badge bg-info text-white">{{ __('Cash Over: +') }}{{ $currencySymbol }}{{ number_format($diff, 2) }}</span>
+                                @else
+                                    <span class="badge bg-danger">{{ __('Cash Short: ') }}{{ $currencySymbol }}{{ number_format($diff, 2) }}</span>
+                                @endif
+                            </div>
+                            @error('pos_closing_balance') <span class="text-danger small d-block">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label fw-bold small mb-1">{{ __('Closing Notes / Reason for Delayed Close') }} <small class="text-muted">({{ __('Optional') }})</small></label>
+                            <textarea wire:model="pos_closing_note" class="form-control" rows="2" placeholder="{{ __('Explain any discrepancy or reason why drawer was not closed last night...') }}"></textarea>
+                            @error('pos_closing_note') <span class="text-danger small">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light py-2 px-4 rounded-bottom-3 d-flex justify-content-between">
+                        <button wire:click="closeClosePreviousDayModal" type="button" class="btn btn-outline-secondary px-4">{{ __('Cancel') }}</button>
+                        <button type="submit" class="btn btn-danger text-white px-4 fw-bold shadow-sm">
+                            <i class="fa-solid fa-lock me-1"></i> {{ __('Close Yesterday & Proceed To Today') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
+
     {{-- Items List Card --}}
     <div class="card border-0 shadow mb-4">
         <div class="card-body">

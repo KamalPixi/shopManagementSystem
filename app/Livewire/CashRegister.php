@@ -114,10 +114,14 @@ class CashRegister extends Component
             'status' => 'closed',
         ]);
 
+        $isDelayed = $activeSession->opened_at->startOfDay()->lt(now()->startOfDay());
+        $actionName = $isDelayed ? 'register_closed_delayed' : 'register_closed';
+
         AuditLogger::log(
-            'register_closed',
-            __(':user closed cash register. Expected: :exp, Actual: :act, Diff: :diff', [
+            $actionName,
+            __(':user closed cash register:opened. Expected: :exp, Actual: :act, Diff: :diff', [
                 'user' => auth()->user()->name,
+                'opened' => $isDelayed ? ' (Opened on ' . $activeSession->opened_at->format('d/m/Y') . ' - Next-day/delayed close)' : '',
                 'exp' => number_format($expected, 2),
                 'act' => number_format($actual, 2),
                 'diff' => number_format($diff, 2)
@@ -127,12 +131,18 @@ class CashRegister extends Component
                 'expected' => $expected,
                 'closing_balance' => $actual,
                 'difference' => $diff,
-                'note' => $this->note
+                'note' => $this->note,
+                'is_delayed_close' => $isDelayed,
+                'opened_at' => $activeSession->opened_at->toDateTimeString(),
             ]
         );
 
         $this->showCloseModal = false;
-        session()->flash('success', __('Cash register session closed successfully.'));
+        if ($isDelayed) {
+            session()->flash('success', __('Previous day\'s cash register closed successfully. Please now open today\'s cash register session.'));
+        } else {
+            session()->flash('success', __('Cash register session closed successfully.'));
+        }
     }
 
     public function render()

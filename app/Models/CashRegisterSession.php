@@ -47,6 +47,30 @@ class CashRegisterSession extends Model
     }
 
     /**
+     * Check if the currently open session was opened on a previous date (unclosed past day session)
+     */
+    public static function previousDayUnclosedSession($userId = null): ?self
+    {
+        $session = self::currentOpenSession($userId);
+        if ($session && $session->opened_at->startOfDay()->lt(now()->startOfDay())) {
+            return $session;
+        }
+        return null;
+    }
+
+    /**
+     * Check if there is an active session opened today
+     */
+    public static function todayOpenSession($userId = null): ?self
+    {
+        $session = self::currentOpenSession($userId);
+        if ($session && $session->opened_at->isToday()) {
+            return $session;
+        }
+        return null;
+    }
+
+    /**
      * Calculate current expected cash in drawer
      */
     public function calculateExpectedCash(): float

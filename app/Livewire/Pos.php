@@ -56,6 +56,16 @@ class Pos extends Component
     public $showCustomModal = false;
     public $errorMessage = '';
 
+    // Register Opening Modal for POS
+    public $showOpenRegisterModal = false;
+    public $pos_opening_balance = 0;
+    public $pos_opening_note = '';
+
+    // Register Close Previous Day Modal for POS (Option B)
+    public $showClosePreviousDayModal = false;
+    public $pos_closing_balance = 0;
+    public $pos_closing_note = '';
+
     public function updated($propertyName) {
         $this->errorMessage = '';
 
@@ -296,7 +306,153 @@ class Pos extends Component
         $this->calculate();
     }
 
+    public function openRegisterModal()
+    {
+        $this->pos_opening_balance = 0;
+        $this->pos_opening_note = '';
+        $this->showOpenRegisterModal = true;
+    }
+
+    public function closeRegisterModal()
+    {
+        $this->showOpenRegisterModal = false;
+    }
+
+    public function openClosePreviousDayModal()
+    {
+        $overdueSession = CashRegisterSession::previousDayUnclosedSession();
+        if ($overdueSession) {
+            $this->pos_closing_balance = $overdueSession->calculateExpectedCash();
+            $this->pos_closing_note = '';
+            $this->showClosePreviousDayModal = true;
+        }
+    }
+
+    public function closeClosePreviousDayModal()
+    {
+        $this->showClosePreviousDayModal = false;
+    }
+
+    public function submitClosePreviousDay()
+    {
+        $this->validate([
+            'pos_closing_balance' => 'required|numeric|min:0',
+            'pos_closing_note' => 'nullable|string|max:1000',
+        ]);
+
+        $overdueSession = CashRegisterSession::previousDayUnclosedSession();
+        if (!$overdueSession) {
+            $this->showClosePreviousDayModal = false;
+            return;
+        }
+
+        $expected = $overdueSession->calculateExpectedCash();
+        $actual = (float) $this->pos_closing_balance;
+        $diff = round($actual - $expected, 2);
+
+        $overdueSession->update([
+            'closing_balance' => $actual,
+            'expected_closing_balance' => $expected,
+            'difference' => $diff,
+            'closed_by' => auth()->id(),
+            'closed_at' => now(),
+            'note' => $this->pos_closing_note,
+            'status' => 'closed',
+        ]);
+
+        AuditLogger::log(
+            'register_closed_delayed',
+            __(':user closed previous day\'s register (opened :date). Expected: :exp, Actual: :act, Diff: :diff', [
+                'user' => auth()->user()->name,
+                'date' => $overdueSession->opened_at->format('d/m/Y'),
+                'exp' => number_format($expected, 2),
+                'act' => number_format($actual, 2),
+                'diff' => number_format($diff, 2)
+            ]),
+            $overdueSession,
+            [
+                'expected' => $expected,
+                'closing_balance' => $actual,
+                'difference' => $diff,
+                'note' => $this->pos_closing_note,
+                'is_delayed_close' => true,
+                'opened_at' => $overdueSession->opened_at->toDateTimeString(),
+            ]
+        );
+
+        $this->showClosePreviousDayModal = false;
+        // Prompt for today's opening balance immediately
+        $this->openRegisterModal();
+        session()->flash('success', __('Previous day\'s drawer closed successfully. Please now enter today\'s opening balance.'));
+    }
+
+    public function submitOpeningBalance()
+    {
+        // First verify no past day session remains unclosed
+        $overdueSession = CashRegisterSession::previousDayUnclosedSession();
+        if ($overdueSession) {
+            $this->showOpenRegisterModal = false;
+            $this->openClosePreviousDayModal();
+            session()->flash('failed', __('Unclosed register from :date detected! Please close yesterday\'s drawer first.', ['date' => $overdueSession->opened_at->format('d/m/Y')]));
+            return;
+        }
+
+        $this->validate([
+            'pos_opening_balance' => 'required|numeric|min:0',
+            'pos_opening_note' => 'nullable|string|max:1000',
+        ]);
+
+        $activeSession = CashRegisterSession::currentOpenSession();
+        if ($activeSession && $activeSession->opened_at->isToday()) {
+            $this->showOpenRegisterModal = false;
+            session()->flash('success', __('Cash register is already open for today.'));
+            return;
+        }
+
+        $session = CashRegisterSession::create([
+            'user_id' => auth()->id(),
+            'opening_balance' => $this->pos_opening_balance,
+            'opened_at' => now(),
+            'status' => 'open',
+            'note' => $this->pos_opening_note,
+        ]);
+
+        AuditLogger::log(
+            'register_opened',
+            __(':user opened daily cash register with opening balance of :amount', [
+                'user' => auth()->user()->name,
+                'amount' => number_format($this->pos_opening_balance, 2)
+            ]),
+            $session,
+            ['opening_balance' => $this->pos_opening_balance]
+        );
+
+        $this->showOpenRegisterModal = false;
+        session()->flash('success', __('Cash register session opened successfully. You can now complete sales.'));
+    }
+
     public function sale() {
+        // Option B Strict Date Cutoff:
+        // 1. Check if an unclosed session from yesterday/past days exists -> MUST close it first!
+        $overdueSession = CashRegisterSession::previousDayUnclosedSession();
+        if ($overdueSession) {
+            $this->openClosePreviousDayModal();
+            $msg = __('Unclosed register from :date detected! You must count and close yesterday\'s drawer before opening today\'s register or completing sales.', ['date' => $overdueSession->opened_at->format('d M Y')]);
+            $this->errorMessage = $msg;
+            session()->flash('failed', $msg);
+            return;
+        }
+
+        // 2. Check if today's register is opened -> MUST enter today's opening balance!
+        $todaySession = CashRegisterSession::todayOpenSession();
+        if (!$todaySession) {
+            $this->openRegisterModal();
+            $msg = __('Cannot proceed with selling! Today\'s opening balance has not been entered yet. Please enter today\'s opening balance first.');
+            $this->errorMessage = $msg;
+            session()->flash('failed', $msg);
+            return;
+        }
+
         if (empty($this->customer_id)) {
             $this->validate([
                 'customer_name' => 'nullable|string|max:255',

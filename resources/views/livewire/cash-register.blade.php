@@ -27,6 +27,15 @@
         </div>
         <div class="card-body">
             @if ($currentSession)
+                @if ($currentSession->opened_at->startOfDay()->lt(now()->startOfDay()))
+                    <div class="alert alert-warning border-start border-4 border-warning d-flex align-items-center mb-3 py-2 px-3" role="alert">
+                        <i class="fa-solid fa-triangle-exclamation text-warning fs-4 me-3"></i>
+                        <div>
+                            <strong class="d-block">{{ __('Unclosed Register From Previous Day Detected!') }}</strong>
+                            <span class="small">{{ __('This register was opened on :date (:time) and was not closed last night. Please count and close yesterday\'s drawer first so today\'s cash can be opened separately.', ['date' => $currentSession->opened_at->format('d M Y'), 'time' => $currentSession->opened_at->format('h:i A')]) }}</span>
+                        </div>
+                    </div>
+                @endif
                 <div class="row g-3 mb-4">
                     <div class="col-md-3 col-sm-6 col-12">
                         <div class="border rounded p-3 bg-light">
@@ -141,6 +150,15 @@
                 </div>
                 <form wire:submit.prevent="endSession">
                     <div class="modal-body p-4">
+                        @if ($currentSession && $currentSession->opened_at->startOfDay()->lt(now()->startOfDay()))
+                            <div class="alert alert-warning py-2 px-3 mb-3 small d-flex align-items-center">
+                                <i class="fa-solid fa-triangle-exclamation me-2 fs-6"></i>
+                                <div>
+                                    <strong>{{ __('Next-Day / Delayed Close:') }}</strong> {{ __('This session was opened on :date. Once closed, you can open today\'s fresh session.', ['date' => $currentSession->opened_at->format('d/m/Y')]) }}
+                                </div>
+                            </div>
+                        @endif
+
                         <div class="alert alert-info py-2 mb-3">
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="fw-bold">{{ __('Calculated Expected Cash:') }}</span>

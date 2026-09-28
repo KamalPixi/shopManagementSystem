@@ -309,4 +309,108 @@ class AuditingAndPosImprovementsTest extends TestCase
                 return $sales->contains('id', $sale->id);
             });
     }
+
+    public function test_pos_blocks_selling_without_todays_opening_balance(): void
+    {
+        // Close all open sessions
+        CashRegisterSession::where('status', 'open')->update(['status' => 'closed']);
+
+        $unique = uniqid();
+        $prod = Product::create([
+            'name' => 'Test Item ' . $unique,
+            'category_id' => 1,
+            'brand_id' => 1,
+            'sku' => 'TEST-' . $unique,
+            'purchase_price' => 10.00,
+            'price' => 20.00,
+            'quantity' => 5,
+        ]);
+
+        // Attempting to sell without an open register session must be blocked
+        $pos = Livewire::test(Pos::class)
+            ->set('identifier', $prod->sku)
+            ->call('add')
+            ->call('sale');
+
+        $pos->assertSet('showOpenRegisterModal', true);
+        $this->assertNotEmpty($pos->get('errorMessage'));
+
+        // User enters opening balance manually
+        $pos->set('pos_opening_balance', 120.00)
+            ->set('pos_opening_note', 'Staff manually entered float')
+            ->call('submitOpeningBalance')
+            ->assertSet('showOpenRegisterModal', false);
+
+        $session = CashRegisterSession::currentOpenSession();
+        $this->assertNotNull($session);
+        $this->assertEquals(120.00, (float)$session->opening_balance);
+        $this->assertEquals($this->user->id, $session->user_id);
+
+        // Now sale can proceed
+        $pos->call('sale')
+            ->assertHasNoErrors();
+    }
+
+    public function test_pos_enforces_closing_previous_day_unclosed_register_before_opening_today(): void
+    {
+        // Setup an unclosed session from yesterday
+        CashRegisterSession::where('status', 'open')->update(['status' => 'closed']);
+
+        $yesterdaySession = CashRegisterSession::create([
+            'user_id' => $this->user->id,
+            'opening_balance' => 150.00,
+            'status' => 'open',
+            'opened_at' => now()->subDay()->setTime(9, 0, 0),
+        ]);
+
+        $unique = uniqid();
+        $prod = Product::create([
+            'name' => 'Item ' . $unique,
+            'category_id' => 1,
+            'brand_id' => 1,
+            'sku' => 'SKU-' . $unique,
+            'purchase_price' => 5.00,
+            'price' => 15.00,
+            'quantity' => 10,
+        ]);
+
+        // Attempting to sell today must detect the previous day session and show close modal
+        $pos = Livewire::test(Pos::class)
+            ->set('identifier', $prod->sku)
+            ->call('add')
+            ->call('sale');
+
+        $pos->assertSet('showClosePreviousDayModal', true);
+        $this->assertStringContainsString('Unclosed register from', $pos->get('errorMessage'));
+
+        // Staff closes yesterday's session
+        $pos->set('pos_closing_balance', 150.00)
+            ->set('pos_closing_note', 'Closed on next morning by staff')
+            ->call('submitClosePreviousDay')
+            ->assertSet('showClosePreviousDayModal', false)
+            ->assertSet('showOpenRegisterModal', true); // Immediately prompts for today's opening balance
+
+        $yesterdaySession->refresh();
+        $this->assertEquals('closed', $yesterdaySession->status);
+
+        // Audit log reflects delayed closure
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'register_closed_delayed',
+            'user_id' => $this->user->id,
+        ]);
+
+        // Staff enters today's opening balance
+        $pos->set('pos_opening_balance', 100.00)
+            ->set('pos_opening_note', 'Today float')
+            ->call('submitOpeningBalance')
+            ->assertSet('showOpenRegisterModal', false);
+
+        $todaySession = CashRegisterSession::todayOpenSession();
+        $this->assertNotNull($todaySession);
+        $this->assertEquals(100.00, (float)$todaySession->opening_balance);
+
+        // Now selling works cleanly
+        $pos->call('sale')
+            ->assertHasNoErrors();
+    }
 }
