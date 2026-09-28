@@ -74,15 +74,15 @@
                     <div class="row">
                         <div class="col-12 col-md-3">
                             <div class="mb-3">
-                                <label>{{ __('Purchase Price*') }}</label>
-                                <input wire:model="purchase_price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end">
+                                <label>{{ __('Purchase Price*') }} @if($has_variations)<small class="text-muted">({{ __('set per variation below') }})</small>@endif</label>
+                                <input wire:model="purchase_price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end" @disabled($has_variations)>
                                 @error('purchase_price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-12 col-md-3">
                             <div class="mb-3">
                                 <label>{{ __('Sale Price*') }}</label>
-                                <input wire:model="price" required type="number" step="0.01" min="0" class="form-control form-control-sm text-end">
+                                <input wire:model="price" required type="number" step="0.01" min="0" class="form-control form-control-sm text-end" @disabled($has_variations)>
                                 @error('price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>
@@ -240,7 +240,7 @@
                                                 <input wire:model="variations.{{ $idx }}.price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end fw-semibold" placeholder="0.00" required>
                                             </td>
                                             <td>
-                                                <input wire:model="variations.{{ $idx }}.purchase_price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0.00">
+                                                <input wire:model="variations.{{ $idx }}.purchase_price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0.00" @disabled($has_variations)>
                                             </td>
                                             <td>
                                                 <input wire:model="variations.{{ $idx }}.quantity" type="number" min="0" class="form-control form-control-sm text-center fw-bold" required>
