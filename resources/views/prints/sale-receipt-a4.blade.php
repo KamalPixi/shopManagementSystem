@@ -50,8 +50,8 @@
             margin-top: 2px;
         }
         .shop-logo {
-            max-height: 55px;
-            max-width: 160px;
+            max-height: 72px;
+            max-width: 360px;
             object-fit: contain;
             margin-bottom: 4px;
         }
@@ -320,11 +320,12 @@
     <table class="header-table" cellpadding="0" cellspacing="0">
         <tr>
             <td style="width: 55%; vertical-align: middle;">
-                @if (!empty($shop->logo) && file_exists(public_path($shop->logo)))
-                    <img src="{{ public_path($shop->logo) }}" alt="{{ $shop->name }}" class="shop-logo"><br>
+                @if (file_exists(public_path('assets/img/tp-horizontal.png')))
+                    <img src="{{ public_path('assets/img/tp-horizontal.png') }}" alt="{{ $shop->name ?? 'Tech Parisien' }}" class="shop-logo">
+                @else
+                    <div class="brand-name">{{ $shop->name ?? 'TECH PARISIEN' }}</div>
+                    <div class="brand-slogan">{{ __('Buy · Sell · Exchange') }}</div>
                 @endif
-                <div class="brand-name">{{ $shop->name ?? 'TECH PARISIEN' }}</div>
-                <div class="brand-slogan">{{ __('Buy · Sell · Exchange') }}</div>
             </td>
             <td style="width: 45%; vertical-align: middle; text-align: right;" class="top-contact-info">
                 @if(!empty($shop->address))
