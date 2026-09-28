@@ -19,9 +19,12 @@ use App\Livewire\Pos;
 use App\Livewire\Sales\Sales;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class AuditingAndPosImprovementsTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected User $user;
 
     protected function setUp(): void
@@ -38,6 +41,17 @@ class AuditingAndPosImprovementsTest extends TestCase
         );
 
         $role = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        foreach ([
+            'sales:read', 'sales:create', 'sales:update', 'sales:delete',
+            'stock:read', 'stock:create', 'stock:update', 'stock:delete',
+            'cash-register:create', 'cash-register:read', 'cash-register:update',
+            'money-movements:create', 'money-movements:read', 'money-movements:delete',
+            'audit-logs:read',
+        ] as $perm) {
+            \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'web']);
+        }
+        $role->syncPermissions(\Spatie\Permission\Models\Permission::all());
+
         if (!$this->user->hasRole('admin')) {
             $this->user->assignRole($role);
         }
@@ -54,7 +68,12 @@ class AuditingAndPosImprovementsTest extends TestCase
             'country' => 'France',
             'gst_percent' => 10,
             'low_stock_threshold' => 5,
+            'currency' => ['code' => 'EUR', 'symbol' => '€', 'name' => 'Euro'],
+            'timezone' => 'Europe/Paris',
         ]);
+
+        \App\Models\Category::firstOrCreate(['id' => 1], ['name' => 'General', 'description' => 'General Category']);
+        \App\Models\Brand::firstOrCreate(['id' => 1], ['name' => 'General Brand', 'description' => 'General Brand']);
     }
 
     public function test_cash_register_session_opening_and_closing(): void
@@ -285,7 +304,15 @@ class AuditingAndPosImprovementsTest extends TestCase
 
     public function test_sales_filtering_by_receipt_staff_and_payment(): void
     {
-        $sale = Sale::latest()->first();
+        $sale = Sale::create([
+            'receipt_no' => 'TP-999999',
+            'created_by' => $this->user->id,
+            'payment_method' => 'bank_transfer',
+            'total_price' => 50.00,
+            'discount' => 0,
+            'gst' => 0,
+            'profit' => 10.00,
+        ]);
         $this->assertNotNull($sale);
 
         // Test filtering by receipt number
