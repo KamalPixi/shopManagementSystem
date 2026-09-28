@@ -291,19 +291,15 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
             @endif
 
             <div class="mb-4 table-responsive">
-                <table class="table table-centered table-nowrap mb-2 rounded">
+                <table class="table table-centered table-nowrap mb-2 rounded align-middle">
                     <thead class="thead-light">
                         <tr>
-                            <th class="border-0 rounded-start">#</th>
-                            <th class="border-0 text-start" style="width: 28%;">{{ __('Product / Item') }}</th>
-                            <th class="border-0 text-center" style="width: 8%;">{{ __('VAT?') }}</th>
-                            <th class="border-0 text-center" style="width: 10%;">{{ __('Attributes') }}</th>
-                            <th class="border-0 text-center" style="width: 16%;">{{ __('Warranty & Print Options') }}</th>
-                            <th class="border-0 text-center" style="width: 10%;">{{ __('Sale Price') }}</th>
-                            <th class="border-0 text-center" style="width: 9%;">{{ __('Discount') }}</th>
-                            <th class="border-0 text-center" style="width: 7%;">{{ __('Qty') }}</th>
-                            <th class="border-0 text-center" style="width: 9%;">{{ __('Total') }}</th>
-                            <th class="border-0 text-end rounded-end" style="width: 3%;">-</th>
+                            <th class="border-0 rounded-start" style="width: 3%;">#</th>
+                            <th class="border-0 text-start" style="width: 32%;">{{ __('Product / Item') }}</th>
+                            <th class="border-0 text-start" style="width: 24%;">{{ __('Warranty & Tax') }}</th>
+                            <th class="border-0 text-end" style="width: 15%;">{{ __('Price & Disc') }}</th>
+                            <th class="border-0 text-center" style="width: 12%;">{{ __('Qty') }}</th>
+                            <th class="border-0 text-end rounded-end" style="width: 14%;">{{ __('Total') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -312,112 +308,129 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                             $prod = !empty($item['product_id']) ? collect($products)->firstWhere('id', $item['product_id']) : null;
                         @endphp
                         <tr wire:key="tr_key_{{ $itemKey }}">
-                            <td>{{ $loop->iteration }}</td>
-                            <td class="fw-bold align-items-center lh-1"> 
-                                {{ $item['item_name'] ?? ($prod?->name ?? 'Item') }}
-                                @if (!empty($item['is_custom']))
-                                    <span class="badge bg-info text-white ms-1" style="font-size: 0.65rem;">{{ __('Custom') }}</span>
-                                @endif
-
-                                @if (!empty($item['serial_no']))
-                                    <div class="mt-1 d-flex align-items-center">
-                                        <small class="text-muted me-2 font-monospace">SN: {{ $item['serial_no'] }}</small>
-                                        <label class="form-check-label text-muted" style="font-size: 0.7rem; cursor: pointer;">
-                                            <input type="checkbox" wire:model.live="sale_items.{{ $itemKey }}.show_serial_on_receipt" class="form-check-input" style="width: 13px; height: 13px;">
-                                            {{ __('Show SN on Receipt') }}
-                                        </label>
-                                    </div>
-                                @endif
-
-                                @if (!empty($item['sku']))
-                                    <small class="text-muted d-block" style="font-size: 0.72rem;">SKU: {{ $item['sku'] }}</small>
-                                @endif
-                            </td>
-
-                            {{-- Freedom for VATable at POS time --}}
-                            <td class="text-center align-middle">
-                                <div class="form-check d-inline-block">
-                                    <input type="checkbox" wire:model.live="sale_items.{{ $itemKey }}.is_vatable" class="form-check-input" id="vat_{{ $itemKey }}" style="width: 17px; height: 17px; cursor: pointer;">
+                            <td class="text-muted fw-bold">{{ $loop->iteration }}</td>
+                            <td class="py-2 text-start">
+                                <div class="d-flex align-items-center flex-wrap gap-1 mb-1">
+                                    <span class="fw-bold text-dark fs-6">{{ $item['item_name'] ?? ($prod?->name ?? 'Item') }}</span>
+                                    @if (!empty($item['is_custom']))
+                                        <span class="badge bg-info text-white" style="font-size: 0.65rem;">{{ __('Custom') }}</span>
+                                    @endif
+                                    @if (!empty($item['variation_name']))
+                                        <span class="badge bg-light text-dark border" style="font-size: 0.7rem;">{{ $item['variation_name'] }}</span>
+                                    @endif
                                 </div>
-                                <br>
-                                @if (!empty($item['is_vatable']))
-                                    <span class="badge bg-success" style="font-size: 0.65rem;">+VAT</span>
-                                @else
-                                    <span class="badge bg-secondary" style="font-size: 0.65rem;">No VAT</span>
-                                @endif
-                            </td>
 
-                            {{-- Attributes --}}
-                            <td class="fw-bold lh-1 text-center">
+                                <div class="d-flex align-items-center flex-wrap gap-2 text-muted" style="font-size: 0.75rem;">
+                                    @if (!empty($item['sku']))
+                                        <span><i class="fa-solid fa-barcode text-gray-400 me-1"></i><span class="font-monospace">{{ $item['sku'] }}</span></span>
+                                    @endif
+
+                                    @if (!empty($item['serial_no']))
+                                        <span class="d-inline-flex align-items-center font-monospace bg-gray-100 px-1 py-0 rounded border">
+                                            SN: {{ $item['serial_no'] }}
+                                        </span>
+                                        <label class="form-check-label text-muted d-inline-flex align-items-center gap-1 ms-1" style="font-size: 0.7rem; cursor: pointer;">
+                                            <input type="checkbox" wire:model.live="sale_items.{{ $itemKey }}.show_serial_on_receipt" class="form-check-input mt-0" style="width: 12px; height: 12px;">
+                                            {{ __('On Receipt') }}
+                                        </label>
+                                    @endif
+                                </div>
+
+                                {{-- Legacy product attributes if non-variant --}}
                                 @if ($prod && $prod->attributes_and_values && empty($item['product_variation_id']))
-                                <ul class="list-unstyled mb-0">
+                                <div class="mt-2 p-2 bg-light rounded border">
                                     @foreach ($prod->attributes_and_values as $att_and_values)
-                                        <li class="d-flex align-items-center justify-content-between mb-1">
-                                            <small class="text-muted pe-1">{{ ucfirst($att_and_values['name']) }}: </small> 
-                                            <select style="width:60%" wire:model="sale_items.{{$itemKey}}.attributes_and_values.{{$att_and_values['name']}}" class="form-select form-select-sm">
+                                        <div class="d-flex align-items-center justify-content-between mb-1 gap-2">
+                                            <small class="text-muted">{{ ucfirst($att_and_values['name']) }}:</small>
+                                            <select style="max-width: 140px;" wire:model="sale_items.{{$itemKey}}.attributes_and_values.{{$att_and_values['name']}}" class="form-select form-select-sm py-0">
                                                 <option value="-" selected>-</option>
                                                 @foreach ($att_and_values['values'] as $value)
                                                     <option wire:key="att_select_{{$value}}" value="{{$value}}">{{ucfirst($value)}}</option>
                                                 @endforeach
                                             </select>
-                                        </li>
+                                        </div>
                                     @endforeach
-                                </ul>
-                                @elseif(!empty($item['variation_name']))
-                                    <span class="badge bg-light text-dark border">{{ $item['variation_name'] }}</span>
-                                @else
-                                    <span class="text-muted">-</span>
+                                </div>
                                 @endif
                             </td>
 
-                            {{-- Warranty & Receipt Option --}}
-                            <td>
-                                <select wire:model.live="sale_items.{{$itemKey}}.warranty_id" class="form-select form-select-sm mb-1">
-                                    <option value="">- {{ __('No Warranty') }} -</option>
-                                    @foreach ($warranties as $warranty)
-                                        <option value="{{ $warranty->id }}">{{ $warranty->name }}</option>
-                                    @endforeach
-                                </select>
-                                <input wire:model.live="sale_items.{{$itemKey}}.warranty_description" type="text" class="form-control form-control-sm text-muted mb-1" placeholder="{{ __('Warranty terms') }}" style="font-size: 0.72rem; padding: 2px 5px;">
-                                @if (!empty($item['warranty_id']) || !empty($item['warranty_description']))
-                                    <label class="form-check-label text-muted" style="font-size: 0.7rem; cursor: pointer;">
-                                        <input type="checkbox" wire:model.live="sale_items.{{ $itemKey }}.show_warranty_on_receipt" class="form-check-input" style="width: 13px; height: 13px;">
-                                        {{ __('Print Warranty on Receipt') }}
-                                    </label>
-                                @endif
+                            {{-- Warranty & Tax --}}
+                            <td class="py-2 text-start">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <div class="flex-grow-1">
+                                        <select wire:model.live="sale_items.{{$itemKey}}.warranty_id" class="form-select form-select-sm py-1" style="font-size: 0.78rem;">
+                                            <option value="">{{ __('No Warranty') }}</option>
+                                            @foreach ($warranties as $warranty)
+                                                <option value="{{ $warranty->id }}">{{ $warranty->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <div class="form-check form-switch m-0" title="{{ __('Toggle VAT') }}">
+                                            <input type="checkbox" wire:model.live="sale_items.{{ $itemKey }}.is_vatable" class="form-check-input" id="vat_{{ $itemKey }}" style="cursor: pointer;">
+                                            <label class="form-check-label badge {{ !empty($item['is_vatable']) ? 'bg-success' : 'bg-secondary' }}" for="vat_{{ $itemKey }}" style="cursor: pointer; font-size: 0.65rem;">
+                                                {{ !empty($item['is_vatable']) ? 'VAT' : 'NO VAT' }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-1">
+                                    <input wire:model.live="sale_items.{{$itemKey}}.warranty_description" type="text" class="form-control form-control-sm text-muted" placeholder="{{ __('Warranty terms/notes') }}" style="font-size: 0.73rem;">
+                                    @if (!empty($item['warranty_id']) || !empty($item['warranty_description']))
+                                        <label class="form-check-label text-muted d-inline-flex align-items-center gap-1 text-nowrap ms-1" style="font-size: 0.7rem; cursor: pointer;" title="{{ __('Print Warranty on Receipt') }}">
+                                            <input type="checkbox" wire:model.live="sale_items.{{ $itemKey }}.show_warranty_on_receipt" class="form-check-input mt-0" style="width: 12px; height: 12px;">
+                                            <span>{{ __('Print') }}</span>
+                                        </label>
+                                    @endif
+                                </div>
                             </td>
 
-                            {{-- Sale Price --}}
-                            <td>
-                                <input wire:model.live="sale_items.{{$itemKey}}.price" type="number" step="0.01" class="form-control form-control-sm text-end" placeholder="0">
+                            {{-- Price & Discount --}}
+                            <td class="py-2 text-end">
+                                <div class="input-group input-group-sm mb-1" style="max-width: 130px; margin-left: auto;">
+                                    <span class="input-group-text py-0 px-2 text-muted">€</span>
+                                    <input wire:model.live="sale_items.{{$itemKey}}.price" type="number" step="0.01" class="form-control form-control-sm text-end fw-semibold py-1" placeholder="0.00" title="{{ __('Unit Price') }}">
+                                </div>
+                                <div class="input-group input-group-sm" style="max-width: 130px; margin-left: auto;">
+                                    <span class="input-group-text py-0 px-2 text-muted" style="font-size: 0.7rem;">-€</span>
+                                    <input wire:model.live="sale_items.{{$itemKey}}.discount" type="number" step="0.01" class="form-control form-control-sm text-end text-danger py-1" placeholder="0.00" title="{{ __('Line Discount') }}">
+                                </div>
                             </td>
 
-                            {{-- Discount --}}
-                            <td>
-                                <input wire:model.live="sale_items.{{$itemKey}}.discount" type="number" step="0.01" class="form-control form-control-sm text-end" placeholder="0">
+                            {{-- Qty Stepper --}}
+                            <td class="py-2 text-center">
+                                <div class="d-inline-flex align-items-center border rounded bg-white shadow-xs p-1">
+                                    <button type="button" class="btn btn-sm btn-link text-secondary p-0 px-1" wire:click="decrementQuantity('{{ $itemKey }}')" title="{{ __('Decrease') }}">
+                                        <i class="fa-solid fa-minus" style="font-size: 0.75rem;"></i>
+                                    </button>
+                                    <input wire:model.live="sale_items.{{$itemKey}}.quantity" type="number" min="1" class="form-control form-control-sm text-center fw-bold border-0 p-0 shadow-none" style="width: 42px;" placeholder="1">
+                                    <button type="button" class="btn btn-sm btn-link text-secondary p-0 px-1" wire:click="incrementQuantity('{{ $itemKey }}')" title="{{ __('Increase') }}">
+                                        <i class="fa-solid fa-plus" style="font-size: 0.75rem;"></i>
+                                    </button>
+                                </div>
                             </td>
 
-                            {{-- Qty --}}
-                            <td>
-                                <input wire:model.live="sale_items.{{$itemKey}}.quantity" type="number" min="1" class="form-control form-control-sm text-center fw-bold" placeholder="0">
-                            </td>
-
-                            {{-- Total --}}
-                            <td>
-                                <input wire:model="sale_items.{{$itemKey}}.total" type="number" readonly class="form-control form-control-sm text-end fw-bold" placeholder="0">
-                            </td>
-
-                            <td class="text-center px-0">
-                                <a class="dropdown-item text-danger text-center rounded p-1" wire:click="delete('{{ $itemKey }}')" wire:confirm="{{ __('Remove this item?') }}" href="#">
-                                    <i class="fas fa-trash"></i>
-                                </a>
+                            {{-- Total & Remove Action --}}
+                            <td class="py-2 text-end">
+                                <div class="d-flex align-items-center justify-content-end gap-2">
+                                    <div class="text-end">
+                                        <div class="fw-bold text-dark fs-6 font-monospace">€{{ number_format((float) ($item['total'] ?? 0), 2) }}</div>
+                                        @if (!empty($item['discount']) && $item['discount'] > 0)
+                                            <small class="text-success d-block" style="font-size: 0.7rem;">-€{{ number_format((float) $item['discount'], 2) }} {{ __('saved') }}</small>
+                                        @endif
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 ms-1" wire:click="delete('{{ $itemKey }}')" wire:confirm="{{ __('Remove this item?') }}" title="{{ __('Remove item') }}">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="10" class="text-center py-5">
+                            <td colspan="6" class="text-center py-5">
                                 <div class="text-muted">
-                                    <i class="fa-solid fa-cart-shopping fa-3x mb-3 text-gray-400 d-block"></i>
+                                    <i class="fa-solid fa-cart-shopping fa-3x mb-3 text-gray-300 d-block"></i>
                                     <span class="fw-bold fs-6 text-gray-700">{{ __('Cart is empty') }}</span>
                                     <p class="small text-muted mb-0 mt-1">{{ __('Scan barcode, enter SKU / serial number, or click + Custom Item to add products.') }}</p>
                                 </div>

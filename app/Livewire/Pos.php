@@ -734,6 +734,42 @@ class Pos extends Component
         $this->calculate();
     }
 
+    public function incrementQuantity($key)
+    {
+        if (isset($this->sale_items[$key])) {
+            $item = $this->sale_items[$key];
+            // Check stock if linked to product/variant
+            if (!empty($item['product_variation_id'])) {
+                $variation = ProductVariation::find($item['product_variation_id']);
+                if ($variation && $item['quantity'] >= $variation->quantity) {
+                    session()->flash('failed', __('Maximum stock reached for :name (:stock left)', ['name' => $item['item_name'], 'stock' => $variation->quantity]));
+                    return;
+                }
+            } elseif (!empty($item['product_id'])) {
+                $product = Product::find($item['product_id']);
+                if ($product && $item['quantity'] >= $product->quantity) {
+                    session()->flash('failed', __('Maximum stock reached for :name (:stock left)', ['name' => $item['item_name'], 'stock' => $product->quantity]));
+                    return;
+                }
+            }
+
+            $this->sale_items[$key]['quantity'] += 1;
+            $this->calculate();
+        }
+    }
+
+    public function decrementQuantity($key)
+    {
+        if (isset($this->sale_items[$key])) {
+            if ($this->sale_items[$key]['quantity'] > 1) {
+                $this->sale_items[$key]['quantity'] -= 1;
+                $this->calculate();
+            } else {
+                $this->delete($key);
+            }
+        }
+    }
+
     public function setCustomer($customer_id) {
         $this->customer_id = $customer_id;
         $customer = Customer::find($customer_id);
