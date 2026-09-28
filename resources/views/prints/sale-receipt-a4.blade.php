@@ -314,14 +314,16 @@
             'cash' => __('Cash'), 'card' => __('Card'),
             'bank_transfer' => __('Bank transfer'),
         ];
+        $logoPath = public_path('assets/img/tp-horizontal.png');
+        $logoData = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : null;
     @endphp
 
     <!-- Header Table -->
     <table class="header-table" cellpadding="0" cellspacing="0">
         <tr>
             <td style="width: 55%; vertical-align: middle;">
-                @if (file_exists(public_path('assets/img/tp-horizontal.png')))
-                    <img src="{{ public_path('assets/img/tp-horizontal.png') }}" alt="{{ $shop->name ?? 'Tech Parisien' }}" class="shop-logo">
+                @if ($logoData)
+                    <img src="{{ $logoData }}" alt="{{ $shop->name ?? 'Tech Parisien' }}" class="shop-logo">
                 @else
                     <div class="brand-name">{{ $shop->name ?? 'TECH PARISIEN' }}</div>
                     <div class="brand-slogan">{{ __('Buy · Sell · Exchange') }}</div>
