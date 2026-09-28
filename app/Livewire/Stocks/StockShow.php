@@ -20,12 +20,12 @@ class StockShow extends Component
             return view('includes.unauthorized');
         }
 
-        $product = Product::find($this->product_id);
+        $product = Product::with(['variations', 'category', 'brand', 'warranty', 'productPurchases.supplier', 'productPurchases.createdBy', 'saleItems'])->findOrFail($this->product_id);
         $sale_ids = $product->saleItems->pluck('sale_id')->unique();
 
         return view('livewire.stocks.stock-show', [
             'product' => $product,
-            'sales' => Sale::whereIn('id', $sale_ids)->get(),
+            'sales' => Sale::with(['saleItems.product', 'saleItems.productVariation', 'customer', 'createdBy'])->whereIn('id', $sale_ids)->get(),
         ]);
     }
 }

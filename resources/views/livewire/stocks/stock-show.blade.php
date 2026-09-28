@@ -80,6 +80,34 @@
                         </tbody>
                     </table>
 
+                    @if ($product->has_variations)
+                        <div class="card border-info-subtle mb-4">
+                            <div class="card-body">
+                                <h2 class="h5 mb-3"><i class="fa-solid fa-boxes-stacked text-info me-2"></i>Variation Inventory</h2>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-sm align-middle mb-0">
+                                        <thead class="table-light"><tr><th>Variation</th><th>SKU</th><th>Serial / IMEI</th><th class="text-end">Sale Price</th><th class="text-end">Cost Price</th><th class="text-center">Stock</th><th class="text-center">Low Alert</th></tr></thead>
+                                        <tbody>
+                                            @forelse ($product->variations as $variation)
+                                                <tr>
+                                                    <td class="fw-semibold">{{ $variation->variation_name }}</td>
+                                                    <td class="font-monospace">{{ $variation->sku ?: '-' }}</td>
+                                                    <td class="font-monospace">{{ $variation->serial_no ?: '-' }}</td>
+                                                    <td class="text-end">{{ number_format($variation->price, 2) }}</td>
+                                                    <td class="text-end">{{ number_format($variation->purchase_price, 2) }}</td>
+                                                    <td class="text-center"><span class="badge {{ $variation->quantity <= ($variation->low_stock_threshold ?? $product->effective_low_stock_threshold) ? 'bg-danger' : 'bg-light text-dark border' }}">{{ $variation->quantity }}</span></td>
+                                                    <td class="text-center">{{ $variation->low_stock_threshold ?? $product->effective_low_stock_threshold }}</td>
+                                                </tr>
+                                            @empty
+                                                <tr><td colspan="7" class="text-center text-muted">No variations configured.</td></tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="">
                         <h2 class="h5 mb-2">Stock Add History</h2>
                         <table class="table table-bordered table-striped">
@@ -157,15 +185,18 @@
                                     @foreach ($sale->saleItems as $item)
                                         <tr wire:key="sale_items_tr_{{$item->id}}">
                                             <td class="px-1 py-1" style="width: 45%;"> 
-                                                <small>{{$item?->product->name }}</small> <br>
-                                                <small class="text-muted">{{ $item?->product->sku }} </small>
+                                                <small>{{$item?->product->name }}</small>
+                                                @if ($item->productVariation?->variation_name)<br><small class="text-primary">{{ $item->productVariation->variation_name }}</small>@endif <br>
+                                                <small class="text-muted">{{ $item->productVariation?->sku ?: $item?->product->sku }} </small>
                                              </td>
                                             <td class="px-1 py-1 align-middle lh-1" style="width: 15%;"> 
                                                 <table class="w-100">
                                                     @foreach ($item->attributes_and_values ?? [] as $att => $value)
+                                                    @php($attributeName = is_array($value) ? ($value['name'] ?? '') : $att)
+                                                    @php($attributeValue = is_array($value) ? ($value['value'] ?? '') : $value)
                                                     <tr>
-                                                        <td class="text-muted px-0"> <small>{{ ucfirst($att) }}</small></td>
-                                                        <td class="px-0"><small><b>: {{ ucfirst($value) }}</b></small></td>
+                                                        <td class="text-muted px-0"> <small>{{ ucfirst($attributeName) }}</small></td>
+                                                        <td class="px-0"><small><b>: {{ ucfirst($attributeValue) }}</b></small></td>
                                                     </tr>
                                                     @endforeach
                                                 </table>
