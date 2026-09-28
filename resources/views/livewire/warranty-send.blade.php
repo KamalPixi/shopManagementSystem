@@ -67,19 +67,19 @@
                             <div class="col-12 col-md-4">
                                 <div class="mb-4">
                                     <label>{{ __('Repair cost') }} </label>
-                                    <input wire:model="repair_cost" type="number" class="form-control form-control-sm">
+                                    <input wire:model="repair_cost" type="number" class="form-control form-control-sm" placeholder="0">
                                 </div>
                             </div>
                             <div class="col-12 col-md-4">
                                 <div class="mb-4">
                                     <label>{{ __('Repair cost paid.') }}</label>
-                                    <input wire:model="repair_cost_paid" type="number" class="form-control form-control-sm">
+                                    <input wire:model="repair_cost_paid" type="number" class="form-control form-control-sm" placeholder="0">
                                 </div>
                             </div>
                             <div class="col-12 col-md-4">
                                 <div class="mb-4">
                                     <label for="description">{{ __('Repair cost due') }}</label>
-                                    <input wire:model="repair_cost_due" type="number" class="form-control form-control-sm">
+                                    <input wire:model="repair_cost_due" type="number" class="form-control form-control-sm" placeholder="0">
                                 </div>
                             </div>
                         </div>

@@ -66,18 +66,18 @@
                         <div class="row g-3 mb-3">
                             <div class="col-md-6 col-12">
                                 <label class="form-label fw-bold small mb-1">{{ __('Sale Price') }} <span class="text-danger">*</span></label>
-                                <input wire:model="custom_price" type="number" step="0.01" min="0" class="form-control text-end" placeholder="0.00" required>
+                                <input wire:model="custom_price" type="number" step="0.01" min="0" class="form-control text-end" placeholder="0" required>
                             </div>
                             <div class="col-md-6 col-12">
                                 <label class="form-label fw-bold small mb-1">{{ __('Cost Price') }}</label>
-                                <input wire:model="custom_purchase_price" type="number" step="0.01" min="0" class="form-control text-end" placeholder="0.00">
+                                <input wire:model="custom_purchase_price" type="number" step="0.01" min="0" class="form-control text-end" placeholder="0">
                             </div>
                         </div>
 
                         <div class="row g-3 mb-3">
                             <div class="col-md-6 col-12">
                                 <label class="form-label fw-bold small mb-1">{{ __('Quantity') }} <span class="text-danger">*</span></label>
-                                <input wire:model="custom_quantity" type="number" min="1" class="form-control text-center fw-bold" required>
+                                <input wire:model="custom_quantity" type="number" min="1" class="form-control text-center fw-bold" required placeholder="0">
                             </div>
                             <div class="col-md-6 col-12">
                                 <label class="form-label fw-bold small mb-1">{{ __('Warranty') }}</label>
@@ -215,19 +215,19 @@
                             </td>
 
                             <td>
-                                <input wire:model.live="sale_items.{{$itemKey}}.price" type="number" step="0.01" class="form-control form-control-sm text-end">
+                                <input wire:model.live="sale_items.{{$itemKey}}.price" type="number" step="0.01" class="form-control form-control-sm text-end" placeholder="0">
                             </td>
 
                             <td>
-                                <input wire:model.live="sale_items.{{$itemKey}}.discount" type="number" step="0.01" class="form-control form-control-sm text-end">
+                                <input wire:model.live="sale_items.{{$itemKey}}.discount" type="number" step="0.01" class="form-control form-control-sm text-end" placeholder="0">
                             </td>
 
                             <td>
-                                <input wire:model.live="sale_items.{{$itemKey}}.quantity" type="number" min="1" class="form-control form-control-sm text-center fw-bold">
+                                <input wire:model.live="sale_items.{{$itemKey}}.quantity" type="number" min="1" class="form-control form-control-sm text-center fw-bold" placeholder="0">
                             </td>
 
                             <td>
-                                <input wire:model="sale_items.{{$itemKey}}.total" type="number" readonly class="form-control form-control-sm text-end fw-bold">
+                                <input wire:model="sale_items.{{$itemKey}}.total" type="number" readonly class="form-control form-control-sm text-end fw-bold" placeholder="0">
                             </td>
 
                             <td class="text-center px-0">
@@ -309,13 +309,13 @@
                             <tr>
                                 <td class="text-end fw-bold py-1" style="width: 70%;">{{ __('Subtotal') }}:</td>
                                 <td class="py-1">
-                                    <input wire:model="subtotal" readonly type="number" class="fw-bold text-end form-control form-control-sm bg-white">
+                                    <input wire:model="subtotal" readonly type="number" class="fw-bold text-end form-control form-control-sm bg-white" placeholder="0">
                                 </td>
                             </tr>
                             <tr>
                                 <td class="text-end fw-bold py-1">{{ __('Discount') }}:</td>
                                 <td class="py-1">
-                                    <input wire:model.live="discount" readonly type="number" class="fw-bold text-end form-control form-control-sm bg-white">
+                                    <input wire:model.live="discount" readonly type="number" class="fw-bold text-end form-control form-control-sm bg-white" placeholder="0">
                                 </td>
                             </tr>
                             <tr>
@@ -323,13 +323,13 @@
                                     {{ $shop?->tax_label ?? 'GST' }} <span class="small text-muted">({{ $shop?->gst_percent }}% on VAT items)</span>:
                                 </td>
                                 <td class="py-1">
-                                    <input wire:model.live="gst" readonly type="number" class="fw-bold text-end form-control form-control-sm bg-white">
+                                    <input wire:model.live="gst" readonly type="number" class="fw-bold text-end form-control form-control-sm bg-white" placeholder="0">
                                 </td>
                             </tr>
                             <tr class="border-top">
                                 <td class="text-end fw-bold fs-5 py-2 text-dark">{{ __('Grand Total') }}:</td>
                                 <td class="py-2">
-                                    <input wire:model.live="grand_total" readonly type="number" class="fs-5 fw-bold text-end form-control form-control-sm bg-white text-primary border-primary">
+                                    <input wire:model.live="grand_total" readonly type="number" class="fs-5 fw-bold text-end form-control form-control-sm bg-white text-primary border-primary" placeholder="0">
                                 </td>
                             </tr>
                         </table>

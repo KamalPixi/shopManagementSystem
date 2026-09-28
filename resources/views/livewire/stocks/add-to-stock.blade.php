@@ -81,8 +81,8 @@
                                             <td class="fw-semibold">{{ $variation['variation_name'] }}</td>
                                             <td>{{ $variation['quantity'] }}</td>
                                             <td>{{ number_format($variation['price'], 2) }}</td>
-                                            <td><input wire:model="variations.{{ $index }}.add_purchase_price" type="number" min="0" step="0.01" class="form-control form-control-sm" style="min-width:110px"></td>
-                                            <td><input wire:model="variations.{{ $index }}.add_quantity" type="number" min="0" class="form-control form-control-sm fw-bold" style="min-width:110px"></td>
+                                            <td placeholder="0"><input wire:model="variations.{{ $index }}.add_purchase_price" type="number" min="0" step="0.01" class="form-control form-control-sm" style="min-width:110px"></td>
+                                            <td placeholder="0"><input wire:model="variations.{{ $index }}.add_quantity" type="number" min="0" class="form-control form-control-sm fw-bold" style="min-width:110px"></td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -174,7 +174,7 @@
                         <div class="col-12 col-md-4">
                             <div class="mb-4">
                                 <label>{{ $has_variations ? __('Total quantity received (calculated)') : __('New Purchase Quantity*') }} | <small>{{ $has_variations ? __('Use the variation table above') : __('Current Qty: ' . $current_quantity) }}</small></label>
-                                <input wire:model="quantity" required type="number" class="form-control form-control-sm" {{ $has_variations ? 'readonly' : '' }}>
+                                <input wire:model="quantity" required type="number" class="form-control form-control-sm" {{ $has_variations ? 'readonly' : '' }} placeholder="0">
                             </div>
                         </div>
 

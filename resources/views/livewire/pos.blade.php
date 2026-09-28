@@ -61,7 +61,7 @@
                             <div class="col-md-6 col-12">
                                 <label class="form-label fw-bold small mb-1">{{ __('Sale Price') }} <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <input wire:model="custom_price" type="number" step="0.01" min="0" class="form-control text-end" placeholder="0.00" required>
+                                    <input wire:model="custom_price" type="number" step="0.01" min="0" class="form-control text-end" placeholder="0" required>
                                 </div>
                                 <div class="d-flex flex-wrap gap-1 mt-1">
                                     @foreach ([10, 20, 30, 40, 50, 100] as $preset)
@@ -74,7 +74,7 @@
                             </div>
                             <div class="col-md-6 col-12">
                                 <label class="form-label fw-bold small mb-1">{{ __('Cost / Purchase Price') }} <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
-                                <input wire:model="custom_purchase_price" type="number" step="0.01" min="0" class="form-control text-end" placeholder="0.00">
+                                <input wire:model="custom_purchase_price" type="number" step="0.01" min="0" class="form-control text-end" placeholder="0">
                                 <div class="d-flex flex-wrap gap-1 mt-1">
                                     @foreach ([0, 5, 10, 15, 20, 30] as $preset)
                                         <button type="button" wire:click="setCustomPurchasePrice({{ $preset }})" class="btn btn-xs btn-outline-secondary rounded-1 py-0 px-2" style="font-size: 0.72rem;">
@@ -89,7 +89,7 @@
                         <div class="row g-3 mb-3">
                             <div class="col-md-6 col-12">
                                 <label class="form-label fw-bold small mb-1">{{ __('Quantity') }} <span class="text-danger">*</span></label>
-                                <input wire:model="custom_quantity" type="number" min="1" class="form-control text-center fw-bold" required>
+                                <input wire:model="custom_quantity" type="number" min="1" class="form-control text-center fw-bold" required placeholder="0">
                                 @error('custom_quantity') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                             <div class="col-md-6 col-12">
@@ -158,7 +158,7 @@
                             <label class="form-label fw-bold small mb-1">{{ __('Opening Cash in Drawer (:currency)', ['currency' => $currencySymbol]) }} <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light fw-bold">{{ $currencySymbol }}</span>
-                                <input wire:model="pos_opening_balance" type="number" step="0.01" min="0" class="form-control form-control-lg text-end fw-bold" placeholder="0.00" autofocus required>
+                                <input wire:model="pos_opening_balance" type="number" step="0.01" min="0" class="form-control form-control-lg text-end fw-bold" placeholder="0" autofocus required>
                             </div>
                             @error('pos_opening_balance') <span class="text-danger small">{{ $message }}</span> @enderror
                         </div>
@@ -220,7 +220,7 @@
                             <label class="form-label fw-bold small mb-1">{{ __('Actual Counted Cash In Drawer') }} <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light fw-bold">{{ $currencySymbol }}</span>
-                                <input wire:model.live="pos_closing_balance" type="number" step="0.01" min="0" class="form-control form-control-lg text-end fw-bold" placeholder="0.00" autofocus required>
+                                <input wire:model.live="pos_closing_balance" type="number" step="0.01" min="0" class="form-control form-control-lg text-end fw-bold" placeholder="0" autofocus required>
                             </div>
                             @php
                                 $diff = round((float)$pos_closing_balance - (float)$overdueExpected, 2);
@@ -367,22 +367,22 @@
 
                             {{-- Sale Price --}}
                             <td>
-                                <input wire:model.live="sale_items.{{$itemKey}}.price" type="number" step="0.01" class="form-control form-control-sm text-end">
+                                <input wire:model.live="sale_items.{{$itemKey}}.price" type="number" step="0.01" class="form-control form-control-sm text-end" placeholder="0">
                             </td>
 
                             {{-- Discount --}}
                             <td>
-                                <input wire:model.live="sale_items.{{$itemKey}}.discount" type="number" step="0.01" class="form-control form-control-sm text-end">
+                                <input wire:model.live="sale_items.{{$itemKey}}.discount" type="number" step="0.01" class="form-control form-control-sm text-end" placeholder="0">
                             </td>
 
                             {{-- Qty --}}
                             <td>
-                                <input wire:model.live="sale_items.{{$itemKey}}.quantity" type="number" min="1" class="form-control form-control-sm text-center fw-bold">
+                                <input wire:model.live="sale_items.{{$itemKey}}.quantity" type="number" min="1" class="form-control form-control-sm text-center fw-bold" placeholder="0">
                             </td>
 
                             {{-- Total --}}
                             <td>
-                                <input wire:model="sale_items.{{$itemKey}}.total" type="number" readonly class="form-control form-control-sm text-end fw-bold">
+                                <input wire:model="sale_items.{{$itemKey}}.total" type="number" readonly class="form-control form-control-sm text-end fw-bold" placeholder="0">
                             </td>
 
                             <td class="text-center px-0">

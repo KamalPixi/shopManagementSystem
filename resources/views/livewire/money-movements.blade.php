@@ -128,7 +128,7 @@
                             <label class="form-label fw-bold small text-gray-700 mb-1">{{ __('Amount') }} <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light text-muted fw-bold">{{ $currencySymbol }}</span>
-                                <input wire:model="amount" type="number" step="0.01" min="0.01" class="form-control text-end fw-bold fs-6" placeholder="0.00" required>
+                                <input wire:model="amount" type="number" step="0.01" min="0.01" class="form-control text-end fw-bold fs-6" placeholder="0" required>
                             </div>
                             @error('amount') <span class="text-danger small">{{ $message }}</span> @enderror
                         </div>

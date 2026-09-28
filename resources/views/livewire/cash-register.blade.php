@@ -112,7 +112,7 @@
                             <label class="form-label fw-bold small mb-1">{{ __('Opening Cash Balance') }} <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text">{{ $currencySymbol }}</span>
-                                <input wire:model="opening_balance" type="number" step="0.01" min="0" class="form-control form-control-lg text-end fw-bold" placeholder="0.00" autofocus required>
+                                <input wire:model="opening_balance" type="number" step="0.01" min="0" class="form-control form-control-lg text-end fw-bold" placeholder="0" autofocus required>
                             </div>
                             <small class="text-muted">{{ __('Count the starting cash present in the drawer.') }}</small>
                             @error('opening_balance') <span class="text-danger small d-block">{{ $message }}</span> @enderror
@@ -170,7 +170,7 @@
                             <label class="form-label fw-bold small mb-1">{{ __('Actual Counted Cash in Drawer') }} <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text">{{ $currencySymbol }}</span>
-                                <input wire:model.live="closing_balance" type="number" step="0.01" min="0" class="form-control form-control-lg text-end fw-bold" placeholder="0.00" required>
+                                <input wire:model.live="closing_balance" type="number" step="0.01" min="0" class="form-control form-control-lg text-end fw-bold" placeholder="0" required>
                             </div>
                             @php
                                 $diff = round((float)$closing_balance - (float)$expectedCash, 2);
