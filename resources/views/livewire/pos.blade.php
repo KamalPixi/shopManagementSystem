@@ -306,6 +306,12 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                         @forelse ($sale_items as $itemKey => $item)
                         @php
                             $prod = !empty($item['product_id']) ? collect($products)->firstWhere('id', $item['product_id']) : null;
+                            $availableStock = null;
+                            if (!empty($item['product_variation_id'])) {
+                                $availableStock = $item['stock'] ?? \App\Models\ProductVariation::where('id', $item['product_variation_id'])->value('quantity');
+                            } elseif (!empty($item['product_id'])) {
+                                $availableStock = $item['stock'] ?? ($prod?->quantity ?? \App\Models\Product::where('id', $item['product_id'])->value('quantity'));
+                            }
                         @endphp
                         <tr wire:key="tr_key_{{ $itemKey }}">
                             <td class="text-muted fw-bold">{{ $loop->iteration }}</td>
@@ -404,16 +410,28 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                                 </div>
                             </td>
 
-                            {{-- Qty Stepper --}}
+                            {{-- Qty Stepper & Stock Info --}}
                             <td class="py-2 text-center">
-                                <div class="d-inline-flex align-items-center border rounded bg-white shadow-xs p-1">
-                                    <button type="button" class="btn btn-sm btn-link text-secondary p-0 px-1" wire:click="decrementQuantity('{{ $itemKey }}')" title="{{ __('Decrease') }}">
-                                        <i class="fa-solid fa-minus" style="font-size: 0.75rem;"></i>
-                                    </button>
-                                    <input wire:model.live="sale_items.{{$itemKey}}.quantity" type="number" min="1" class="form-control form-control-sm text-center fw-bold border-0 p-0 shadow-none" style="width: 42px;" placeholder="1">
-                                    <button type="button" class="btn btn-sm btn-link text-secondary p-0 px-1" wire:click="incrementQuantity('{{ $itemKey }}')" title="{{ __('Increase') }}">
-                                        <i class="fa-solid fa-plus" style="font-size: 0.75rem;"></i>
-                                    </button>
+                                <div class="d-inline-flex align-items-center gap-2">
+                                    <div class="d-inline-flex align-items-center border rounded bg-white shadow-xs p-1">
+                                        <button type="button" class="btn btn-sm btn-link text-secondary p-0 px-1" wire:click="decrementQuantity('{{ $itemKey }}')" title="{{ __('Decrease') }}">
+                                            <i class="fa-solid fa-minus" style="font-size: 0.75rem;"></i>
+                                        </button>
+                                        <input wire:model.live="sale_items.{{$itemKey}}.quantity" type="number" min="1" class="form-control form-control-sm text-center fw-bold border-0 p-0 shadow-none" style="width: 42px;" placeholder="1">
+                                        <button type="button" class="btn btn-sm btn-link text-secondary p-0 px-1" wire:click="incrementQuantity('{{ $itemKey }}')" title="{{ __('Increase') }}">
+                                            <i class="fa-solid fa-plus" style="font-size: 0.75rem;"></i>
+                                        </button>
+                                    </div>
+                                    @if ($availableStock !== null)
+                                        @php
+                                            $remainingStock = $availableStock - (int)($item['quantity'] ?? 1);
+                                        @endphp
+                                        <div class="text-nowrap" title="{{ __('Available stock in inventory: :total', ['total' => $availableStock]) }}">
+                                            <span class="badge {{ $remainingStock <= 2 ? 'bg-danger text-white' : 'bg-light text-secondary border' }}" style="font-size: 0.68rem; font-weight: 600; padding: 4px 6px;">
+                                                {{ $remainingStock }} {{ __('left') }}
+                                            </span>
+                                        </div>
+                                    @endif
                                 </div>
                             </td>
 

@@ -209,6 +209,7 @@ class Pos extends Component
                     'show_warranty_on_receipt' => true,
                     'show_serial_on_receipt' => !empty($matchedVariation->serial_no ?: $product->serial_no),
                     'is_custom' => false,
+                    'stock' => $matchedVariation->quantity,
                 ];
             }
         } else {
@@ -249,6 +250,7 @@ class Pos extends Component
                     'show_warranty_on_receipt' => true,
                     'show_serial_on_receipt' => !empty($product->serial_no),
                     'is_custom' => false,
+                    'stock' => $product->quantity,
                 ];
             }
         }
