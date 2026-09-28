@@ -52,10 +52,20 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                     <div class="row g-2">
                         @forelse ($pendingProduct->variations as $variation)
                             <div class="col-12 col-md-6 col-xl-3">
-                                <button type="button" wire:click="selectVariation({{ $variation->id }})" class="btn btn-outline-primary w-100 text-start h-100" @disabled($variation->quantity < 1)>
-                                    <strong class="d-block">{{ $variation->variation_name }}</strong>
-                                    <small class="d-block">{{ $variation->sku ?: $pendingProduct->sku }}</small>
-                                    <small>{{ number_format($variation->price, 2) }} · {{ __('Stock') }}: {{ $variation->quantity }}</small>
+                                <button type="button" wire:click="selectVariation({{ $variation->id }})" class="btn {{ $variation->quantity < 1 ? 'btn-outline-danger opacity-75' : 'btn-outline-primary' }} w-100 text-start h-100 position-relative" @disabled($variation->quantity < 1)>
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <strong class="d-block">{{ $variation->variation_name }}</strong>
+                                        @if ($variation->quantity < 1)
+                                            <span class="badge bg-danger text-white ms-1" style="font-size: 0.65rem;">{{ __('Out of Stock') }}</span>
+                                        @endif
+                                    </div>
+                                    <small class="d-block text-muted">{{ $variation->sku ?: $pendingProduct->sku }}</small>
+                                    <div class="mt-1 d-flex justify-content-between align-items-center">
+                                        <span class="fw-semibold">€{{ number_format($variation->price, 2) }}</span>
+                                        <span class="{{ $variation->quantity < 1 ? 'text-danger fw-bold' : 'text-muted' }}" style="font-size: 0.78rem;">
+                                            {{ __('Stock') }}: {{ $variation->quantity }}
+                                        </span>
+                                    </div>
                                 </button>
                             </div>
                         @empty
