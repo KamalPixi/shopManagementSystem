@@ -11,33 +11,7 @@
         $currencySymbol = $shop?->currency['symbol'] ?? '€';
     @endphp
 
-    {{-- Top Register Status Bar --}}
-    <div class="row mb-3">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center p-2 px-3 rounded shadow-sm {{ $currentSession ? 'bg-white border-start border-4 border-success' : 'bg-white border-start border-4 border-warning' }}">
-                <div class="d-flex align-items-center">
-                    <i class="fa-solid fa-cash-register me-2 {{ $currentSession ? 'text-success' : 'text-warning' }} fs-5"></i>
-                    <div>
-                        @if ($currentSession)
-                            <span class="fw-bold text-dark">{{ __('Cash Register is OPEN') }}</span>
-                            <span class="text-muted small ms-2">({{ __('Opened by: :user with :sym:amount', ['user' => $currentSession->user?->name ?? 'Staff', 'sym' => $currencySymbol, 'amount' => number_format($currentSession->opening_balance, 2)]) }})</span>
-                        @else
-                            <span class="fw-bold text-warning">{{ __('Cash Register is CLOSED') }}</span>
-                            <span class="text-muted small ms-2">{{ __('No daily opening balance set yet.') }}</span>
-                        @endif
-                    </div>
-                </div>
-                <div>
-                    <a href="{{ route('cashRegister') }}" class="btn btn-xs btn-outline-dark">
-                        <i class="fa-solid fa-drawer me-1"></i> {{ __('Register & Drawer') }}
-                    </a>
-                    <a href="{{ route('moneyMovements') }}" class="btn btn-xs btn-outline-info ms-1">
-                        <i class="fa-solid fa-money-bill-transfer me-1"></i> {{ __('Cash In / Out') }}
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     {{-- Scan & Custom Item Bar --}}
     <div class="row mb-4">
@@ -300,37 +274,44 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="10" class="text-center text-muted py-4">{{ __('Scan a barcode/serial or click + Custom Item to add items to the cart.') }}</td>
+                            <td colspan="10" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="fa-solid fa-cart-shopping fa-3x mb-3 text-gray-400 d-block"></i>
+                                    <span class="fw-bold fs-6 text-gray-700">{{ __('Cart is empty') }}</span>
+                                    <p class="small text-muted mb-0 mt-1">{{ __('Scan barcode, enter SKU / serial number, or click + Custom Item to add products.') }}</p>
+                                </div>
+                            </td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
 
-            {{-- Checkout Bottom Area: Payment, Customer, and Totals --}}
-            <div class="row g-3">
+            {{-- Checkout Bottom Area: Shown ONLY when items are added to the cart --}}
+            @if (count($sale_items) > 0)
+            <div class="row g-3 mt-2 pt-3 border-top">
                 {{-- Payment Details Column --}}
                 <div class="col-lg-6 col-12">
-                    <div class="card border border-light-subtle bg-light p-3 rounded h-100">
-                        <h6 class="fw-bold mb-3 d-flex align-items-center">
+                    <div class="card border border-light-subtle bg-light p-3 rounded h-100 shadow-none">
+                        <h6 class="fw-bold mb-3 d-flex align-items-center text-dark">
                             <i class="fa-solid fa-credit-card me-2 text-primary"></i> {{ __('Payment Information') }}
                         </h6>
 
                         <div class="mb-3">
                             <label class="small fw-bold mb-1">{{ __('Payment Method') }} <span class="text-danger">*</span></label>
                             <div class="btn-group w-100" role="group">
-                                <input type="radio" wire:model.live="payment_method" class="btn-check" name="btnradio" id="btnradio_cash" value="cash" autocomplete="off" checked>
-                                <label class="btn btn-outline-success fw-bold" for="btnradio_cash">
+                                <input type="radio" wire:model.live="payment_method" class="btn-check" name="btnradio" id="btnradio_cash" value="cash" autocomplete="off">
+                                <label class="btn {{ $payment_method === 'cash' ? 'btn-success text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_cash">
                                     <i class="fa-solid fa-money-bill-wave me-1"></i> {{ __('Cash') }}
                                 </label>
 
                                 <input type="radio" wire:model.live="payment_method" class="btn-check" name="btnradio" id="btnradio_card" value="card" autocomplete="off">
-                                <label class="btn btn-outline-info fw-bold" for="btnradio_card">
+                                <label class="btn {{ $payment_method === 'card' ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_card">
                                     <i class="fa-solid fa-credit-card me-1"></i> {{ __('Card') }}
                                 </label>
 
                                 <input type="radio" wire:model.live="payment_method" class="btn-check" name="btnradio" id="btnradio_bank" value="bank_transfer" autocomplete="off">
-                                <label class="btn btn-outline-warning text-dark fw-bold" for="btnradio_bank">
+                                <label class="btn {{ $payment_method === 'bank_transfer' ? 'btn-info text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_bank">
                                     <i class="fa-solid fa-building-columns me-1"></i> {{ __('Bank Transfer') }}
                                 </label>
                             </div>
@@ -379,49 +360,47 @@
 
                 {{-- Totals Column --}}
                 <div class="col-lg-6 col-12">
-                    <div class="card border border-light-subtle bg-light p-3 rounded h-100 d-flex flex-column justify-content-between">
-                        <table class="w-100 mb-3">
-                            <tr>
-                                <td class="text-end fw-bold py-1" style="width: 70%;">{{ __('Subtotal') }}:</td>
-                                <td class="py-1">
-                                    <input wire:model="subtotal" readonly type="number" class="fw-bold text-end form-control form-control-sm bg-white">
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="text-end fw-bold py-1">{{ __('Discount') }}:</td>
-                                <td class="py-1">
-                                    <input wire:model.live="discount" readonly type="number" class="fw-bold text-end form-control form-control-sm bg-white">
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="text-end fw-bold py-1">
-                                    {{ $shop?->tax_label ?? 'GST' }} <span class="small text-muted">({{ $shop?->gst_percent }}% on VAT items)</span>:
-                                </td>
-                                <td class="py-1">
-                                    <input wire:model.live="gst" readonly type="number" class="fw-bold text-end form-control form-control-sm bg-white">
-                                </td>
-                            </tr>
-                            <tr class="border-top">
-                                <td class="text-end fw-bold fs-5 py-2 text-dark">{{ __('Grand Total') }}:</td>
-                                <td class="py-2">
-                                    <input wire:model.live="grand_total" readonly type="number" class="fs-5 fw-bold text-end form-control form-control-sm bg-white text-primary border-primary">
-                                </td>
-                            </tr>
-                        </table>
+                    <div class="card border border-light-subtle bg-light p-3 rounded h-100 d-flex flex-column justify-content-between shadow-none">
+                        <div>
+                            <h6 class="fw-bold mb-3 d-flex align-items-center text-dark">
+                                <i class="fa-solid fa-receipt me-2 text-primary"></i> {{ __('Order Summary') }}
+                            </h6>
+                            <table class="table table-sm table-borderless w-100 mb-3">
+                                <tbody>
+                                    <tr>
+                                        <td class="text-start text-muted py-1">{{ __('Subtotal') }}</td>
+                                        <td class="text-end fw-bold py-1">{{ $currencySymbol }}{{ number_format((float)$subtotal, 2) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-start text-muted py-1">{{ __('Discount') }}</td>
+                                        <td class="text-end fw-bold text-danger py-1">- {{ $currencySymbol }}{{ number_format((float)$discount, 2) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-start text-muted py-1">
+                                            {{ $shop?->tax_label ?? 'TVA' }} <span class="small text-muted">({{ $shop?->gst_percent }}% on VAT items)</span>
+                                        </td>
+                                        <td class="text-end fw-bold py-1">{{ $currencySymbol }}{{ number_format((float)$gst, 2) }}</td>
+                                    </tr>
+                                    <tr class="border-top">
+                                        <td class="text-start fw-bold fs-5 py-2 text-dark">{{ __('Grand Total') }}</td>
+                                        <td class="text-end fw-bold fs-4 py-2 text-primary">{{ $currencySymbol }}{{ number_format((float)$grand_total, 2) }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
 
-                        @if (count($sale_items) > 0)
-                        <div class="d-flex gap-2">
-                            <button wire:click="clearPos" type="button" class="btn btn-outline-danger w-30 py-2">
+                        <div class="d-flex gap-2 pt-2">
+                            <button wire:click="clearPos" type="button" class="btn btn-outline-danger py-2 px-3 fw-bold">
                                 <i class="fa-solid fa-trash-can me-1"></i> {{ __('Clear') }}
                             </button>
-                            <button wire:click="sale" type="button" class="btn btn-primary w-70 py-2 fw-bold shadow-sm fs-6">
-                                <i class="fa-solid fa-check-circle me-1"></i> {{ __('Complete Sale (:sym:amt)', ['sym' => $currencySymbol, 'amt' => $grand_total]) }}
+                            <button wire:click="sale" type="button" class="btn btn-primary flex-grow-1 py-2 fw-bold shadow-sm fs-6 d-flex align-items-center justify-content-center">
+                                <i class="fa-solid fa-circle-check me-2 fs-5"></i> {{ __('Complete Sale (:sym:amt)', ['sym' => $currencySymbol, 'amt' => number_format((float)$grand_total, 2)]) }}
                             </button>
                         </div>
-                        @endif
                     </div>
                 </div>
             </div>
+            @endif
         </div>
     </div>
 
