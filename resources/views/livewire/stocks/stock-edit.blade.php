@@ -98,9 +98,9 @@
                         </div>
                         <div class="col-12 col-md-3">
                             <div class="mb-3">
-                                <label>{{ __('Low Stock Alert Threshold') }}</label>
-                                <input wire:model="low_stock_threshold" type="number" min="0" class="form-control form-control-sm text-center" placeholder="{{ __('e.g. 5, 0 (Default: 10)') }}">
-                                <small class="text-muted d-block">{{ __('Alert when stock <= threshold') }}</small>
+                                <label>{{ __('Low Stock Alert Threshold') }} @if($has_variations)<small class="text-muted">({{ __('set per variation below') }})</small>@endif</label>
+                                <input wire:model="low_stock_threshold" type="number" min="0" class="form-control form-control-sm text-center" placeholder="{{ __('e.g. 5, 0 (Default: 10)') }}" @disabled($has_variations)>
+                                <small class="text-muted d-block">{{ $has_variations ? __('Use the threshold in each variation row.') : __('Alert when stock <= threshold') }}</small>
                                 @error('low_stock_threshold') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>

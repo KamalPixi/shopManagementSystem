@@ -123,6 +123,16 @@ class Product extends Model
      */
     public function getIsLowStockAttribute(): bool
     {
+        if ($this->has_variations) {
+            $variations = $this->relationLoaded('variations') ? $this->variations : $this->variations()->get();
+            if ($variations->isNotEmpty()) {
+                $defaultThreshold = $this->effective_low_stock_threshold;
+                return $variations->contains(function ($variation) use ($defaultThreshold) {
+                    $threshold = is_null($variation->low_stock_threshold) ? $defaultThreshold : (int) $variation->low_stock_threshold;
+                    return (int) $variation->quantity <= $threshold;
+                });
+            }
+        }
         return (int) $this->quantity <= $this->effective_low_stock_threshold;
     }
 }
