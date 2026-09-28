@@ -22,6 +22,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/pos', 'pos')->name('pos');
         Route::get('/sales/index', 'sales')->name('sales.index');
         Route::get('/sales/edit/{sale_id}', 'saleEdit')->name('sales.edit');
+        Route::get('/sales/show/{sale_id}', 'saleShow')->name('sales.show');
         Route::get('/sales/report', 'salesReports')->name('sales.report');
         Route::get('/brands', 'brands')->name('brands');
         Route::get('/categories', 'categories')->name('categories');

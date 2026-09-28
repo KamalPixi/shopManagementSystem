@@ -92,6 +92,10 @@ class DashboardController extends Controller
         return view('sales.edit', compact('sale_id'));
     }
 
+    public function saleShow($sale_id) {
+        return view('sales.show', compact('sale_id'));
+    }
+
     public function suppliers() {
         return view('suppliers');
     }

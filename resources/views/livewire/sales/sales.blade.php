@@ -123,8 +123,10 @@
                             <td class="px-2 py-0 align-middle">{{ $sales->firstItem() + $loop->index }}</td>
                             
                             {{-- Receipt Number --}}
-                            <td class="align-middle fw-bold text-dark font-monospace fs-6">
-                                {{ $sale->receipt_no ?: sprintf('TP-%06d', $sale->id) }}
+                            <td class="align-middle fw-bold font-monospace fs-6">
+                                <a href="{{ route('sales.show', $sale->id) }}" class="text-dark text-decoration-none" title="{{ __('View Sale Details') }}">
+                                    {{ $sale->receipt_no ?: sprintf('TP-%06d', $sale->id) }}
+                                </a>
                             </td>
 
                             {{-- Products --}}
@@ -133,8 +135,14 @@
                                     @foreach ($sale->saleItems as $item)
                                         <tr wire:key="sale_items_tr_{{$item->id}}">
                                             <td class="px-1 py-1" style="width: 45%;"> 
-                                                <small class="fw-bold">{{ $item->name }}</small>
-                                                @if (empty($item->product_id))
+                                                @if ($item->product_id)
+                                                    <a href="{{ route('sales.show', $sale->id) }}" class="small fw-bold text-dark text-decoration-none" title="{{ __('View Sale Details') }}">
+                                                        {{ $item->name }}
+                                                    </a>
+                                                @else
+                                                    <a href="{{ route('sales.show', $sale->id) }}" class="small fw-bold text-dark text-decoration-none" title="{{ __('View Sale Details') }}">
+                                                        {{ $item->name }}
+                                                    </a>
                                                     <span class="badge bg-info text-white" style="font-size: 0.6rem;">Custom</span>
                                                 @endif
                                                 @if ($item->is_vatable)
@@ -220,6 +228,7 @@
                                         <i class="fas fa-ellipsis-h"></i>
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end shadow">
+                                        <li><a class="dropdown-item text-dark" href="{{ route('sales.show', $sale->id) }}"><i class="fa-solid fa-eye pe-2"></i>{{ __('View Details') }}</a></li>
                                         <li><a class="dropdown-item text-primary" href="{{ route('sales.edit', $sale->id) }}"><i class="fa-solid fa-pen-to-square pe-2"></i>{{ __('Edit Sale') }}</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item" href="#" wire:click="printSaleReceiptPos('{{$sale->id}}')"><i class="fa-solid fa-print pe-2"></i>{{ __('Receipt (POS)') }}</a></li>

@@ -332,6 +332,14 @@
                             <td class="text-center ps-3 text-muted">{{ $loop->iteration }}</td>
                             <td class="py-2 text-start">
                                 <div class="bg-light p-2 rounded border">
+                                    <div class="mb-1 pb-1 border-bottom d-flex justify-content-between align-items-center">
+                                        <a href="{{ route('sales.show', $sale->id) }}" class="fw-bold text-dark font-monospace text-decoration-none small">
+                                            {{ $sale->receipt_no ?: sprintf('TP-%06d', $sale->id) }}
+                                        </a>
+                                        <a href="{{ route('sales.show', $sale->id) }}" class="btn btn-xs btn-outline-secondary py-0 px-1" style="font-size: 0.65rem;">
+                                            {{ __('View Sale') }}
+                                        </a>
+                                    </div>
                                     @foreach ($sale->saleItems as $item)
                                         <div class="d-flex justify-content-between align-items-center mb-1 pb-1 {{ !$loop->last ? 'border-bottom' : '' }}">
                                             <div>
