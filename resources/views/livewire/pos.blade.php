@@ -311,12 +311,18 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                             <td class="text-muted fw-bold">{{ $loop->iteration }}</td>
                             <td class="py-2 text-start">
                                 <div class="d-flex align-items-center flex-wrap gap-1 mb-1">
-                                    <span class="fw-bold text-dark fs-6">{{ $item['item_name'] ?? ($prod?->name ?? 'Item') }}</span>
+                                    <span class="fw-bold text-dark fs-6">
+                                        @if (!empty($item['variation_name']) && $prod?->name)
+                                            {{ $prod->name }}
+                                        @else
+                                            {{ $item['item_name'] ?? ($prod?->name ?? 'Item') }}
+                                        @endif
+                                    </span>
                                     @if (!empty($item['is_custom']))
-                                        <span class="badge bg-info text-white" style="font-size: 0.65rem;">{{ __('Custom') }}</span>
+                                        <span class="badge bg-secondary text-white ms-1" style="font-size: 0.7rem; font-weight: 600;">{{ __('Custom') }}</span>
                                     @endif
                                     @if (!empty($item['variation_name']))
-                                        <span class="badge bg-light text-dark border" style="font-size: 0.7rem;">{{ $item['variation_name'] }}</span>
+                                        <span class="badge bg-primary text-white ms-1" style="font-size: 0.72rem; font-weight: 600;">{{ $item['variation_name'] }}</span>
                                     @endif
                                 </div>
 
@@ -455,7 +461,7 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                             <label class="small fw-bold mb-1">{{ __('Payment Method') }} <span class="text-danger">*</span></label>
                             <div class="btn-group w-100" role="group">
                                 <input type="radio" wire:model.live="payment_method" class="btn-check" name="btnradio" id="btnradio_cash" value="cash" autocomplete="off">
-                                <label class="btn {{ $payment_method === 'cash' ? 'btn-success text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_cash">
+                                <label class="btn {{ $payment_method === 'cash' ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_cash">
                                     <i class="fa-solid fa-money-bill-wave me-1"></i> {{ __('Cash') }}
                                 </label>
 
@@ -465,7 +471,7 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                                 </label>
 
                                 <input type="radio" wire:model.live="payment_method" class="btn-check" name="btnradio" id="btnradio_bank" value="bank_transfer" autocomplete="off">
-                                <label class="btn {{ $payment_method === 'bank_transfer' ? 'btn-info text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_bank">
+                                <label class="btn {{ $payment_method === 'bank_transfer' ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_bank">
                                     <i class="fa-solid fa-building-columns me-1"></i> {{ __('Bank Transfer') }}
                                 </label>
                             </div>
