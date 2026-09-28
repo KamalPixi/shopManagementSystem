@@ -9,6 +9,7 @@ use App\Models\Supplier;
 use App\Models\Warranty;
 use App\Models\Product;
 use App\Models\Attribute;
+use App\Models\ProductVariation;
 
 class AddToStock extends Component
 {
@@ -40,6 +41,9 @@ class AddToStock extends Component
 
     // helper property
     public $attribute_readonly_index = 0;
+    public $has_variations = false;
+    public $selected_variation_id = null;
+    public $variations = [];
 
     protected $rules = [
         'purchase_price' => 'required|numeric|min:0',
@@ -68,6 +72,13 @@ class AddToStock extends Component
             return session()->flash('success', 'Not found!');
         }
 
+        $this->has_variations = (bool) $product->has_variations;
+        $this->variations = $product->variations()->orderBy('variation_name')->get()->map(function ($variation) {
+            return array_merge($variation->toArray(), ['add_quantity' => 0, 'add_purchase_price' => $variation->purchase_price]);
+        })->toArray();
+        $this->selected_variation_id = $product->matchedVariation?->id;
+        $latestPurchase = $product->productPurchases()->latest('created_at')->first();
+
         $this->fill([
             'name' => $product->name,
             'description' => $product->description,
@@ -78,22 +89,61 @@ class AddToStock extends Component
             'serial_no' => $product->serial_no,
             'sku' => $product->sku,
             'price' => $product->price,
-            'purchase_price' => 0,
+            'purchase_price' => $latestPurchase?->purchase_price ?? 0,
             'quantity' => 0,
             'current_quantity' => $product->quantity,
             'remark' => $product->remark,
             'status' => $product->status,
-            'supplier_id' => $product->supplier_id,
+            'supplier_id' => $latestPurchase?->supplier_id ?? $product->supplier_id,
+            'purchase_date' => $latestPurchase?->purchase_date?->format('Y-m-d') ?? date('Y-m-d'),
             'productAttributesOld' => Collect($product->attributes_and_values)->map(fn($att) => [ 'name' => $att['name'], 'values' => implode(',', $att['values'])])->toArray(),
         ]);
+
+        if ($product->matchedVariation) {
+            $this->price = $product->matchedVariation->price;
+            $this->current_quantity = $product->matchedVariation->quantity;
+        }
     }
     
+    public function updatedSelectedVariationId($variationId)
+    {
+        $variation = collect($this->variations)->firstWhere('id', (int) $variationId);
+        if ($variation) {
+            $this->price = $variation['price'];
+            $this->current_quantity = $variation['quantity'];
+        }
+    }
+
     public function create() {
         $validated = $this->validate();
 
         // dd($validated);
 
         $product = Product::findBySkuSerialOrModel($this->identifier);
+        $variation = null;
+        $bulkQuantity = 0;
+        if ($this->has_variations) {
+            $bulkRows = collect($this->variations)->filter(fn ($row) => (int) ($row['add_quantity'] ?? 0) > 0);
+            if ($bulkRows->isEmpty()) {
+                $this->addError('variations', __('Enter a quantity for at least one variation.'));
+                return;
+            }
+            foreach ($bulkRows as $row) {
+                $dbVariation = ProductVariation::where('product_id', $product->id)->find($row['id'] ?? null);
+                if (!$dbVariation) continue;
+                $qty = (int) $row['add_quantity'];
+                $dbVariation->increment('quantity', $qty);
+                if (isset($row['add_purchase_price']) && $row['add_purchase_price'] !== '') {
+                    $dbVariation->update(['purchase_price' => (float) $row['add_purchase_price']]);
+                }
+                $bulkQuantity += $qty;
+            }
+            if ($bulkQuantity < 1) {
+                $this->addError('variations', __('Enter a valid quantity for at least one variation.'));
+                return;
+            }
+            $validated['quantity'] = $bulkQuantity;
+        }
 
         $newAttributes = collect($this->productAttributes)->map(function ($att) {
             $values = collect(explode(',', strtolower($att['values'])))
@@ -145,7 +195,7 @@ class AddToStock extends Component
         })->values()->toArray();   
 
         $product->update([
-            'quantity' => $product->quantity + $validated['quantity'],
+            'quantity' => $product->quantity + ($this->has_variations ? $bulkQuantity : $validated['quantity']),
             'attributes_and_values' => $attributes,
             'purchase_price' => $validated['purchase_price'],
             'updated_by' => auth()->id(),

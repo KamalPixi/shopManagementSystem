@@ -67,6 +67,29 @@
                             </div>
                         </div>
                     </div>
+                    @if ($has_variations)
+                        <div class="alert alert-info d-flex align-items-center mb-4">
+                            <i class="fa-solid fa-boxes-stacked me-2"></i>
+                            <div><strong>{{ __('Bulk variation receiving') }}</strong><br><small>{{ __('Enter quantities for all variations receiving stock. Leave unused rows at zero.') }}</small></div>
+                        </div>
+                        <div class="table-responsive rounded border border-info-subtle mb-4">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead class="table-light"><tr><th>{{ __('Variation') }}</th><th>{{ __('Current stock') }}</th><th>{{ __('Sale price') }}</th><th>{{ __('Purchase price') }}</th><th>{{ __('Receive quantity') }}</th></tr></thead>
+                                <tbody>
+                                    @foreach ($variations as $index => $variation)
+                                        <tr wire:key="bulk_variation_{{ $variation['id'] }}">
+                                            <td class="fw-semibold">{{ $variation['variation_name'] }}</td>
+                                            <td>{{ $variation['quantity'] }}</td>
+                                            <td>{{ number_format($variation['price'], 2) }}</td>
+                                            <td><input wire:model="variations.{{ $index }}.add_purchase_price" type="number" min="0" step="0.01" class="form-control form-control-sm" style="min-width:110px"></td>
+                                            <td><input wire:model="variations.{{ $index }}.add_quantity" type="number" min="0" class="form-control form-control-sm fw-bold" style="min-width:110px"></td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        @error('variations') <small class="text-danger d-block mb-3">{{ $message }}</small> @enderror
+                    @endif
                     <div class="row">
                         <div class="col-12 col-md-4">
                             <div class="mb-4">
@@ -150,8 +173,8 @@
                         </div>
                         <div class="col-12 col-md-4">
                             <div class="mb-4">
-                                <label>New Purchase Quantity* | <small>Current Qty: {{ $current_quantity }} </small></label>
-                                <input wire:model="quantity" required type="number" class="form-control form-control-sm">
+                                <label>{{ $has_variations ? __('Total quantity received (calculated)') : __('New Purchase Quantity*') }} | <small>{{ $has_variations ? __('Use the variation table above') : __('Current Qty: ' . $current_quantity) }}</small></label>
+                                <input wire:model="quantity" required type="number" class="form-control form-control-sm" {{ $has_variations ? 'readonly' : '' }}>
                             </div>
                         </div>
 
