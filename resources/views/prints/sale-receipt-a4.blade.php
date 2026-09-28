@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facture {{ $sale->receipt_no }}</title>
+    <title>{{ __('Invoice') }} {{ $sale->receipt_no }}</title>
     <style>
         @page {
-            margin: 25px 30px 25px 30px;
+            margin: 24px 28px 28px 28px;
             size: a4 portrait;
         }
         * {
@@ -16,7 +16,7 @@
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             color: #1e293b;
             font-size: 11px;
-            line-height: 1.4;
+            line-height: 1.45;
             margin: 0;
             padding: 0;
         }
@@ -34,7 +34,7 @@
             margin-bottom: 15px;
         }
         .brand-name {
-            font-size: 22px;
+            font-size: 26px;
             font-weight: 800;
             color: #0f2c59;
             letter-spacing: 0.5px;
@@ -78,14 +78,13 @@
             margin-bottom: 2px;
         }
         .facture-box {
-            background-color: #f8fafc;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
+            background-color: #eef2f7;
+            border-radius: 5px;
             padding: 10px 14px;
             width: 100%;
         }
         .facture-title {
-            font-size: 20px;
+            font-size: 27px;
             font-weight: 900;
             color: #0f2c59;
             letter-spacing: 1px;
@@ -101,8 +100,8 @@
 
         /* Client Section */
         .client-card {
-            background-color: #f1f5f9;
-            border-left: 4px solid #0f2c59;
+            background-color: #eef2f7;
+            border-left: 0;
             padding: 8px 12px;
             margin-bottom: 15px;
             border-radius: 0 4px 4px 0;
@@ -136,9 +135,7 @@
             color: #ffffff;
             font-size: 9px;
             font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 7px 6px;
+            padding: 9px 6px;
             border: 1px solid #0f2c59;
         }
         .items-table tbody td {
@@ -182,13 +179,15 @@
             width: 100%;
             margin-top: 5px;
             margin-bottom: 15px;
+            page-break-inside: avoid;
         }
         .payment-mode-box {
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
             padding: 10px 12px;
-            height: 100%;
+            height: auto;
+            page-break-inside: avoid;
         }
         .payment-mode-title {
             font-size: 10px;
@@ -258,13 +257,14 @@
         .footer-section {
             margin-top: 25px;
             text-align: center;
-            border-top: 1px solid #e2e8f0;
+            border-top: 1px solid #0f2c59;
             padding-top: 12px;
+            page-break-inside: avoid;
         }
         .signature-msg {
             font-family: 'Georgia', 'Times New Roman', serif;
             font-style: italic;
-            font-size: 13px;
+            font-size: 22px;
             color: #0f2c59;
             margin-bottom: 2px;
         }
@@ -297,28 +297,23 @@
 <body>
 
     @php
-        $currencyCode = $shop->currency['code'] ?? 'EUR';
-        $currencySymbol = ($currencyCode === 'EUR' || $currencyCode === '€') ? '€' : $currencyCode;
-        $gstPercent = floatval($shop->gst_percent ?? 20);
+        $gstPercent = (float) ($shop?->gst_percent ?? 0);
 
-        // Calculate Subtotal HT, TVA, Total TTC
-        $totalTtc = floatval($sale->total_price ?? 0);
-        $totalGst = floatval($sale->gst ?? 0);
-        $discount = floatval($sale->discount ?? 0);
-        $subtotalTtc = floatval($sale->saleItems->sum('total') ?? $totalTtc);
-        $subtotalHt = 0;
-
-        foreach ($sale->saleItems as $item) {
-            $itemTotal = floatval($item->total);
-            if ($item->is_vatable && $gstPercent > 0) {
-                $subtotalHt += ($itemTotal / (1 + ($gstPercent / 100)));
-            } else {
-                $subtotalHt += $itemTotal;
-            }
-        }
-        $totalHt = max(0, $subtotalHt - $discount);
-        
+        // POS prices are tax exclusive. Sale item totals include item discounts.
+        $totalTtc = (float) ($sale->total_price ?? 0);
+        $totalGst = (float) ($sale->gst ?? 0);
+        $discount = (float) ($sale->discount ?? 0);
+        $subtotalHt = $sale->saleItems->sum(fn ($item) => (float) $item->price * (int) $item->quantity);
+        $totalHt = $sale->saleItems->sum(fn ($item) => (float) $item->total);
         $paymentMethod = strtolower($sale->payment_method ?? 'cash');
+        $taxLabel = $shop?->tax_label ?? 'VAT';
+        $currencyCode = $shop?->currency['code'] ?? 'EUR';
+        $currencySymbol = $shop?->currency['symbol'] ?? $currencyCode;
+        $legal = $shop?->settings['legal'] ?? [];
+        $paymentLabels = [
+            'cash' => __('Cash'), 'card' => __('Card'),
+            'bank_transfer' => __('Bank transfer'),
+        ];
     @endphp
 
     <!-- Header Table -->
@@ -329,7 +324,7 @@
                     <img src="{{ public_path($shop->logo) }}" alt="{{ $shop->name }}" class="shop-logo"><br>
                 @endif
                 <div class="brand-name">{{ $shop->name ?? 'TECH PARISIEN' }}</div>
-                <div class="brand-slogan">ACHETEZ &bull; VENDEZ &bull; ÉCHANGEZ</div>
+                <div class="brand-slogan">{{ __('Buy · Sell · Exchange') }}</div>
             </td>
             <td style="width: 45%; vertical-align: middle; text-align: right;" class="top-contact-info">
                 @if(!empty($shop->address))
@@ -339,7 +334,7 @@
                     <div>{{ $shop->postal_code }} {{ $shop->city }}{{ !empty($shop->country) ? ', '.$shop->country : '' }}</div>
                 @endif
                 @if(!empty($shop->contact_no))
-                    <div><strong>Tél :</strong> {{ $shop->contact_no }}</div>
+                    <div><strong>{{ __('Phone') }}:</strong> {{ $shop->contact_no }}</div>
                 @endif
                 @if(!empty($shop->email))
                     <div><strong>Email :</strong> {{ $shop->email }}</div>
@@ -353,18 +348,19 @@
         <tr>
             <td style="width: 52%; vertical-align: top; padding-right: 15px;" class="company-legal-box">
                 <div class="company-legal-title">{{ $shop->name ?? 'TECH PARISIEN' }}</div>
-                <div>SAS au capital de 2 010 €</div>
-                <div>{{ $shop->address ?? '33 rue Brézin' }}, {{ $shop->postal_code ?? '75014' }} {{ $shop->city ?? 'Paris' }}</div>
-                <div>SIREN : 109 915 405</div>
-                <div>TVA intracommunautaire : FR75 109915405</div>
+                @if (!empty($legal['company_type']))<div>{{ $legal['company_type'] }}</div>@endif
+                <div>{{ collect([$shop?->address, trim(($shop?->postal_code ?? '') . ' ' . ($shop?->city ?? '')), $shop?->country])->filter()->implode(', ') }}</div>
+                @if (!empty($legal['registration_number']))<div>{{ __('Registration no.') }}: {{ $legal['registration_number'] }}</div>@endif
+                @if (!empty($legal['tax_number']))<div>{{ __('Tax ID') }}: {{ $legal['tax_number'] }}</div>@endif
             </td>
             <td style="width: 48%; vertical-align: top;">
                 <div class="facture-box">
-                    <div class="facture-title">FACTURE</div>
-                    <div class="facture-meta-row"><strong>N° de facture :</strong> {{ $sale->receipt_no }}</div>
-                    <div class="facture-meta-row"><strong>Date :</strong> {{ $sale->created_at->format('d/m/Y') }}</div>
-                    <div class="facture-meta-row"><strong>Heure :</strong> {{ $sale->created_at->format('H:i') }}</div>
-                    <div class="facture-meta-row"><strong>Caissier :</strong> {{ $sale->createdBy?->name ?? 'Admin' }}</div>
+                    <div class="facture-title">{{ __('Invoice') }}</div>
+                    <div class="facture-meta-row"><strong>{{ __('Invoice no.') }}:</strong> {{ $sale->receipt_no }}</div>
+                    <div class="facture-meta-row"><strong>{{ __('Date') }}:</strong> {{ $sale->created_at->format('d/m/Y') }}</div>
+                    <div class="facture-meta-row"><strong>{{ __('Time') }}:</strong> {{ $sale->created_at->format('H:i') }}</div>
+                    <div class="facture-meta-row"><strong>{{ __('Sold by') }}:</strong> {{ $sale->createdBy?->name ?? '-' }}</div>
+                    <div class="facture-meta-row"><strong>{{ __('Payment method') }}:</strong> {{ $paymentLabels[$paymentMethod] ?? __('Other') }}</div>
                 </div>
             </td>
         </tr>
@@ -372,14 +368,14 @@
 
     <!-- Client Info -->
     <div class="client-card">
-        <div class="client-card-title">Facturé à :</div>
-        <div class="client-name">{{ $sale->customer?->name ?: 'Client au comptoir' }}</div>
+        <div class="client-card-title">{{ __('Customer') }}</div>
+        <div class="client-name">{{ $sale->customer?->name ?: __('Walk-in customer') }}</div>
         @if($sale->customer?->address || $sale->customer?->city)
             <div class="client-details">{{ $sale->customer?->address }} {{ $sale->customer?->city }}</div>
         @endif
         @if($sale->customer?->phone_no || $sale->customer?->email)
             <div class="client-details">
-                @if($sale->customer?->phone_no) Tél : {{ $sale->customer->phone_no }} @endif
+                @if($sale->customer?->phone_no) {{ __('Phone') }}: {{ $sale->customer->phone_no }} @endif
                 @if($sale->customer?->phone_no && $sale->customer?->email) | @endif
                 @if($sale->customer?->email) Email : {{ $sale->customer->email }} @endif
             </div>
@@ -391,12 +387,12 @@
         <thead>
             <tr>
                 <th style="width: 4%; text-align: center;">#</th>
-                <th style="width: 44%; text-align: left;">Désignation du produit</th>
-                <th style="width: 14%; text-align: right;">Prix unit. HT</th>
-                <th style="width: 8%; text-align: center;">TVA</th>
-                <th style="width: 14%; text-align: right;">Prix unit. TTC</th>
-                <th style="width: 4%; text-align: center;">Qté</th>
-                <th style="width: 12%; text-align: right;">Total TTC</th>
+                <th style="width: 44%; text-align: left;">{{ __('Product description') }}</th>
+                <th style="width: 14%; text-align: right;">{{ __('Unit price excl. tax') }} ({{ $currencySymbol }})</th>
+                <th style="width: 8%; text-align: center;">{{ $taxLabel }} (%)</th>
+                <th style="width: 14%; text-align: right;">{{ __('Unit price incl. tax') }} ({{ $currencySymbol }})</th>
+                <th style="width: 4%; text-align: center;">{{ __('Qty') }}</th>
+                <th style="width: 12%; text-align: right;">{{ __('Total incl. tax') }} ({{ $currencySymbol }})</th>
             </tr>
         </thead>
         <tbody>
@@ -404,9 +400,9 @@
                 @php
                     $isVat = $item->is_vatable;
                     $itemVatRate = $isVat ? $gstPercent : 0;
-                    $unitTtc = floatval($item->price);
-                    $unitHt = $isVat && $gstPercent > 0 ? ($unitTtc / (1 + ($gstPercent / 100))) : $unitTtc;
-                    $totalLineTtc = floatval($item->total);
+                    $unitHt = (float) $item->price;
+                    $unitTtc = $unitHt * (1 + $itemVatRate / 100);
+                    $totalLineTtc = (float) $item->total * (1 + $itemVatRate / 100);
                     $warrantyText = $item->warranty_description ?: ($item->warranty?->description ?: $item->warranty?->name);
                     $sn = $item->productVariation?->serial_no ?: $item->product?->serial_no;
                 @endphp
@@ -416,18 +412,18 @@
                         <div class="product-title">
                             {{ $item->name }}
                             @if($isVat)
-                                <span class="badge-vat">TVA {{ $itemVatRate }}%</span>
+                                <span class="badge-vat">{{ $taxLabel }} {{ $itemVatRate }}%</span>
                             @endif
                         </div>
                         <div class="product-meta">
                             @if ($item->productVariation?->variation_name)
-                                <span><b>Variante :</b> {{ $item->productVariation->variation_name }}</span><br>
+                                <span><b>{{ __('Variation') }}:</b> {{ $item->productVariation->variation_name }}</span><br>
                             @endif
                             @if ($item->productVariation?->sku || $item->product?->sku)
                                 <span><b>SKU :</b> {{ $item->productVariation?->sku ?: $item->product?->sku }}</span>
                             @endif
                             @if ($item->product?->model_no)
-                                <span> &bull; <b>Modèle :</b> {{ $item->product?->model_no }}</span>
+                                <span> &bull; <b>{{ __('Model') }}:</b> {{ $item->product?->model_no }}</span>
                             @endif
                             @if ($sn && $item->show_serial_on_receipt)
                                 <br><span><b>SN / IMEI :</b> {{ $sn }}</span>
@@ -442,7 +438,7 @@
                                 @endif
                             @endforeach
                             @if ($warrantyText && $item->show_warranty_on_receipt)
-                                <br><span style="color: #0f2c59;"><b>Garantie :</b> {{ $warrantyText }}</span>
+                                <br><span style="color: #0f2c59;"><b>{{ __('Warranty') }}:</b> {{ $warrantyText }}</span>
                             @endif
                         </div>
                     </td>
@@ -462,34 +458,34 @@
             <!-- Payment Mode Checklist -->
             <td style="width: 50%; vertical-align: top; padding-right: 15px;">
                 <div class="payment-mode-box">
-                    <div class="payment-mode-title">Mode de règlement</div>
+                    <div class="payment-mode-title">{{ __('Payment method') }}</div>
                     <div class="payment-option">
                         <span class="checkbox-box {{ in_array($paymentMethod, ['cash', 'especes', 'espèce', 'espece']) ? 'checked' : '' }}">
                             {!! in_array($paymentMethod, ['cash', 'especes', 'espèce', 'espece']) ? '&#10003;' : '&nbsp;' !!}
                         </span>
-                        Espèces (Cash)
+                        {{ __('Cash') }}
                     </div>
                     <div class="payment-option">
                         <span class="checkbox-box {{ in_array($paymentMethod, ['card', 'carte', 'cb', 'credit_card', 'carte bancaire']) ? 'checked' : '' }}">
                             {!! in_array($paymentMethod, ['card', 'carte', 'cb', 'credit_card', 'carte bancaire']) ? '&#10003;' : '&nbsp;' !!}
                         </span>
-                        Carte bancaire (CB)
+                        {{ __('Card') }}
                     </div>
                     <div class="payment-option">
                         <span class="checkbox-box {{ in_array($paymentMethod, ['bank_transfer', 'virement', 'transfer']) ? 'checked' : '' }}">
                             {!! in_array($paymentMethod, ['bank_transfer', 'virement', 'transfer']) ? '&#10003;' : '&nbsp;' !!}
                         </span>
-                        Virement bancaire
+                        {{ __('Bank transfer') }}
                     </div>
                     <div class="payment-option">
                         <span class="checkbox-box {{ in_array($paymentMethod, ['cheque', 'check', 'other', 'autre']) ? 'checked' : '' }}">
                             {!! in_array($paymentMethod, ['cheque', 'check', 'other', 'autre']) ? '&#10003;' : '&nbsp;' !!}
                         </span>
-                        Autre / Chèque
+                        {{ __('Other') }}
                     </div>
                     @if($sale->payment_reference)
                         <div style="font-size: 8.5px; color: #64748b; margin-top: 6px;">
-                            <strong>Réf. :</strong> {{ $sale->payment_reference }}
+                            <strong>{{ __('Reference') }}:</strong> {{ $sale->payment_reference }}
                         </div>
                     @endif
                 </div>
@@ -499,25 +495,25 @@
             <td style="width: 50%; vertical-align: top;">
                 <table class="totals-card">
                     <tr>
-                        <td class="totals-label">Sous-total HT :</td>
+                        <td class="totals-label">{{ __('Subtotal excl. tax') }}:</td>
                         <td class="totals-value">{{ number_format($subtotalHt, 2) }} {{ $currencySymbol }}</td>
                     </tr>
                     @if($discount > 0)
                     <tr>
-                        <td class="totals-label" style="color: #e11d48;">Remise :</td>
+                        <td class="totals-label" style="color: #e11d48;">{{ __('Discount') }}:</td>
                         <td class="totals-value" style="color: #e11d48;">- {{ number_format($discount, 2) }} {{ $currencySymbol }}</td>
                     </tr>
                     @endif
                     <tr>
-                        <td class="totals-label">Total HT :</td>
+                        <td class="totals-label">{{ __('Total excl. tax') }}:</td>
                         <td class="totals-value">{{ number_format($totalHt, 2) }} {{ $currencySymbol }}</td>
                     </tr>
                     <tr>
-                        <td class="totals-label">TVA ({{ $gstPercent }}%) :</td>
+                        <td class="totals-label">{{ $taxLabel }} ({{ $gstPercent }}%):</td>
                         <td class="totals-value">{{ number_format($totalGst, 2) }} {{ $currencySymbol }}</td>
                     </tr>
                     <tr class="grand-total-row">
-                        <td class="totals-label">Total TTC (EUR) :</td>
+                        <td class="totals-label">{{ __('Total incl. tax') }} ({{ $currencyCode }}):</td>
                         <td class="totals-value">{{ number_format($totalTtc, 2) }} {{ $currencySymbol }}</td>
                     </tr>
                 </table>
@@ -527,17 +523,16 @@
 
     <!-- Footer -->
     <div class="footer-section">
-        <div class="signature-msg">Merci pour votre confiance !</div>
-        <div class="signature-team">L'équipe {{ $shop->name ?? 'Tech Parisien' }}</div>
+        <div class="signature-msg">{{ __('Thank you for your trust!') }}</div>
+        <div class="signature-team">{{ __('The team at :shop', ['shop' => $shop?->name ?? 'Tech Parisien']) }}</div>
         
         <div class="services-bar">
-            Achat <span>|</span> Vente <span>|</span> Réparation <span>|</span> Services informatiques <span>|</span> Échange & Reprise
+            {{ __('Buy') }} <span>|</span> {{ __('Sell') }} <span>|</span> {{ __('Repair') }} <span>|</span> {{ __('IT services') }} <span>|</span> {{ __('Exchange & trade-in') }}
         </div>
         <div class="system-note">
-            Document généré électroniquement &bull; TECH PARISIEN SAS &bull; Tous droits réservés
+            {{ __('Electronically generated document') }} &bull; {{ $shop?->name ?? 'Tech Parisien' }}
         </div>
     </div>
 
 </body>
 </html>
-

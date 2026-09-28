@@ -153,7 +153,7 @@
                                     $cats = $type === 'in' ? $inCategories : $outCategories;
                                 @endphp
                                 @foreach ($cats as $cat)
-                                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                    <option value="{{ $cat->id }}">{{ __($cat->name) }}</option>
                                 @endforeach
                             </select>
                             @error('money_category_id') <span class="text-danger small">{{ $message }}</span> @enderror
@@ -211,7 +211,7 @@
                             <select wire:model.live="filter_category_id" class="form-select form-select-sm">
                                 <option value="">{{ __('All Categories') }}</option>
                                 @foreach ($allCategories as $c)
-                                    <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                    <option value="{{ $c->id }}">{{ __($c->name) }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -259,7 +259,7 @@
                                         {{ $m->type === 'in' ? '+' : '-' }}{{ $currencySymbol }}{{ number_format($m->amount, 2) }}
                                     </td>
                                     <td class="py-2 align-middle">
-                                        <span class="badge bg-gray-100 text-gray-800 border px-2 py-1">{{ $m->category?->name ?? __('General') }}</span>
+                                        <span class="badge bg-gray-100 text-gray-800 border px-2 py-1">{{ $m->category ? __($m->category->name) : __('General') }}</span>
                                     </td>
                                     <td class="py-2 align-middle" style="max-width: 200px; white-space: normal; line-height: 1.35;">
                                         <small class="text-dark">{{ $m->reason }}</small>
@@ -400,7 +400,7 @@
                             <tbody>
                                 @forelse ($allCategories as $c)
                                 <tr class="{{ $editingCategoryId === $c->id ? 'table-primary' : '' }}">
-                                    <td class="px-3 py-2 fw-semibold text-dark">{{ $c->name }}</td>
+                                    <td class="px-3 py-2 fw-semibold text-dark">{{ __($c->name) }}</td>
                                     <td class="py-2">
                                         @if ($c->type === 'in')
                                             <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">{{ __('In') }}</span>
@@ -410,7 +410,7 @@
                                             <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1">{{ __('Both') }}</span>
                                         @endif
                                     </td>
-                                    <td class="py-2 text-muted small">{{ $c->description ?: '-' }}</td>
+                                    <td class="py-2 text-muted small">{{ $c->description ? __($c->description) : '-' }}</td>
                                     <td class="px-3 py-2 text-end">
                                         <div class="d-inline-flex align-items-center gap-1">
                                             <button wire:click="editCategory({{ $c->id }})" type="button" class="btn btn-xs {{ $editingCategoryId === $c->id ? 'btn-primary' : 'btn-outline-primary' }} px-2" title="{{ __('Edit Category') }}">

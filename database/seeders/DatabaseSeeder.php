@@ -134,17 +134,23 @@ class DatabaseSeeder extends Seeder
 
         // Seed default money movement categories
         $defaultCategories = [
-            ['name' => 'Capital Investment', 'type' => 'in', 'description' => 'Business capital injection'],
-            ['name' => 'Owner Deposit', 'type' => 'in', 'description' => 'Owner deposited cash into business'],
-            ['name' => 'Bank Withdrawal to Cash', 'type' => 'in', 'description' => 'Withdrew cash from bank for drawer'],
-            ['name' => 'Customer Debt Repayment', 'type' => 'in', 'description' => 'Outstanding payment received'],
-            ['name' => 'Other Cash In', 'type' => 'in', 'description' => 'Miscellaneous cash receipt'],
-            ['name' => 'Daily Shop Expense', 'type' => 'out', 'description' => 'Daily operating expenses'],
-            ['name' => 'Owner Withdrawal', 'type' => 'out', 'description' => 'Owner drew money from business'],
-            ['name' => 'Supplier Payment', 'type' => 'out', 'description' => 'Paid cash to supplier'],
-            ['name' => 'Utility / Bills', 'type' => 'out', 'description' => 'Electricity, internet, water, etc.'],
-            ['name' => 'Refund to Customer', 'type' => 'out', 'description' => 'Cash refund'],
-            ['name' => 'Petty Cash', 'type' => 'out', 'description' => 'Small miscellaneous cash out'],
+            // Cash In
+            ['name' => "Apport d'un associé", 'type' => 'in', 'description' => "Apport de fonds par un associé (Partner Contribution)"],
+            ['name' => 'Paiement client', 'type' => 'in', 'description' => 'Paiement direct reçu d\'un client (Customer Payment)'],
+            ['name' => "Règlement d'un impayé", 'type' => 'in', 'description' => "Règlement d'une créance ou facture impayée (Previous Due Payment)"],
+            ['name' => 'Ajustement de caisse', 'type' => 'in', 'description' => 'Ajustement positif du solde de caisse (Cash Adjustment)'],
+            
+            // Cash Out
+            ['name' => 'Achat de produit', 'type' => 'out', 'description' => 'Achat de marchandises ou produits (Product Purchase)'],
+            ['name' => 'Paiement fournisseur', 'type' => 'out', 'description' => 'Règlement de facture fournisseur (Supplier Payment)'],
+            ['name' => 'Dépense du magasin', 'type' => 'out', 'description' => "Frais et charges d'exploitation du magasin (Shop Expense)"],
+            ['name' => 'Remboursement client', 'type' => 'out', 'description' => 'Remboursement ou avoir client en espèces (Customer Refund)'],
+            ['name' => "Retrait d'un associé", 'type' => 'out', 'description' => "Retrait de fonds par un associé (Partner Withdrawal)"],
+            ['name' => 'Dépôt bancaire', 'type' => 'out', 'description' => 'Versement des espèces en banque (Bank Deposit)'],
+            ['name' => 'Petite caisse', 'type' => 'out', 'description' => 'Dépenses courantes de petite caisse (Petty Cash)'],
+
+            // Both (In & Out)
+            ['name' => 'Autre', 'type' => 'both', 'description' => 'Autre opération de caisse (Other)'],
         ];
 
         foreach ($defaultCategories as $cat) {
