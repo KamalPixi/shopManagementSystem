@@ -485,16 +485,23 @@ class Pos extends Component
         ]);
 
         // Pre-validate stock for catalog products & variations
-        foreach ($this->sale_items as $item) {
+        foreach ($this->sale_items as $itemKey => $item) {
             if (!empty($item['product_variation_id'])) {
                 $variation = ProductVariation::find($item['product_variation_id']);
-                if (!$variation || $variation->quantity < $item['quantity']) {
+                if (!$variation || $variation->product_id != ($item['product_id'] ?? null) || $variation->quantity < $item['quantity']) {
                     session()->flash('failed', __('Insufficient stock for variation [:name]. Requested: :req, Available: :stock.', [
                         'name' => $item['item_name'],
                         'req' => $item['quantity'],
                         'stock' => $variation ? $variation->quantity : 0,
                     ]));
                     return;
+                }
+                // Always persist the selected variation's canonical attributes in the cart.
+                if (isset($this->sale_items[$itemKey])) {
+                    $this->sale_items[$itemKey]['attributes_and_values'] = $variation->attributes_and_values ?? [];
+                    $this->sale_items[$itemKey]['variation_name'] = $variation->variation_name;
+                    $this->sale_items[$itemKey]['sku'] = $variation->sku ?: $this->sale_items[$itemKey]['sku'];
+                    $this->sale_items[$itemKey]['serial_no'] = $variation->serial_no ?: $this->sale_items[$itemKey]['serial_no'];
                 }
             } elseif (!empty($item['product_id'])) {
                 $product = Product::find($item['product_id']);

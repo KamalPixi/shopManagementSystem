@@ -10,6 +10,7 @@ use App\Models\Brand;
 use App\Models\Supplier;
 use App\Models\Warranty;
 use App\Services\AuditLogger;
+use App\Services\VariationGenerator;
 use Illuminate\Validation\Rule;
 
 class StockEdit extends Component
@@ -110,6 +111,7 @@ class StockEdit extends Component
         $this->variations = $this->product->variations->map(fn($v) => [
             'id' => $v->id,
             'variation_name' => $v->variation_name,
+            'attributes_and_values' => $v->attributes_and_values ?? [],
             'sku' => $v->sku,
             'serial_no' => $v->serial_no,
             'price' => $v->price,
@@ -148,66 +150,39 @@ class StockEdit extends Component
      */
     public function generateVariationsFromAttributes()
     {
-        $attributeSets = [];
-        foreach ($this->productAttributes as $attr) {
-            $name = trim($attr['name'] ?? '');
-            $valuesStr = trim($attr['values'] ?? '');
-            if (!empty($name) && !empty($valuesStr)) {
-                $vals = array_filter(array_map('trim', explode(',', $valuesStr)));
-                if (!empty($vals)) {
-                    $attributeSets[$name] = $vals;
-                }
-            }
-        }
-
-        if (empty($attributeSets)) {
+        $generatedDefinitions = VariationGenerator::generate($this->productAttributes);
+        if (empty($generatedDefinitions)) {
             session()->flash('variation_error', __('Please enter at least one attribute with values (e.g. Color: Black, Blue) before generating variations.'));
             return;
         }
 
-        $combinations = [[]];
-        foreach ($attributeSets as $attrName => $attrValues) {
-            $newCombinations = [];
-            foreach ($combinations as $combo) {
-                foreach ($attrValues as $val) {
-                    $newCombinations[] = array_merge($combo, [$val]);
-                }
-            }
-            $combinations = $newCombinations;
-        }
-
         $existingMap = [];
-        foreach ($this->variations as $var) {
-            if (!empty($var['variation_name'])) {
-                $existingMap[$var['variation_name']] = $var;
+        foreach ($this->variations as $variation) {
+            $attributes = $variation['attributes_and_values'] ?? [];
+            $key = $attributes ? implode('|', array_map(fn ($pair) => strtolower(trim($pair['name'] ?? '')) . '=' . strtolower(trim($pair['value'] ?? '')), $attributes)) : strtolower(trim($variation['variation_name'] ?? ''));
+            if ($key !== '') {
+                $existingMap[$key] = $variation;
+                if (!empty($variation['variation_name'])) $existingMap['name:' . strtolower(trim($variation['variation_name']))] = $variation;
             }
         }
 
         $generated = [];
-        $baseSku = trim($this->sku ?? '');
-
-        foreach ($combinations as $idx => $combo) {
-            $varName = implode(' / ', $combo);
-            if (isset($existingMap[$varName])) {
-                $generated[] = $existingMap[$varName];
-            } else {
-                $suggestedSku = '';
-                if (!empty($baseSku)) {
-                    $suffix = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', implode('-', $combo)), 0, 8));
-                    $suggestedSku = $baseSku . '-' . ($suffix ?: ($idx + 1));
-                }
-
-                $generated[] = [
-                    'id' => null,
-                    'variation_name' => $varName,
-                    'sku' => $suggestedSku,
-                    'serial_no' => '',
-                    'price' => $this->price ?: 0,
-                    'purchase_price' => $this->purchase_price ?: 0,
-                    'quantity' => 1,
+        $baseSku = trim((string) ($this->sku ?? ''));
+        foreach ($generatedDefinitions as $index => $definition) {
+            $existing = $existingMap[$definition['key']] ?? $existingMap['name:' . strtolower($definition['name'])] ?? null;
+            if (!$existing) {
+                $suffix = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $definition['name']), 0, 12));
+                $existing = [
+                    'id' => null, 'variation_name' => $definition['name'],
+                    'sku' => $baseSku ? $baseSku . '-' . ($suffix ?: ($index + 1)) : '',
+                    'serial_no' => '', 'price' => $this->price ?: 0,
+                    'purchase_price' => $this->purchase_price ?: 0, 'quantity' => 1,
                     'low_stock_threshold' => $this->low_stock_threshold,
                 ];
             }
+            $existing['variation_name'] = $definition['name'];
+            $existing['attributes_and_values'] = $definition['attributes'];
+            $generated[] = $existing;
         }
 
         $this->variations = $generated;
@@ -259,6 +234,7 @@ class StockEdit extends Component
                     if ($existing) {
                         $existing->update([
                             'variation_name' => trim($var['variation_name']),
+                    'attributes_and_values' => $var['attributes_and_values'] ?? [],
                             'sku' => !empty($var['sku']) ? trim($var['sku']) : null,
                             'serial_no' => !empty($var['serial_no']) ? trim($var['serial_no']) : null,
                             'price' => (float) $var['price'],
@@ -271,6 +247,7 @@ class StockEdit extends Component
                 } else {
                     $newVar = $this->product->variations()->create([
                         'variation_name' => trim($var['variation_name']),
+                    'attributes_and_values' => $var['attributes_and_values'] ?? [],
                         'sku' => !empty($var['sku']) ? trim($var['sku']) : null,
                         'serial_no' => !empty($var['serial_no']) ? trim($var['serial_no']) : null,
                         'price' => (float) $var['price'],
