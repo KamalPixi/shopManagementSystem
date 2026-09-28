@@ -123,8 +123,8 @@
                             <td class="px-2 py-0 align-middle">{{ $sales->firstItem() + $loop->index }}</td>
                             
                             {{-- Receipt Number --}}
-                            <td class="align-middle fw-bold">
-                                <span class="badge bg-dark font-monospace fs-7 px-2 py-1">{{ $sale->receipt_no }}</span>
+                            <td class="align-middle fw-bold text-dark font-monospace fs-6">
+                                {{ $sale->receipt_no ?: sprintf('TP-%06d', $sale->id) }}
                             </td>
 
                             {{-- Products --}}
