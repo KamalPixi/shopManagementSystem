@@ -109,62 +109,48 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
 
     {{-- Custom Item Modal --}}
     @if ($showCustomModal)
-    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px);" aria-modal="true" role="dialog">
-        <div class="modal-dialog modal-dialog-centered" style="max-width: 620px;">
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(15, 23, 42, 0.7); backdrop-filter: blur(3px);" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 680px;">
             <div class="modal-content border-0 shadow-lg rounded-3">
                 <div class="modal-header bg-gray-800 text-white py-3 px-4 rounded-top-3">
-                    <h5 class="modal-title h6 mb-0 text-white d-flex align-items-center">
-                        <i class="fa-solid fa-tag me-2 text-primary"></i> {{ __('Add Custom Item / Service') }}
+                    <h5 class="modal-title h6 mb-0 text-white fw-bold">
+                        {{ __('Add Custom Item / Service') }}
                     </h5>
                     <button wire:click="closeCustomModal" type="button" class="btn-close btn-close-white" aria-label="{{ __('Cancel') }}"></button>
                 </div>
                 <form wire:submit.prevent="addCustomItem">
                     <div class="modal-body p-4">
                         <div class="mb-3">
-                            <label class="form-label fw-bold small mb-1">{{ __('Item / Service Name') }} <span class="text-danger">*</span></label>
-                            <input wire:model="custom_item_name" type="text" class="form-control" placeholder="{{ __('e.g. Phone Repair Service / Special Cable') }}" required>
+                            <label class="form-label fw-bold small text-dark mb-1">{{ __('Item or Service Name') }} <span class="text-danger">*</span></label>
+                            <input wire:model="custom_item_name" type="text" class="form-control" autofocus required>
                             @error('custom_item_name') <span class="text-danger small">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="row g-3 mb-3">
                             <div class="col-md-6 col-12">
-                                <label class="form-label fw-bold small mb-1">{{ __('Sale Price') }} <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <input wire:model="custom_price" type="number" step="0.01" min="0" class="form-control text-end" placeholder="0" required>
-                                </div>
-                                <div class="d-flex flex-wrap gap-1 mt-1">
-                                    @foreach ([10, 20, 30, 40, 50, 100] as $preset)
-                                        <button type="button" wire:click="setCustomSalePrice({{ $preset }})" class="btn btn-xs btn-outline-primary rounded-1 py-0 px-2" style="font-size: 0.72rem;">
-                                            {{ $preset }}
-                                        </button>
-                                    @endforeach
-                                </div>
+                                <label class="form-label fw-bold small text-dark mb-1">{{ __('Sale Price') }} ({{ $currencySymbol }}) <span class="text-danger">*</span></label>
+                                <input wire:model="custom_price" type="number" step="0.01" min="0" class="form-control font-monospace" required>
                                 @error('custom_price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
+
                             <div class="col-md-6 col-12">
-                                <label class="form-label fw-bold small mb-1">{{ __('Cost / Purchase Price') }} <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
-                                <input wire:model="custom_purchase_price" type="number" step="0.01" min="0" class="form-control text-end" placeholder="0">
-                                <div class="d-flex flex-wrap gap-1 mt-1">
-                                    @foreach ([0, 5, 10, 15, 20, 30] as $preset)
-                                        <button type="button" wire:click="setCustomPurchasePrice({{ $preset }})" class="btn btn-xs btn-outline-secondary rounded-1 py-0 px-2" style="font-size: 0.72rem;">
-                                            {{ $preset }}
-                                        </button>
-                                    @endforeach
-                                </div>
+                                <label class="form-label fw-bold small text-dark mb-1">{{ __('Cost / Purchase Price') }} ({{ $currencySymbol }}) <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
+                                <input wire:model="custom_purchase_price" type="number" step="0.01" min="0" class="form-control font-monospace">
                                 @error('custom_purchase_price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>
 
                         <div class="row g-3 mb-3">
-                            <div class="col-md-6 col-12">
-                                <label class="form-label fw-bold small mb-1">{{ __('Quantity') }} <span class="text-danger">*</span></label>
-                                <input wire:model="custom_quantity" type="number" min="1" class="form-control text-center fw-bold" required placeholder="0">
+                            <div class="col-md-4 col-12">
+                                <label class="form-label fw-bold small text-dark mb-1">{{ __('Quantity') }} <span class="text-danger">*</span></label>
+                                <input wire:model="custom_quantity" type="number" min="1" class="form-control text-center fw-bold" required>
                                 @error('custom_quantity') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
-                            <div class="col-md-6 col-12">
-                                <label class="form-label fw-bold small mb-1">{{ __('Warranty') }} <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
+
+                            <div class="col-md-8 col-12">
+                                <label class="form-label fw-bold small text-dark mb-1">{{ __('Warranty Plan') }} <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
                                 <select wire:model.live="custom_warranty_id" class="form-select">
-                                    <option value="">{{ __('No Warranty') }}</option>
+                                    <option value="">{{ __('No Warranty / Standard') }}</option>
                                     @foreach ($warranties as $warranty)
                                         <option value="{{ $warranty->id }}">{{ $warranty->name }}</option>
                                     @endforeach
@@ -174,29 +160,33 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold small mb-1">{{ __('Warranty Description / Terms') }} <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
-                            <input wire:model="custom_warranty_description" type="text" class="form-control" placeholder="{{ __('e.g. 1 Month warranty on replacement parts') }}">
+                            <label class="form-label fw-bold small text-dark mb-1">{{ __('Warranty Terms / Description on Receipt') }} <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
+                            <input wire:model="custom_warranty_description" type="text" class="form-control">
                         </div>
 
-                        <div class="row">
+                        <div class="row g-2 p-3 bg-light rounded border">
                             <div class="col-md-6 col-12">
-                                <div class="form-check form-switch">
-                                    <input wire:model="custom_is_vatable" class="form-check-input" type="checkbox" id="custom_is_vatable">
-                                    <label class="form-check-label fw-bold small" for="custom_is_vatable">{{ __('VAT\'able Item') }}</label>
+                                <div class="form-check form-switch m-0">
+                                    <input wire:model="custom_is_vatable" class="form-check-input" type="checkbox" id="custom_is_vatable" style="cursor: pointer;">
+                                    <label class="form-check-label fw-bold small text-dark ms-1" for="custom_is_vatable" style="cursor: pointer;">
+                                        {{ __('Subject to VAT / TVA') }}
+                                    </label>
                                 </div>
                             </div>
                             <div class="col-md-6 col-12">
-                                <div class="form-check form-switch">
-                                    <input wire:model="custom_show_warranty_on_receipt" class="form-check-input" type="checkbox" id="custom_show_warranty">
-                                    <label class="form-check-label fw-bold small" for="custom_show_warranty">{{ __('Show Warranty on Receipt') }}</label>
+                                <div class="form-check form-switch m-0">
+                                    <input wire:model="custom_show_warranty_on_receipt" class="form-check-input" type="checkbox" id="custom_show_warranty" style="cursor: pointer;">
+                                    <label class="form-check-label fw-bold small text-dark ms-1" for="custom_show_warranty" style="cursor: pointer;">
+                                        {{ __('Print Warranty on Receipt') }}
+                                    </label>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer bg-light py-2 px-4 rounded-bottom-3 d-flex justify-content-between">
                         <button wire:click="closeCustomModal" type="button" class="btn btn-outline-secondary px-4">{{ __('Cancel') }}</button>
-                        <button type="submit" class="btn btn-primary px-4 shadow-sm">
-                            <i class="fa-solid fa-plus me-1"></i> {{ __('Add to Cart') }}
+                        <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">
+                            {{ __('Add to Cart') }}
                         </button>
                     </div>
                 </form>
