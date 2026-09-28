@@ -147,6 +147,12 @@
                             <small style="font-size: 7px; color: #16a34a;">(VAT)</small>
                         @endif
                         <br>
+                        @if ($item->productVariation?->variation_name)
+                            <small style="font-size: 8px;">Variant: {{ $item->productVariation->variation_name }}</small><br>
+                        @endif
+                        @if ($item->productVariation?->sku || $item->product?->sku)
+                            <small style="font-size: 8px;">SKU: {{ $item->productVariation?->sku ?: $item->product?->sku }}</small><br>
+                        @endif
                         @if ($item->product?->model_no)
                             <small style="font-size: 8px;">Model: {{ $item->product?->model_no }}</small> 
                         @endif
@@ -157,8 +163,10 @@
                             <small style="font-size: 8px;">SN: {{ $sn }}</small> <br>
                         @endif
                         @foreach ($item->attributes_and_values ?? [] as $att => $value)
+                        @php($attributeName = is_array($value) ? ($value['name'] ?? '') : $att)
+                        @php($attributeValue = is_array($value) ? ($value['value'] ?? '') : $value)
                         <small style="font-size: 8px;">
-                           {{ ucfirst($att) }}:{{ ucfirst($value) }}
+                           {{ ucfirst($attributeName) }}:{{ ucfirst($attributeValue) }}
                         </small>
                         @endforeach
                     </td>

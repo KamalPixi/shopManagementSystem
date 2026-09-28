@@ -153,6 +153,10 @@ class Pos extends Component
 
         // Check if a specific variation was matched
         $matchedVariation = $product->relationLoaded('matchedVariation') ? $product->matchedVariation : null;
+        if ($product->has_variations && !$matchedVariation) {
+            session()->flash('failed', __('Scan or enter a variation SKU or serial number to select its price and stock.'));
+            return;
+        }
 
         if ($matchedVariation) {
             if ($matchedVariation->quantity < 1) {

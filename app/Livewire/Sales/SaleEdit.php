@@ -28,6 +28,7 @@ class SaleEdit extends Component
 
     // Track original quantities for stock adjustment: [product_id => total_original_qty]
     public $original_stock_quantities = [];
+    public $original_variation_quantities = [];
 
     public $subtotal = 0;
     public $discount = 0;
@@ -78,6 +79,7 @@ class SaleEdit extends Component
         $this->existing_attachment = $this->sale->payment_attachment;
 
         $this->original_stock_quantities = [];
+        $this->original_variation_quantities = [];
 
         foreach ($this->sale->saleItems as $item) {
             $itemKey = !empty($item->product_id) ? 'prod_' . $item->product_id . ($item->product_variation_id ? '_' . $item->product_variation_id : '') : 'custom_' . $item->id;
@@ -85,6 +87,9 @@ class SaleEdit extends Component
             if ($item->product) {
                 $this->products[] = $item->product;
                 $this->original_stock_quantities[$item->product_id] = ($this->original_stock_quantities[$item->product_id] ?? 0) + (int) $item->quantity;
+                if ($item->product_variation_id) {
+                    $this->original_variation_quantities[$item->product_variation_id] = ($this->original_variation_quantities[$item->product_variation_id] ?? 0) + (int) $item->quantity;
+                }
             }
 
             $this->sale_items[$itemKey] = [
@@ -163,6 +168,14 @@ class SaleEdit extends Component
                 if ($qty < 1) {
                     $this->sale_items[$itemKey]['quantity'] = 1;
                     $this->errorMessage = __('Quantity must be at least 1.');
+                } elseif (!empty($this->sale_items[$itemKey]['product_variation_id'])) {
+                    $variation = ProductVariation::find($this->sale_items[$itemKey]['product_variation_id']);
+                    $originalQty = $this->original_variation_quantities[$variation?->id] ?? 0;
+                    $availableTotal = ($variation ? $variation->quantity : 0) + $originalQty;
+                    if ($qty > $availableTotal) {
+                        $this->sale_items[$itemKey]['quantity'] = max(1, $availableTotal);
+                        $this->errorMessage = __('Cannot exceed available variation stock (:avail in stock + :orig original)!', ['avail' => $variation ? $variation->quantity : 0, 'orig' => $originalQty]);
+                    }
                 } elseif (!empty($this->sale_items[$itemKey]['product_id'])) {
                     $pid = $this->sale_items[$itemKey]['product_id'];
                     $product = collect($this->products)->firstWhere('id', $pid) ?: Product::find($pid);
@@ -193,6 +206,10 @@ class SaleEdit extends Component
         }
 
         $matchedVariation = $product->relationLoaded('matchedVariation') ? $product->matchedVariation : null;
+        if ($product->has_variations && !$matchedVariation) {
+            session()->flash('failed', __('Scan or enter a variation SKU or serial number to select its price and stock.'));
+            return;
+        }
 
         if ($matchedVariation) {
             $itemKey = 'var_' . $matchedVariation->id;
@@ -407,27 +424,36 @@ class SaleEdit extends Component
             'sale_items.*.total' => 'required|numeric',
         ]);
 
-        // Calculate new quantities per catalog product
+        // Calculate new quantities separately for products and variations.
         $newQuantitiesByProduct = [];
+        $newQuantitiesByVariation = [];
         foreach ($this->sale_items as $item) {
-            if (!empty($item['product_id'])) {
-                $pid = $item['product_id'];
-                $newQuantitiesByProduct[$pid] = ($newQuantitiesByProduct[$pid] ?? 0) + (int) $item['quantity'];
+            if (!empty($item['product_variation_id'])) {
+                $id = $item['product_variation_id'];
+                $newQuantitiesByVariation[$id] = ($newQuantitiesByVariation[$id] ?? 0) + (int) $item['quantity'];
+                if (!empty($item['product_id'])) {
+                    $pid = $item['product_id'];
+                    $newQuantitiesByProduct[$pid] = ($newQuantitiesByProduct[$pid] ?? 0) + (int) $item['quantity'];
+                }
+            } elseif (!empty($item['product_id'])) {
+                $id = $item['product_id'];
+                $newQuantitiesByProduct[$id] = ($newQuantitiesByProduct[$id] ?? 0) + (int) $item['quantity'];
             }
         }
 
-        // Validate stock
+        foreach ($newQuantitiesByVariation as $vid => $newQty) {
+            $variation = ProductVariation::find($vid);
+            $available = ($variation?->quantity ?? 0) + ($this->original_variation_quantities[$vid] ?? 0);
+            if (!$variation || $newQty > $available) {
+                session()->flash('failed', __('Insufficient stock for variation. Requested: :req, Available: :avail.', ['req' => $newQty, 'avail' => $available]));
+                return;
+            }
+        }
         foreach ($newQuantitiesByProduct as $pid => $newQty) {
-            $originalQty = $this->original_stock_quantities[$pid] ?? 0;
-            $product = collect($this->products)->firstWhere('id', $pid) ?: Product::find($pid);
-            $availableTotal = ($product ? $product->quantity : 0) + $originalQty;
-
-            if ($newQty > $availableTotal) {
-                session()->flash('failed', __('Insufficient stock for [:name]! Requested: :req, Available: :avail.', [
-                    'name' => $product ? $product->name : "Product #$pid",
-                    'req' => $newQty,
-                    'avail' => $availableTotal,
-                ]));
+            $product = Product::find($pid);
+            $available = ($product?->quantity ?? 0) + ($this->original_stock_quantities[$pid] ?? 0);
+            if (!$product || $newQty > $available) {
+                session()->flash('failed', __('Insufficient stock for product. Requested: :req, Available: :avail.', ['req' => $newQty, 'avail' => $available]));
                 return;
             }
         }
@@ -445,8 +471,15 @@ class SaleEdit extends Component
         }
 
         // Perform atomic update
-        DB::transaction(function () use ($newQuantitiesByProduct, $attachmentPath) {
-            // Adjust inventory stock for differences
+        DB::transaction(function () use ($newQuantitiesByProduct, $newQuantitiesByVariation, $attachmentPath) {
+            // Adjust variation stock first.
+            $allVariationIds = array_unique(array_merge(array_keys($this->original_variation_quantities), array_keys($newQuantitiesByVariation)));
+            foreach ($allVariationIds as $vid) {
+                $diff = ($newQuantitiesByVariation[$vid] ?? 0) - ($this->original_variation_quantities[$vid] ?? 0);
+                if ($diff !== 0) ProductVariation::lockForUpdate()->find($vid)?->decrement('quantity', $diff);
+            }
+
+            // Adjust parent stock for standalone product items.
             $allProductIds = array_unique(array_merge(
                 array_keys($this->original_stock_quantities),
                 array_keys($newQuantitiesByProduct)
@@ -472,7 +505,10 @@ class SaleEdit extends Component
             foreach ($this->sale_items as $item) {
                 $purchase_price = 0;
 
-                if (!empty($item['product_id'])) {
+                if (!empty($item['product_variation_id'])) {
+                    $variation = ProductVariation::find($item['product_variation_id']);
+                    $purchase_price = $variation ? (float) $variation->purchase_price : (float) ($item['purchase_price'] ?? 0);
+                } elseif (!empty($item['product_id'])) {
                     $product = Product::find($item['product_id']);
                     $purchase_price = $product ? (float) $product->purchase_price : (float) ($item['purchase_price'] ?? 0);
                 } else {

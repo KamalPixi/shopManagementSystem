@@ -102,13 +102,26 @@
                     </table>
                     @endif
                 </td>
-                <td class="text-center">{{ $product->price }}</td>
+                <td class="text-center">{{ $product->has_variations ? 'Per variation' : $product->price }}</td>
                 <td class="text-center">{{ $product->quantity }}</td>
-                <td class="text-center">{{ $product->purchase_price }}</td>
-                <td class="text-center">{{ number_format($product->price * $product->quantity, 2, '.', '') }}</td>
+                <td class="text-center">{{ $product->has_variations ? 'Per variation' : $product->purchase_price }}</td>
+                <td class="text-center">{{ number_format($product->has_variations ? $product->variations->sum(fn($v) => $v->price * $v->quantity) : $product->price * $product->quantity, 2, '.', '') }}</td>
                 <td class="text-center">{{ $product->warranty?->name ?? '-' }}</td>
                 <td class="text-center">{{ $product->supplier?->name ?? '-' }}</td>
             </tr>
+            @if ($product->has_variations)
+                @foreach ($product->variations as $variation)
+                    <tr>
+                        <td></td>
+                        <td>↳ {{ $variation->variation_name }}<br><small>SKU: {{ $variation->sku ?: '-' }}</small></td>
+                        <td class="text-center">{{ $variation->price }}</td>
+                        <td class="text-center">{{ $variation->quantity }}</td>
+                        <td class="text-center">{{ $variation->purchase_price }}</td>
+                        <td class="text-center">{{ number_format($variation->price * $variation->quantity, 2, '.', '') }}</td>
+                        <td></td><td></td>
+                    </tr>
+                @endforeach
+            @endif
             @endforeach
         </tbody>
     </table>
@@ -119,8 +132,8 @@
             <td></td>
             <td style="width:9%;" class="fw-bold text-center">Total Unit Price: <br> {{ number_format($products->sum('price'), 2, '.', '') }} </td>
             <td style="width:9%;" class="fw-bold text-center">Total Qty: <br> {{ $products->sum('quantity') }} </td>
-            <td style="width:9%;" class="fw-bold text-center">Total Purchase Price: <br> {{ number_format($products->sum(fn($p) => $p->purchase_price * $p->quantity), 2, '.', '') }} </td>
-            <td style="width:9%;" class="fw-bold text-center">Total Sale Price: <br> {{ number_format($products->sum(fn($p) => $p->price * $p->quantity), 2, '.', '') }} </td>
+            <td style="width:9%;" class="fw-bold text-center">Total Purchase Price: <br> {{ number_format($products->sum(fn($p) => $p->has_variations ? $p->variations->sum(fn($v) => $v->purchase_price * $v->quantity) : $p->purchase_price * $p->quantity), 2, '.', '') }} </td>
+            <td style="width:9%;" class="fw-bold text-center">Total Sale Price: <br> {{ number_format($products->sum(fn($p) => $p->has_variations ? $p->variations->sum(fn($v) => $v->price * $v->quantity) : $p->price * $p->quantity), 2, '.', '') }} </td>
             <td style="width:6%;"></td>
             <td style="width:8%;"></td>
         </tr>

@@ -100,6 +100,7 @@
                         <tr>
                             <td style="width: 45%;line-height: 1;"> 
                                 <small>{{ $item->name }}</small>
+                                @if ($item->productVariation?->variation_name)<br><small>Variant: {{ $item->productVariation->variation_name }}</small>@endif
                                 @if (empty($item->product_id))
                                     <small style="color: #0dcaf0;">(Custom)</small>
                                 @endif
@@ -108,15 +109,17 @@
                                     <small class="text-muted">SN:{{ $item->product->serial_no }}</small> <br>
                                 @endif
                                 @if ($item->product?->sku || $item->product?->model_no)
-                                    <small class="text-muted">SKU: {{ $item->product?->sku }} | Model: {{ $item->product?->model_no }}</small>
+                                    <small class="text-muted">SKU: {{ $item->productVariation?->sku ?: $item->product?->sku }} | Model: {{ $item->product?->model_no }}</small>
                                 @endif
                             </td>
                             <td style="width: 18%;"> 
                                 <table class="w-100">
                                     @foreach ($item->attributes_and_values ?? [] as $att => $value)
+                                    @php($attributeName = is_array($value) ? ($value['name'] ?? '') : $att)
+                                    @php($attributeValue = is_array($value) ? ($value['value'] ?? '') : $value)
                                     <tr>
-                                        <td class="text-muted"><small>{{ ucfirst($att) }}</small></td>
-                                        <td><small><b>: {{ ucfirst($value) }}</b></small></td>
+                                        <td class="text-muted"><small>{{ ucfirst($attributeName) }}</small></td>
+                                        <td><small><b>: {{ ucfirst($attributeValue) }}</b></small></td>
                                     </tr>
                                     @endforeach
                                 </table>

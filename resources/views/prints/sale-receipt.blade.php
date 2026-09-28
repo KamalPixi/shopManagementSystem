@@ -155,11 +155,13 @@
                             <small class="text-muted">SN:{{ $sn }}</small> <br>
                         @endif
                         @if ($item->product?->sku || $item->product?->model_no)
-                            <small class="text-muted">Model: {{ $item->product?->model_no }} | SKU: {{ $item->product?->sku }}</small><br>
+                            <small class="text-muted">Model: {{ $item->product?->model_no }} | SKU: {{ $item->productVariation?->sku ?: $item->product?->sku }}</small><br>
                         @endif
                         @foreach ($item->attributes_and_values ?? [] as $att => $value)
+                        @php($attributeName = is_array($value) ? ($value['name'] ?? '') : $att)
+                        @php($attributeValue = is_array($value) ? ($value['value'] ?? '') : $value)
                         <small style="font-size: 5px;">
-                           {{ ucfirst($att) }}:{{ ucfirst($value) }}
+                           {{ ucfirst($attributeName) }}:{{ ucfirst($attributeValue) }}
                         </small>
                         @endforeach
                     </td>
