@@ -161,13 +161,13 @@
                     <div class="row">
                         <div class="col-12 col-md-4">
                             <div class="mb-4">
-                                <label for="brand">New Purchase Price*</label>
-                                <input wire:model="purchase_price" type="text" class="form-control form-control-sm">
+                                <label for="brand">{{ $has_variations ? __('Default Purchase Price') : __('New Purchase Price*') }} @if($has_variations)<small class="text-muted">({{ __('set per variation above') }})</small>@endif</label>
+                                <input wire:model="purchase_price" type="text" class="form-control form-control-sm" {{ $has_variations ? 'readonly' : '' }}>
                             </div>
                         </div>
                         <div class="col-12 col-md-4">
                             <div class="mb-4">
-                                <label>Sale Price*</label> <small class="text-muted small">(Price Per Unit)</small>
+                                <label>{{ $has_variations ? __('Default Sale Price') : __('Sale Price*') }}</label> <small class="text-muted small">({{ $has_variations ? __('set per variation') : __('Price Per Unit') }})</small>
                                 <input wire:model="price" required type="text" class="form-control form-control-sm" readonly>
                             </div>
                         </div>
