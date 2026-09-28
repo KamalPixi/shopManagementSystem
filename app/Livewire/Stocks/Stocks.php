@@ -21,9 +21,20 @@ class Stocks extends Component
     public $category_id = '';
     public $stock_add_date = '';
     public $filter_type = 'day';
+    public $low_stock_only = false;
+    public $has_variations_filter = '';
+    public $status_filter = '';
+    public $perPage = 50;
 
     public $productIds = [];
     public $isSelectedAll = false;
+
+    public function updated($propertyName)
+    {
+        if ($propertyName !== 'productIds' && $propertyName !== 'isSelectedAll') {
+            $this->resetPage();
+        }
+    }
 
     public function pdfStocks() {
         $query = $this->buildQuery();
@@ -153,7 +164,9 @@ class Stocks extends Component
     }
 
     public function clearFilter() {
-        $this->reset();
+        $this->reset(['name', 'sku', 'model_no', 'category_id', 'stock_add_date', 'low_stock_only', 'has_variations_filter', 'status_filter']);
+        $this->filter_type = 'day';
+        $this->resetPage();
     }
 
     public function delete($id) {
@@ -183,13 +196,30 @@ class Stocks extends Component
 
     private function buildQuery()
     {
-        $query = Product::query();
+        $query = Product::with(['category', 'brand', 'warranty', 'createdBy', 'variations']);
 
         if (!empty($this->name)) {
             $query->where('name', 'like', '%' . $this->name . '%');
         }
         if (!empty($this->sku)) {
-            $query->where('sku', 'like', '%' . $this->sku . '%');
+            $term = '%' . $this->sku . '%';
+            $query->where(function ($q) use ($term) {
+                $q->where('sku', 'like', $term)->orWhereHas('variations', fn ($variation) => $variation->where('sku', 'like', $term));
+            });
+        }
+        if ($this->has_variations_filter !== '') {
+            $query->where('has_variations', (bool) $this->has_variations_filter);
+        }
+        if ($this->status_filter !== '') {
+            $query->where('status', (bool) $this->status_filter);
+        }
+        if ($this->low_stock_only) {
+            $query->where(function ($q) {
+                $q->whereColumn('quantity', '<=', 'low_stock_threshold')
+                  ->orWhere(function ($variationQuery) {
+                      $variationQuery->where('has_variations', true)->whereHas('variations', fn ($variation) => $variation->whereColumn('quantity', '<=', 'low_stock_threshold'));
+                  });
+            });
         }
         if (!empty($this->model_no)) {
             $query->where('model_no', 'like', '%' . $this->model_no . '%');
@@ -227,7 +257,7 @@ class Stocks extends Component
 
         return view('livewire.stocks.stocks', [
             'categories' => Category::all(),
-            'products' => $query->orderBy('created_at', 'desc')->paginate(50),
+            'products' => $query->orderBy('created_at', 'desc')->paginate($this->perPage),
         ]);
     }
 }

@@ -24,6 +24,32 @@
                         </div>
                         <div class="col">
                             <div class="mb-4">
+                                <label>{{ __('Status') }}</label>
+                                <select wire:model.live="status_filter" class="form-select form-select-sm">
+                                    <option value="">{{ __('All statuses') }}</option>
+                                    <option value="1">{{ __('Active') }}</option>
+                                    <option value="0">{{ __('Inactive') }}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mb-4">
+                                <label>{{ __('Product type') }}</label>
+                                <select wire:model.live="has_variations_filter" class="form-select form-select-sm">
+                                    <option value="">{{ __('All products') }}</option>
+                                    <option value="1">{{ __('With variations') }}</option>
+                                    <option value="0">{{ __('Single product') }}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col d-flex align-items-center pt-2">
+                            <div class="form-check">
+                                <input wire:model.live="low_stock_only" class="form-check-input" type="checkbox" id="low_stock_only">
+                                <label class="form-check-label" for="low_stock_only">{{ __('Low stock only') }}</label>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mb-4">
                                 <label for="description">{{ __('SKU/Bercode') }}</label>
                                 <input wire:model.live="sku" type="text" class="form-control form-control-sm">
                             </div>
@@ -48,7 +74,7 @@
                         <div class="col">
                             <div class="mb-4">
                                 <label>{{ __('Stock Added Date') }}</label>
-                                <input wire:model.live="stock_add_date" type="date" class="form-control form-control-sm input-date">
+                                <input wire:model.live="stock_add_date" type="date" class="form-control form-control-sm input-date" placeholder="{{ __('Choose date') }}">
                             </div>
                         </div>
                         <div class="col">
@@ -135,14 +161,11 @@
                                 <br> <span class="small text-muted">{{$product->sku}}</span>
                             </td>
                             <td class="px-0 fw-bold align-items-center text-center lh-1">
-                                <table class="table table-striped w-100">
+                                    <div class="small text-start">
                                     @foreach ($product->attributes_and_values ?? [] as $att_value)
-                                    <tr>
-                                        <td class="text-start" style="padding:0.2rem;"> <small class="text-muted">{{ ucfirst($att_value['name']) }}:</small> </td>
-                                        <td class="text-start" style="padding:0.2rem;"> <small> {{ implode(', ', $att_value['values']) }}</small></td>
-                                    </tr>
+                                        <span class="badge bg-light text-dark border me-1 mb-1">{{ ucfirst($att_value['name']) }}: {{ implode(', ', $att_value['values']) }}</span>
                                     @endforeach
-                                </table>
+                                    </div>
                             </td>
                             <td class="px-0 fw-bold align-items-center text-center"> {{ $product->category?->name }} </td>
                             <td class="px-0 fw-bold align-items-center text-center"> {{ $product->brand?->name }} </td>
@@ -157,6 +180,9 @@
                                     </span>
                                 @else
                                     <span class="badge bg-light text-dark border py-1 px-2">{{ $product->quantity }}</span>
+                                @endif
+                                @if ($product->has_variations)
+                                    <small class="d-block text-muted mt-1">{{ $product->variations->count() }} {{ __('variants') }}</small>
                                 @endif
                             </td>
                             <td class="px-0 fw-bold align-items-center text-center"> {{ $product->status }} </td>
