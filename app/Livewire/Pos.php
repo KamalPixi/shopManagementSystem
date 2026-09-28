@@ -21,6 +21,8 @@ class Pos extends Component
     use WithFileUploads;
 
     public $identifier = '';
+    public $pendingVariationProductId = null;
+    public $selectedVariationId = null;
 
     public $products = [];
     public $sale_items = [];
@@ -63,11 +65,19 @@ class Pos extends Component
 
     // Register Close Previous Day Modal for POS (Option B)
     public $showClosePreviousDayModal = false;
+    public $overdueSession = null;
+    public $overdueExpected = 0;
     public $pos_closing_balance = 0;
     public $pos_closing_note = '';
+    public $overdueDifference = 0;
 
     public function updated($propertyName) {
         $this->errorMessage = '';
+
+        if ($propertyName === 'pos_closing_balance') {
+            $this->overdueDifference = round((float) $this->pos_closing_balance - (float) $this->overdueExpected, 2);
+            return;
+        }
 
         if ($propertyName == 'customer_name') {
             if (empty($this->customer_name)) {
@@ -144,7 +154,9 @@ class Pos extends Component
     }
 
     public function add() {
-        $product = Product::findBySkuSerialOrModel($this->identifier);
+        $selectedVariation = $this->selectedVariationId ? ProductVariation::with('product')->find($this->selectedVariationId) : null;
+        $product = $selectedVariation?->product ?: Product::findBySkuSerialOrModel($this->identifier);
+        $this->selectedVariationId = null;
 
         if (empty($product)) {
             session()->flash('failed', __('No product found [:id]', ['id' => $this->identifier]));
@@ -152,11 +164,14 @@ class Pos extends Component
         }
 
         // Check if a specific variation was matched
-        $matchedVariation = $product->relationLoaded('matchedVariation') ? $product->matchedVariation : null;
+        $matchedVariation = $selectedVariation ?: ($product->relationLoaded('matchedVariation') ? $product->matchedVariation : null);
         if ($product->has_variations && !$matchedVariation) {
-            session()->flash('failed', __('Scan or enter a variation SKU or serial number to select its price and stock.'));
+            $this->pendingVariationProductId = $product->id;
+            $this->identifier = '';
             return;
         }
+
+        $this->pendingVariationProductId = null;
 
         if ($matchedVariation) {
             if ($matchedVariation->quantity < 1) {
@@ -240,6 +255,22 @@ class Pos extends Component
 
         $this->reset(['identifier']);
         $this->calculate();
+    }
+
+    public function selectVariation($variationId)
+    {
+        $variation = ProductVariation::where('product_id', $this->pendingVariationProductId)->find($variationId);
+        if (!$variation) {
+            session()->flash('failed', __('Variation not found. Search the product again.'));
+            return;
+        }
+        $this->selectedVariationId = $variation->id;
+        $this->add();
+    }
+
+    public function cancelVariationSelection()
+    {
+        $this->pendingVariationProductId = null;
     }
 
     public function openCustomModal() {
@@ -326,7 +357,10 @@ class Pos extends Component
     {
         $overdueSession = CashRegisterSession::previousDayUnclosedSession();
         if ($overdueSession) {
+            $this->overdueSession = $overdueSession;
+            $this->overdueExpected = $overdueSession->calculateExpectedCash();
             $this->pos_closing_balance = $overdueSession->calculateExpectedCash();
+            $this->overdueDifference = 0;
             $this->pos_closing_note = '';
             $this->showClosePreviousDayModal = true;
         }
@@ -335,6 +369,9 @@ class Pos extends Component
     public function closeClosePreviousDayModal()
     {
         $this->showClosePreviousDayModal = false;
+        $this->overdueSession = null;
+        $this->overdueExpected = 0;
+        $this->overdueDifference = 0;
     }
 
     public function submitClosePreviousDay()

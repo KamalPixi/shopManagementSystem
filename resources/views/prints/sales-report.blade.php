@@ -115,8 +115,12 @@
                             <td style="width: 18%;"> 
                                 <table class="w-100">
                                     @foreach ($item->attributes_and_values ?? [] as $att => $value)
-                                    @php($attributeName = is_array($value) ? ($value['name'] ?? '') : $att)
-                                    @php($attributeValue = is_array($value) ? ($value['value'] ?? '') : $value)
+                                    @php
+$attributeName = is_array($value) ? ($value['name'] ?? '') : $att
+@endphp
+                                    @php
+$attributeValue = is_array($value) ? ($value['value'] ?? '') : $value
+@endphp
                                     <tr>
                                         <td class="text-muted"><small>{{ ucfirst($attributeName) }}</small></td>
                                         <td><small><b>: {{ ucfirst($attributeValue) }}</b></small></td>

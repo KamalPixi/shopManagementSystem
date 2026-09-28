@@ -163,8 +163,12 @@
                             <small style="font-size: 8px;">SN: {{ $sn }}</small> <br>
                         @endif
                         @foreach ($item->attributes_and_values ?? [] as $att => $value)
-                        @php($attributeName = is_array($value) ? ($value['name'] ?? '') : $att)
-                        @php($attributeValue = is_array($value) ? ($value['value'] ?? '') : $value)
+                        @php
+$attributeName = is_array($value) ? ($value['name'] ?? '') : $att
+@endphp
+                        @php
+$attributeValue = is_array($value) ? ($value['value'] ?? '') : $value
+@endphp
                         <small style="font-size: 8px;">
                            {{ ucfirst($attributeName) }}:{{ ucfirst($attributeValue) }}
                         </small>

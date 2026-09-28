@@ -38,6 +38,35 @@
         </div>
     </div>
 
+    @if ($pendingVariationProductId)
+        @php
+$pendingProduct = \App\Models\Product::with('variations')->find($pendingVariationProductId)
+@endphp
+        @if ($pendingProduct)
+            <div class="card border-info shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div><strong>{{ $pendingProduct->name }}</strong><span class="text-muted ms-2">{{ __('Select a variation to add to cart') }}</span></div>
+                        <button type="button" wire:click="cancelVariationSelection" class="btn btn-sm btn-outline-secondary">{{ __('Cancel') }}</button>
+                    </div>
+                    <div class="row g-2">
+                        @forelse ($pendingProduct->variations as $variation)
+                            <div class="col-12 col-md-6 col-xl-3">
+                                <button type="button" wire:click="selectVariation({{ $variation->id }})" class="btn btn-outline-primary w-100 text-start h-100" @disabled($variation->quantity < 1)>
+                                    <strong class="d-block">{{ $variation->variation_name }}</strong>
+                                    <small class="d-block">{{ $variation->sku ?: $pendingProduct->sku }}</small>
+                                    <small>{{ number_format($variation->price, 2) }} · {{ __('Stock') }}: {{ $variation->quantity }}</small>
+                                </button>
+                            </div>
+                        @empty
+                            <div class="col-12 text-muted">{{ __('No variations configured.') }}</div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endif
+
     {{-- Custom Item Modal --}}
     @if ($showCustomModal)
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px);" aria-modal="true" role="dialog">
@@ -183,10 +212,6 @@
 
     {{-- Option B: Force Close Previous Day's Unclosed Register Modal --}}
     @if ($showClosePreviousDayModal)
-    @php
-        $overdueSession = \App\Models\CashRegisterSession::previousDayUnclosedSession();
-        $overdueExpected = $overdueSession ? $overdueSession->calculateExpectedCash() : 0;
-    @endphp
     <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(15, 23, 42, 0.7); backdrop-filter: blur(3px);" aria-modal="true" role="dialog">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 520px;">
             <div class="modal-content border-0 shadow-lg rounded-3">
@@ -222,16 +247,13 @@
                                 <span class="input-group-text bg-light fw-bold">{{ $currencySymbol }}</span>
                                 <input wire:model.live="pos_closing_balance" type="number" step="0.01" min="0" class="form-control form-control-lg text-end fw-bold" placeholder="0" autofocus required>
                             </div>
-                            @php
-                                $diff = round((float)$pos_closing_balance - (float)$overdueExpected, 2);
-                            @endphp
                             <div class="mt-2">
-                                @if ($diff == 0)
+                                @if ($overdueDifference == 0)
                                     <span class="badge bg-success">{{ __('Balances perfectly (Diff: 0.00)') }}</span>
-                                @elseif ($diff > 0)
-                                    <span class="badge bg-info text-white">{{ __('Cash Over: +') }}{{ $currencySymbol }}{{ number_format($diff, 2) }}</span>
+                                @elseif ($overdueDifference > 0)
+                                    <span class="badge bg-info text-white">{{ __('Cash Over: +') }}{{ $currencySymbol }}{{ number_format($overdueDifference, 2) }}</span>
                                 @else
-                                    <span class="badge bg-danger">{{ __('Cash Short: ') }}{{ $currencySymbol }}{{ number_format($diff, 2) }}</span>
+                                    <span class="badge bg-danger">{{ __('Cash Short: ') }}{{ $currencySymbol }}{{ number_format($overdueDifference, 2) }}</span>
                                 @endif
                             </div>
                             @error('pos_closing_balance') <span class="text-danger small d-block">{{ $message }}</span> @enderror
