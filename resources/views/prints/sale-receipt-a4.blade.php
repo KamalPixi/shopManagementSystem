@@ -59,6 +59,35 @@
             font-size: 9.5px;
             color: #475569;
             line-height: 1.35;
+            text-align: left;
+            padding-left: 18px;
+        }
+        .contact-panel {
+            border-left: 1px solid #0f2c59;
+            padding-left: 18px;
+            padding-bottom: 6px;
+        }
+        .contact-row {
+            display: table;
+            width: 100%;
+            margin: 4px 0;
+        }
+        .contact-icon {
+            display: table-cell;
+            width: 22px;
+            height: 22px;
+            max-width: 22px;
+            max-height: 22px;
+            vertical-align: middle;
+            text-align: center;
+            object-fit: contain;
+        }
+        .contact-value {
+            display: table-cell;
+            vertical-align: middle;
+            padding-left: 8px;
+            text-align: left;
+            color: #1e293b;
         }
 
         /* Legal & Meta Section */
@@ -316,32 +345,35 @@
         ];
         $logoPath = public_path('assets/img/tp-horizontal.png');
         $logoData = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : null;
+        $locationIcon = file_exists(public_path('assets/icons/location.png')) ? 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('assets/icons/location.png'))) : null;
+        $contactIcon = file_exists(public_path('assets/icons/contact.png')) ? 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('assets/icons/contact.png'))) : null;
+        $emailIcon = file_exists(public_path('assets/icons/email.png')) ? 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('assets/icons/email.png'))) : null;
     @endphp
 
     <!-- Header Table -->
     <table class="header-table" cellpadding="0" cellspacing="0">
         <tr>
             <td style="width: 55%; vertical-align: middle;">
+                <div style="padding-left: 18px;">
                 @if ($logoData)
                     <img src="{{ $logoData }}" alt="{{ $shop->name ?? 'Tech Parisien' }}" class="shop-logo">
                 @else
                     <div class="brand-name">{{ $shop->name ?? 'TECH PARISIEN' }}</div>
                     <div class="brand-slogan">{{ __('Buy · Sell · Exchange') }}</div>
                 @endif
+                </div>
             </td>
-            <td style="width: 45%; vertical-align: middle; text-align: right;" class="top-contact-info">
-                @if(!empty($shop->address))
-                    <div>{{ $shop->address }}</div>
-                @endif
-                @if(!empty($shop->postal_code) || !empty($shop->city))
-                    <div>{{ $shop->postal_code }} {{ $shop->city }}{{ !empty($shop->country) ? ', '.$shop->country : '' }}</div>
-                @endif
-                @if(!empty($shop->contact_no))
-                    <div><strong>{{ __('Phone') }}:</strong> {{ $shop->contact_no }}</div>
-                @endif
-                @if(!empty($shop->email))
-                    <div><strong>Email :</strong> {{ $shop->email }}</div>
-                @endif
+            <td style="width: 45%; vertical-align: middle;" class="top-contact-info">
+                <div class="contact-panel">
+                @php
+                    $contactAddress = $shop?->address ?: '33 rue Brézin, 75014 Paris, France';
+                    $contactPhone = $shop?->contact_no ?: '07 53 74 59 97';
+                    $contactEmail = $shop?->email ?: 'techparisien@gmail.com';
+                @endphp
+                <div class="contact-row"><img src="{{ $locationIcon }}" class="contact-icon"><span class="contact-value">{{ $contactAddress }}@if(!$shop?->address && !$shop?->postal_code && !$shop?->city)@else{{ $shop?->postal_code || $shop?->city ? ', ' . trim(($shop?->postal_code ?? '') . ' ' . ($shop?->city ?? '')) : '' }}{{ $shop?->country ? ', ' . $shop->country : '' }}@endif</span></div>
+                <div class="contact-row"><img src="{{ $contactIcon }}" class="contact-icon"><span class="contact-value">{{ $contactPhone }}</span></div>
+                <div class="contact-row"><img src="{{ $emailIcon }}" class="contact-icon"><span class="contact-value">{{ $contactEmail }}</span></div>
+                </div>
             </td>
         </tr>
     </table>
