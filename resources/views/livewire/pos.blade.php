@@ -9,9 +9,39 @@
 
     @php
         $currencySymbol = $shop?->currency['symbol'] ?? '€';
+        $needsPreviousDayClose = !empty($overdueSession);
+        $needsTodayOpen = empty($todaySession) && empty($needsPreviousDayClose);
+        $registerBlocked = $needsPreviousDayClose || empty($todaySession);
     @endphp
 
-
+    {{-- Register Status Warning Banner --}}
+    @if ($needsPreviousDayClose)
+        <div class="alert alert-danger d-flex align-items-center justify-content-between shadow-sm mb-4 py-2 px-3" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fa-solid fa-triangle-exclamation me-2 fs-5"></i>
+                <div>
+                    <strong>{{ __('Unclosed Register from :date', ['date' => $overdueSession->opened_at->format('d M Y')]) }}:</strong>
+                    {{ __('Yesterday\'s register must be counted and closed before opening today\'s register or completing sales.') }}
+                </div>
+            </div>
+            <button wire:click="openClosePreviousDayModal" type="button" class="btn btn-sm btn-danger text-white fw-bold text-nowrap ms-3">
+                {{ __('Close Yesterday\'s Register') }}
+            </button>
+        </div>
+    @elseif ($needsTodayOpen)
+        <div class="alert alert-warning d-flex align-items-center justify-content-between shadow-sm mb-4 py-2 px-3" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fa-solid fa-cash-register me-2 fs-5"></i>
+                <div>
+                    <strong>{{ __('Today\'s Register Not Opened Yet') }}:</strong>
+                    {{ __('Please enter today\'s opening cash balance to enable sales.') }}
+                </div>
+            </div>
+            <button wire:click="openRegisterModal" type="button" class="btn btn-sm btn-warning text-dark fw-bold text-nowrap ms-3">
+                {{ __('Enter Opening Balance') }}
+            </button>
+        </div>
+    @endif
 
     {{-- Scan & Custom Item Bar --}}
     <div class="row mb-4">
@@ -568,13 +598,35 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                             </table>
                         </div>
 
-                        <div class="d-flex gap-2 pt-2">
-                            <button wire:click="clearPos" type="button" class="btn btn-outline-danger py-2 px-3 fw-bold">
-                                <i class="fa-solid fa-trash-can me-1"></i> {{ __('Clear') }}
-                            </button>
-                            <button wire:click="sale" type="button" class="btn btn-primary flex-grow-1 py-2 fw-bold shadow-sm fs-6 d-flex align-items-center justify-content-center">
-                                <i class="fa-solid fa-circle-check me-2 fs-5"></i> {{ __('Complete Sale (:sym:amt)', ['sym' => $currencySymbol, 'amt' => number_format((float)$grand_total, 2)]) }}
-                            </button>
+                        <div class="d-flex flex-column gap-2 pt-2">
+                            @if ($needsPreviousDayClose)
+                                <div class="alert alert-danger py-1 px-2 mb-0 small text-center">
+                                    {{ __('Unclosed yesterday drawer detected. Close yesterday register first.') }}
+                                </div>
+                            @elseif ($needsTodayOpen)
+                                <div class="alert alert-warning py-1 px-2 mb-0 small text-center">
+                                    {{ __('Today\'s opening balance required before completing sale.') }}
+                                </div>
+                            @endif
+
+                            <div class="d-flex gap-2">
+                                <button wire:click="clearPos" type="button" class="btn btn-outline-danger py-2 px-3 fw-bold">
+                                    <i class="fa-solid fa-trash-can me-1"></i> {{ __('Clear') }}
+                                </button>
+                                @if ($needsPreviousDayClose)
+                                    <button wire:click="openClosePreviousDayModal" type="button" class="btn btn-danger flex-grow-1 py-2 fw-bold shadow-sm fs-6 d-flex align-items-center justify-content-center">
+                                        <i class="fa-solid fa-lock me-2 fs-5"></i> {{ __('Close Yesterday\'s Register') }}
+                                    </button>
+                                @elseif ($needsTodayOpen)
+                                    <button wire:click="openRegisterModal" type="button" class="btn btn-warning text-dark flex-grow-1 py-2 fw-bold shadow-sm fs-6 d-flex align-items-center justify-content-center">
+                                        <i class="fa-solid fa-cash-register me-2 fs-5"></i> {{ __('Enter Opening Balance First') }}
+                                    </button>
+                                @else
+                                    <button wire:click="sale" type="button" class="btn btn-primary flex-grow-1 py-2 fw-bold shadow-sm fs-6 d-flex align-items-center justify-content-center">
+                                        <i class="fa-solid fa-circle-check me-2 fs-5"></i> {{ __('Complete Sale (:sym:amt)', ['sym' => $currencySymbol, 'amt' => number_format((float)$grand_total, 2)]) }}
+                                    </button>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>

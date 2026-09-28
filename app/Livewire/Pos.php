@@ -807,11 +807,15 @@ class Pos extends Component
     public function render()
     {
         $currentSession = CashRegisterSession::currentOpenSession();
+        $todaySession = CashRegisterSession::todayOpenSession();
+        $overdueSession = CashRegisterSession::previousDayUnclosedSession();
 
         return view('livewire.pos', [
             'warranties' => Warranty::all(),
             'shop' => Shop::first(),
             'currentSession' => $currentSession,
+            'todaySession' => $todaySession,
+            'overdueSession' => $overdueSession,
         ]);
     }
 }
