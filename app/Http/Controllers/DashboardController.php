@@ -16,13 +16,20 @@ class DashboardController extends Controller
                         ->where('status', 1)
                         ->whereRaw('quantity <= COALESCE(low_stock_threshold, ?)', [$defaultThreshold])
                         ->orderBy('quantity', 'asc')
-                        ->paginate(10);
+                        ->paginate(5, ['*'], 'low_stock_page');
 
         $lowStockCount = Product::where('status', 1)
                         ->whereRaw('quantity <= COALESCE(low_stock_threshold, ?)', [$defaultThreshold])
                         ->count();
 
-        return view('dashboard', compact('products', 'lowStockCount'));
+        $recentSales = \App\Models\Sale::with(['createdBy', 'saleItems'])
+                        ->latest('created_at')
+                        ->take(5)
+                        ->get();
+
+        $currentSession = \App\Models\CashRegisterSession::currentOpenSession();
+
+        return view('dashboard', compact('products', 'lowStockCount', 'recentSales', 'currentSession', 'shop'));
     }
 
     public function pos() {
