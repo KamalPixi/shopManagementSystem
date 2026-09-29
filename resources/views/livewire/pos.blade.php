@@ -513,12 +513,17 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                                 <label class="btn {{ $payment_method === 'bank_transfer' ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_bank">
                                     <i class="fa-solid fa-building-columns me-1"></i> {{ __('Bank Transfer') }}
                                 </label>
+
+                                <input type="radio" wire:model.live="payment_method" class="btn-check" name="btnradio" id="btnradio_other" value="other" autocomplete="off">
+                                <label class="btn {{ $payment_method === 'other' ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_other">
+                                    <i class="fa-solid fa-ellipsis me-1"></i> {{ __('Other') }}
+                                </label>
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label class="small fw-bold mb-1">
-                                {{ __('Payment Reference / Auth / Slip No.') }}
+                                {{ $payment_method === 'other' ? __('Other payment details') : __('Payment Reference / Auth / Slip No.') }}
                                 <small class="text-muted fw-normal">({{ __('Optional') }})</small>
                             </label>
                             <input wire:model="payment_reference" type="text" class="form-control form-control-sm" placeholder="{{ __('e.g. Card TXN-998877 or Bank Ref 12345678') }}">

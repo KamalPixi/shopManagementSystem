@@ -428,6 +428,7 @@
         $subtotalHt = $sale->saleItems->sum(fn ($item) => (float) $item->price * (int) $item->quantity);
         $totalHt = $sale->saleItems->sum(fn ($item) => (float) $item->total);
         $paymentMethod = strtolower($sale->payment_method ?? 'cash');
+        $otherPaymentDetails = $paymentMethod === 'other' ? trim((string) ($sale->payment_reference ?? '')) : '';
         $staffName = $sale->createdBy?->name ?? __('Unknown');
         $taxLabel = $shop?->tax_label ?? 'VAT';
         $currencyCode = $shop?->currency['code'] ?? 'EUR';
@@ -594,7 +595,7 @@
                     <div class="payment-option">
                         <span class="checkbox-box {{ in_array($paymentMethod, ['cheque', 'check', 'other', 'autre']) ? 'checked' : '' }}">@if(in_array($paymentMethod, ['cheque', 'check', 'other', 'autre']) && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif
                         </span>
-                        {{ __('Other') }} : <span class="payment-other-line"></span>
+                            {{ __('Other') }} : @if($otherPaymentDetails)<span>{{ $otherPaymentDetails }}</span>@else<span class="payment-other-line"></span>@endif
                     </div>
                     @if($sale->payment_reference)
                         <div style="font-size: 8.5px; color: #64748b; margin-top: 6px;">

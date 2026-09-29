@@ -42,7 +42,7 @@ class Pos extends Component
     public $gst_percent = 0;
 
     // Payment methods & reference
-    public $payment_method = 'cash'; // cash, card, bank_transfer
+    public $payment_method = 'cash'; // cash, card, bank_transfer, other
     public $payment_reference = '';
     public $payment_attachment;
 
@@ -510,8 +510,8 @@ class Pos extends Component
 
         // Validate sale items
         $this->validate([
-            'payment_method' => 'required|in:cash,card,bank_transfer',
-            'payment_reference' => 'nullable|string|max:255',
+            'payment_method' => 'required|in:cash,card,bank_transfer,other',
+            'payment_reference' => $this->payment_method === 'other' ? 'required|string|max:255' : 'nullable|string|max:255',
             'payment_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:3072',
             'sale_items' => 'required|array',
             'sale_items.*' => 'required|array',
