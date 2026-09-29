@@ -38,7 +38,6 @@
             font-weight: 800;
             color: #0f2c59;
             letter-spacing: 0.5px;
-            text-transform: uppercase;
             margin: 0;
         }
         .brand-slogan {
@@ -105,12 +104,26 @@
             font-size: 9.5px;
             color: #334155;
             line-height: 1.4;
+            font-weight: 400;
         }
         .company-legal-title {
             font-weight: bold;
-            font-size: 11px;
+            font-size: 20px;
             color: #0f2c59;
-            margin-bottom: 2px;
+            margin-bottom: 5px;
+            line-height: 1.1;
+        }
+        .company-legal-label {
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .company-legal-label-normal {
+            font-weight: 400;
+            color: #334155;
+        }
+        .company-legal-value {
+            font-weight: 400;
+            color: #334155;
         }
         .facture-box {
             background-color: #eef2f7;
@@ -125,12 +138,22 @@
             letter-spacing: 1px;
             margin: 0 0 6px 0;
             text-align: right;
+            text-transform: uppercase;
         }
         .facture-meta-row {
             font-size: 9.5px;
             color: #334155;
-            text-align: right;
+            display: grid;
+            grid-template-columns: 122px 12px 1fr;
+            align-items: baseline;
+            text-align: left;
             padding: 1px 0;
+        }
+        .facture-meta-label {
+            font-weight: 700;
+        }
+        .facture-meta-colon {
+            text-align: center;
         }
 
         /* Client Section */
@@ -255,18 +278,15 @@
             page-break-inside: avoid;
         }
         .payment-mode-title {
-            font-size: 10px;
+            font-size: 14px;
             font-weight: bold;
             color: #0f2c59;
-            text-transform: uppercase;
             margin-bottom: 8px;
-            border-bottom: 1px solid #cbd5e1;
-            padding-bottom: 4px;
         }
         .payment-option {
-            font-size: 9.5px;
+            font-size: 10.5px;
             color: #334155;
-            margin-bottom: 4px;
+            margin-bottom: 7px;
         }
         .checkbox-box {
             display: inline-block;
@@ -285,6 +305,14 @@
             color: #ffffff;
             border-color: #0f2c59;
         }
+        .payment-other-line {
+            display: inline-block;
+            width: 125px;
+            margin-left: 5px;
+            border-bottom: 1px solid #0f2c59;
+            height: 10px;
+            vertical-align: middle;
+        }
 
         /* Totals Card */
         .totals-card {
@@ -292,15 +320,16 @@
             border-collapse: collapse;
         }
         .totals-card td {
-            padding: 4px 8px;
-            font-size: 9.5px;
+            padding: 6px 8px;
+            font-size: 10.5px;
         }
         .totals-label {
             color: #475569;
             text-align: left;
+            font-weight: bold;
         }
         .totals-value {
-            font-weight: bold;
+            font-weight: normal;
             color: #1e293b;
             text-align: right;
         }
@@ -423,17 +452,17 @@
         <tr>
             <td style="width: 52%; vertical-align: top; padding-right: 15px;" class="company-legal-box">
                 <div class="company-legal-title">{{ $shop->name ?? 'TECH PARISIEN' }}</div>
-                <div>{{ $legalCompanyType }}</div>
-                <div>{{ $legalAddress }}</div>
-                <div><strong>{{ __('SIREN') }} :</strong> {{ $legalRegistration }}</div>
-                <div>{{ __('Intracommunity VAT') }} : {{ $legalTaxNumber }}</div>
+                <div class="company-legal-value" style="font-weight: 700; color: #0f172a;">{{ $legalCompanyType }}</div>
+                <div class="company-legal-value">{{ $legalAddress }}</div>
+                <div><span class="company-legal-label">{{ __('SIREN') }} :</span> <span class="company-legal-value">{{ $legalRegistration }}</span></div>
+                <div><span class="company-legal-label-normal">TVA intracommunautaire:</span> <span class="company-legal-value">{{ $legalTaxNumber }}</span></div>
             </td>
             <td style="width: 48%; vertical-align: top;">
                 <div class="facture-title">{{ __('Invoice') }}</div>
                 <div class="facture-box">
-                    <div class="facture-meta-row"><strong>{{ __('Invoice no.') }}:</strong> {{ $sale->receipt_no }}</div>
-                    <div class="facture-meta-row"><strong>{{ __('Date') }}:</strong> {{ $sale->created_at->format('d/m/Y') }}</div>
-                    <div class="facture-meta-row"><strong>{{ __('Payment method') }}:</strong> {{ $paymentLabels[$paymentMethod] ?? __('Other') }}</div>
+                    <div class="facture-meta-row"><span class="facture-meta-label">{{ __('Invoice no.') }}</span><span class="facture-meta-colon">:</span><span>{{ $sale->receipt_no }}</span></div>
+                    <div class="facture-meta-row"><span class="facture-meta-label">{{ __('Date') }}</span><span class="facture-meta-colon">:</span><span>{{ $sale->created_at->format('d/m/Y') }}</span></div>
+                    <div class="facture-meta-row"><span class="facture-meta-label">{{ __('Payment method') }}</span><span class="facture-meta-colon">:</span><span>{{ $paymentLabels[$paymentMethod] ?? __('Other') }}</span></div>
                 </div>
             </td>
         </tr>
@@ -539,7 +568,7 @@
                         <span class="checkbox-box {{ in_array($paymentMethod, ['cheque', 'check', 'other', 'autre']) ? 'checked' : '' }}">
                             {!! in_array($paymentMethod, ['cheque', 'check', 'other', 'autre']) ? '&#10003;' : '&nbsp;' !!}
                         </span>
-                        {{ __('Other') }}
+                        {{ __('Other') }} : <span class="payment-other-line"></span>
                     </div>
                     @if($sale->payment_reference)
                         <div style="font-size: 8.5px; color: #64748b; margin-top: 6px;">
