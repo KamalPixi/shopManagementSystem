@@ -509,7 +509,12 @@
             <td style="width: 52%; vertical-align: top; padding-right: 15px;" class="company-legal-box">
                 <div class="company-legal-title">{{ $shop?->name ?: '-' }}</div>
                 @foreach($legalLines as $legalLine)
-                    <div class="company-legal-value">{{ trim($legalLine) !== '' ? $legalLine : '-' }}</div>
+                    @php
+                        $legalLine = trim($legalLine);
+                        $legalLineHtml = e($legalLine !== '' ? $legalLine : '-');
+                        $legalLineHtml = preg_replace('/\*\*(.+?)\*\*/', '<strong>$1</strong>', $legalLineHtml);
+                    @endphp
+                    <div class="company-legal-value">{!! $legalLineHtml !!}</div>
                 @endforeach
             </td>
             <td style="width: 48%; vertical-align: top;">
