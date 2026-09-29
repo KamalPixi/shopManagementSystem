@@ -142,7 +142,7 @@
             border-radius: 0 4px 4px 0;
         }
         .client-card-title {
-            font-size: 9px;
+            font-size: 10px;
             font-weight: bold;
             color: #64748b;
             text-transform: uppercase;
@@ -153,6 +153,30 @@
             font-size: 12px;
             font-weight: bold;
             color: #0f2c59;
+        }
+        .client-row {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            margin: 2px 0;
+            font-size: 10px;
+        }
+        .client-label {
+            display: table-cell;
+            width: 16%;
+            font-weight: bold;
+            color: #0f2c59;
+        }
+        .client-colon {
+            display: table-cell;
+            width: 3%;
+            font-weight: bold;
+            color: #1e293b;
+        }
+        .client-value {
+            display: table-cell;
+            width: 81%;
+            color: #1e293b;
         }
         .client-details {
             font-size: 9.5px;
@@ -197,6 +221,12 @@
         }
         .product-meta b {
             color: #334155;
+        }
+        .warranty-meta {
+            display: block;
+            margin-top: 8px;
+            color: #0f2c59;
+            line-height: 1.35;
         }
         .badge-vat {
             display: inline-block;
@@ -345,6 +375,10 @@
         $currencyCode = $shop?->currency['code'] ?? 'EUR';
         $currencySymbol = $shop?->currency['symbol'] ?? $currencyCode;
         $legal = $shop?->settings['legal'] ?? [];
+        $legalCompanyType = $legal['company_type'] ?? 'SAS au capital de 2 010 €';
+        $legalAddress = $shop?->address ?: '33 rue Brézin, 75014 Paris, France';
+        $legalRegistration = $legal['registration_number'] ?? '109 915 405';
+        $legalTaxNumber = $legal['tax_number'] ?? 'FR75 109915405';
         $paymentLabels = [
             'cash' => __('Cash'), 'card' => __('Card'),
             'bank_transfer' => __('Bank transfer'),
@@ -389,18 +423,16 @@
         <tr>
             <td style="width: 52%; vertical-align: top; padding-right: 15px;" class="company-legal-box">
                 <div class="company-legal-title">{{ $shop->name ?? 'TECH PARISIEN' }}</div>
-                @if (!empty($legal['company_type']))<div>{{ $legal['company_type'] }}</div>@endif
-                <div>{{ collect([$shop?->address, trim(($shop?->postal_code ?? '') . ' ' . ($shop?->city ?? '')), $shop?->country])->filter()->implode(', ') }}</div>
-                @if (!empty($legal['registration_number']))<div>{{ __('Registration no.') }}: {{ $legal['registration_number'] }}</div>@endif
-                @if (!empty($legal['tax_number']))<div>{{ __('Tax ID') }}: {{ $legal['tax_number'] }}</div>@endif
+                <div>{{ $legalCompanyType }}</div>
+                <div>{{ $legalAddress }}</div>
+                <div><strong>{{ __('SIREN') }} :</strong> {{ $legalRegistration }}</div>
+                <div>{{ __('Intracommunity VAT') }} : {{ $legalTaxNumber }}</div>
             </td>
             <td style="width: 48%; vertical-align: top;">
+                <div class="facture-title">{{ __('Invoice') }}</div>
                 <div class="facture-box">
-                    <div class="facture-title">{{ __('Invoice') }}</div>
                     <div class="facture-meta-row"><strong>{{ __('Invoice no.') }}:</strong> {{ $sale->receipt_no }}</div>
                     <div class="facture-meta-row"><strong>{{ __('Date') }}:</strong> {{ $sale->created_at->format('d/m/Y') }}</div>
-                    <div class="facture-meta-row"><strong>{{ __('Time') }}:</strong> {{ $sale->created_at->format('H:i') }}</div>
-                    <div class="facture-meta-row"><strong>{{ __('Sold by') }}:</strong> {{ $sale->createdBy?->name ?? '-' }}</div>
                     <div class="facture-meta-row"><strong>{{ __('Payment method') }}:</strong> {{ $paymentLabels[$paymentMethod] ?? __('Other') }}</div>
                 </div>
             </td>
@@ -409,18 +441,9 @@
 
     <!-- Client Info -->
     <div class="client-card">
-        <div class="client-card-title">{{ __('Customer') }}</div>
-        <div class="client-name">{{ $sale->customer?->name ?: __('Walk-in customer') }}</div>
-        @if($sale->customer?->address || $sale->customer?->city)
-            <div class="client-details">{{ $sale->customer?->address }} {{ $sale->customer?->city }}</div>
-        @endif
-        @if($sale->customer?->phone_no || $sale->customer?->email)
-            <div class="client-details">
-                @if($sale->customer?->phone_no) {{ __('Phone') }}: {{ $sale->customer->phone_no }} @endif
-                @if($sale->customer?->phone_no && $sale->customer?->email) | @endif
-                @if($sale->customer?->email) Email : {{ $sale->customer->email }} @endif
-            </div>
-        @endif
+        <div class="client-row"><span class="client-label">{{ __('Customer') }}</span><span class="client-colon">:</span><span class="client-value">{{ $sale->customer?->name ?: __('Walk-in customer') }}</span></div>
+        <div class="client-row"><span class="client-label">{{ __('Address') }}</span><span class="client-colon">:</span><span class="client-value">{{ collect([$sale->customer?->address, trim(($sale->customer?->postal_code ?? '') . ' ' . ($sale->customer?->city ?? '')), $sale->customer?->country])->filter()->implode(', ') ?: '-' }}</span></div>
+        <div class="client-row"><span class="client-label">{{ __('Email') }}</span><span class="client-colon">:</span><span class="client-value">{{ $sale->customer?->email ?: '-' }}</span></div>
     </div>
 
     <!-- Products Table -->
@@ -452,22 +475,16 @@
                     <td>
                         <div class="product-title">
                             {{ $item->name }}
-                            @if($isVat)
+                            @if($isVat && $itemVatRate > 0)
                                 <span class="badge-vat">{{ $taxLabel }} {{ $itemVatRate }}%</span>
                             @endif
                         </div>
                         <div class="product-meta">
-                            @if ($item->productVariation?->variation_name)
-                                <span><b>{{ __('Variation') }}:</b> {{ $item->productVariation->variation_name }}</span><br>
-                            @endif
-                            @if ($item->productVariation?->sku || $item->product?->sku)
-                                <span><b>SKU :</b> {{ $item->productVariation?->sku ?: $item->product?->sku }}</span>
-                            @endif
                             @if ($item->product?->model_no)
-                                <span> &bull; <b>{{ __('Model') }}:</b> {{ $item->product?->model_no }}</span>
+                                <br><span><b>{{ __('Model') }}:</b> {{ $item->product?->model_no }}</span>
                             @endif
                             @if ($sn && $item->show_serial_on_receipt)
-                                <br><span><b>SN / IMEI :</b> {{ $sn }}</span>
+                                <span><b>SN / IMEI :</b> {{ $sn }}</span>
                             @endif
                             @foreach ($item->attributes_and_values ?? [] as $att => $value)
                                 @php
@@ -479,7 +496,7 @@
                                 @endif
                             @endforeach
                             @if ($warrantyText && $item->show_warranty_on_receipt)
-                                <br><span style="color: #0f2c59;"><b>{{ __('Warranty') }}:</b> {{ $warrantyText }}</span>
+                                <span class="warranty-meta"><b>{{ __('Warranty') }}:</b> {{ $warrantyText }}</span>
                             @endif
                         </div>
                     </td>
