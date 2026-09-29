@@ -135,7 +135,7 @@
             border-radius: 5px;
             padding: 10px 14px;
             margin-top: -10px;
-            width: 100%;
+            width: calc(100% - 28px);
         }
         .facture-title {
             font-size: 27px;
