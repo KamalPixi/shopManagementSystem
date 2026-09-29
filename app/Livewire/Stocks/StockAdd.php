@@ -197,7 +197,15 @@ class StockAdd extends Component
 
         // Create the product
         $validated['attributes_and_values'] = $attributeArray;
-        $validated['created_by'] = auth()->id();
+        // Normalize lookup values before insertion. This prevents stale browser
+        // selections from violating SQLite foreign-key constraints.
+        $validated['category_id'] = !empty($validated['category_id']) && Category::whereKey($validated['category_id'])->exists()
+            ? (int) $validated['category_id'] : null;
+        $validated['brand_id'] = !empty($validated['brand_id']) && Brand::whereKey($validated['brand_id'])->exists()
+            ? (int) $validated['brand_id'] : null;
+        $validated['warranty_id'] = !empty($validated['warranty_id']) && Warranty::whereKey($validated['warranty_id'])->exists()
+            ? (int) $validated['warranty_id'] : null;
+        $validated['created_by'] = auth()->user()?->exists ? auth()->id() : null;
         $validated['is_vatable'] = (bool) $this->is_vatable;
         $validated['has_variations'] = (bool) $this->has_variations;
         $validated['low_stock_threshold'] = !is_null($this->low_stock_threshold) && $this->low_stock_threshold !== '' ? (int) $this->low_stock_threshold : null;
