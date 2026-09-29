@@ -173,6 +173,11 @@ class Stocks extends Component
 
         $p = Product::find($id);
         if ($p) {
+            if ($p->saleItems()->exists() || $p->variations()->whereHas('saleItems')->exists()) {
+                session()->flash('failed', __('This product cannot be deleted because it has sales history. Mark it inactive instead.'));
+                return;
+            }
+
             $name = $p->name;
             $sku = $p->sku;
             $p->delete();

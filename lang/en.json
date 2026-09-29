@@ -350,5 +350,6 @@
     "Receive From Repair Shop": "Receive From Repair Shop",
     "Receive date": "Receive date",
     "Receive remark": "Receive remark",
-    "Received from repair shop": "Received from repair shop"
+    "Received from repair shop": "Received from repair shop",
+    "This product cannot be deleted because it has sales history. Mark it inactive instead.": "This product cannot be deleted because it has sales history. Mark it inactive instead."
 }

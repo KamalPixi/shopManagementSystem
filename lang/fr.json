@@ -361,5 +361,6 @@
     "Receive From Repair Shop": "Réception de l'atelier de réparation",
     "Receive date": "Date de réception",
     "Receive remark": "Remarque de réception",
-    "Received from repair shop": "Reçu de l'atelier de réparation"
+    "Received from repair shop": "Reçu de l'atelier de réparation",
+    "This product cannot be deleted because it has sales history. Mark it inactive instead.": "Ce produit ne peut pas être supprimé car il possède un historique de ventes. Désactivez-le plutôt."
 }
