@@ -132,6 +132,7 @@
             background-color: #eef2f7;
             border-radius: 5px;
             padding: 10px 14px;
+            margin-top: -10px;
             width: 100%;
         }
         .facture-title {
