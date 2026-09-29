@@ -19,6 +19,9 @@
             line-height: 1.45;
             margin: 0;
             padding: 0;
+            min-height: calc(297mm - 52px);
+            position: relative;
+            padding-bottom: 36px;
         }
         .w-100 { width: 100%; }
         .text-start { text-align: left; }
@@ -357,7 +360,10 @@
 
         /* Footer */
         .footer-section {
-            margin-top: 25px;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
             text-align: center;
             border-top: 1px solid #0f2c59;
             padding-top: 12px;
