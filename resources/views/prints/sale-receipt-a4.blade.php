@@ -227,6 +227,15 @@
             font-weight: bold;
             padding: 9px 6px;
             border: 1px solid #0f2c59;
+            vertical-align: top;
+        }
+        .items-table thead th.currency-heading {
+            text-align: center;
+        }
+        .items-table thead th.currency-heading .header-currency {
+            display: block;
+            margin-top: 2px;
+            white-space: nowrap;
         }
         .items-table tbody td {
             padding: 6px;
@@ -515,11 +524,11 @@
             <tr>
                 <th style="width: 4%; text-align: center;">#</th>
                 <th style="width: 44%; text-align: left;">{{ __('Product description') }}</th>
-                <th style="width: 14%; text-align: right;">{{ __('Unit price excl. tax') }} ({{ $currencySymbol }})</th>
+                <th class="currency-heading" style="width: 14%;"><span class="header-label">{{ __('Unit price excl. tax') }}</span><span class="header-currency">({{ $currencySymbol }})</span></th>
                 <th style="width: 8%; text-align: center;">{{ $taxLabel }} (%)</th>
-                <th style="width: 14%; text-align: right;">{{ __('Unit price incl. tax') }} ({{ $currencySymbol }})</th>
+                <th class="currency-heading" style="width: 14%;"><span class="header-label">{{ __('Unit price incl. tax') }}</span><span class="header-currency">({{ $currencySymbol }})</span></th>
                 <th style="width: 4%; text-align: center;">{{ __('Qty') }}</th>
-                <th style="width: 12%; text-align: right;">{{ __('Total incl. tax') }} ({{ $currencySymbol }})</th>
+                <th class="currency-heading" style="width: 12%;"><span class="header-label">{{ __('Total incl. tax') }}</span><span class="header-currency">({{ $currencySymbol }})</span></th>
             </tr>
         </thead>
         <tbody>
