@@ -262,6 +262,7 @@
                             <th class="border-0 text-end">{{ __('Sale Price') }}</th>
                             <th class="border-0 text-center">{{ __('Qty Purchased') }}</th>
                             <th class="border-0 text-center">{{ __('Supplier') }}</th>
+                            <th class="border-0 text-center">{{ __('Payment Method') }}</th>
                             <th class="border-0 text-center rounded-end pe-3">{{ __('Added By') }}</th>
                         </tr>
                     </thead>
@@ -289,11 +290,12 @@
                                 <span class="badge bg-light text-dark border fw-bold">{{ $p->quantity }}</span>
                             </td>
                             <td class="text-center text-muted">{{ $p->supplier?->name ?? '-' }}</td>
+                            <td class="text-center text-muted">{{ $p->paymentMethod?->name ?? '-' }}</td>
                             <td class="text-center pe-3 text-muted">{{ $p->createdBy?->name ?? '-' }}</td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center text-muted py-4">{{ __('No purchase history available.') }}</td>
+                            <td colspan="9" class="text-center text-muted py-4">{{ __('No purchase history available.') }}</td>
                         </tr>
                         @endforelse
                     </tbody>

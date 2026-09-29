@@ -20,7 +20,7 @@ class StockShow extends Component
             return view('includes.unauthorized');
         }
 
-        $product = Product::with(['variations', 'category', 'brand', 'warranty', 'productPurchases.supplier', 'productPurchases.createdBy', 'saleItems'])->findOrFail($this->product_id);
+        $product = Product::with(['variations', 'category', 'brand', 'warranty', 'productPurchases.supplier', 'productPurchases.paymentMethod', 'productPurchases.createdBy', 'saleItems'])->findOrFail($this->product_id);
         $sale_ids = $product->saleItems->pluck('sale_id')->unique();
 
         return view('livewire.stocks.stock-show', [
