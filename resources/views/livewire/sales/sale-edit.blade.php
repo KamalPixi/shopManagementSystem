@@ -256,20 +256,10 @@
                         <div class="mb-3">
                             <label class="small fw-bold mb-1">{{ __('Payment Method') }} <span class="text-danger">*</span></label>
                             <div class="btn-group w-100" role="group">
-                                <input type="radio" wire:model.live="payment_method" class="btn-check" name="edit_pay_method" id="pay_cash" value="cash" autocomplete="off">
-                                <label class="btn btn-outline-success fw-bold" for="pay_cash">
-                                    <i class="fa-solid fa-money-bill-wave me-1"></i> {{ __('Cash') }}
-                                </label>
-
-                                <input type="radio" wire:model.live="payment_method" class="btn-check" name="edit_pay_method" id="pay_card" value="card" autocomplete="off">
-                                <label class="btn btn-outline-info fw-bold" for="pay_card">
-                                    <i class="fa-solid fa-credit-card me-1"></i> {{ __('Card') }}
-                                </label>
-
-                                <input type="radio" wire:model.live="payment_method" class="btn-check" name="edit_pay_method" id="pay_bank" value="bank_transfer" autocomplete="off">
-                                <label class="btn btn-outline-warning text-dark fw-bold" for="pay_bank">
-                                    <i class="fa-solid fa-building-columns me-1"></i> {{ __('Bank Transfer') }}
-                                </label>
+                                @foreach ($paymentMethods as $method)
+                                    <input type="radio" wire:model.live="payment_method" class="btn-check" name="edit_pay_method" id="pay_{{ $method->code }}" value="{{ $method->code }}" autocomplete="off">
+                                    <label class="btn btn-outline-primary fw-bold" for="pay_{{ $method->code }}">{{ __($method->name) }}</label>
+                                @endforeach
                             </div>
                         </div>
 

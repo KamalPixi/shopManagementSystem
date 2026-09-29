@@ -43,9 +43,9 @@
                             <label class="small text-muted mb-1">{{ __('Payment Method') }}</label>
                             <select wire:model.live="payment_method_filter" class="form-select form-select-sm">
                                 <option value="">{{ __('All Methods') }}</option>
-                                <option value="cash">{{ __('Cash') }}</option>
-                                <option value="card">{{ __('Card') }}</option>
-                                <option value="bank_transfer">{{ __('Bank Transfer') }}</option>
+                                @foreach ($paymentMethods as $method)
+                                    <option value="{{ $method->code }}">{{ __($method->name) }}</option>
+                                @endforeach
                             </select>
                         </div>
 

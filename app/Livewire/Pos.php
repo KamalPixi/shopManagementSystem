@@ -11,6 +11,7 @@ use App\Models\Shop;
 use App\Models\Sale;
 use App\Models\Customer;
 use App\Models\CashRegisterSession;
+use App\Models\PaymentMethod;
 use App\Services\SaleService;
 use App\Services\PrintService;
 use App\Services\AuditLogger;
@@ -513,7 +514,7 @@ class Pos extends Component
 
         // Validate sale items
         $this->validate([
-            'payment_method' => 'required|in:cash,card,bank_transfer,other',
+            'payment_method' => 'required|exists:payment_methods,code',
             'payment_reference' => $this->payment_method === 'other' ? 'required|string|max:255' : 'nullable|string|max:255',
             'payment_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:3072',
             'sale_items' => 'required|array',
@@ -819,6 +820,7 @@ class Pos extends Component
             'currentSession' => $currentSession,
             'todaySession' => $todaySession,
             'overdueSession' => $overdueSession,
+            'paymentMethods' => PaymentMethod::where('is_active', true)->orderBy('sort_order')->get(),
         ]);
     }
 }

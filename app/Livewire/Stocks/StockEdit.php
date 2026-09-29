@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Brand;
 use App\Models\Supplier;
 use App\Models\Warranty;
+use App\Models\PaymentMethod;
 use App\Services\AuditLogger;
 use App\Services\VariationGenerator;
 use Illuminate\Validation\Rule;
@@ -37,6 +38,10 @@ class StockEdit extends Component
     public $status = 1;
     public $supplier_id = null;
     public $purchase_date;
+    public $payment_method_id;
+    public $payment_reference;
+    public $payment_status = 'unpaid';
+    public $paid_amount = 0;
 
     // Enhancements
     public $is_vatable = 1;
@@ -69,6 +74,10 @@ class StockEdit extends Component
             'status' => 'nullable|numeric|in:0,1',
             'supplier_id' => 'nullable|integer|exists:suppliers,id',
             'purchase_date' => 'nullable|date_format:Y-m-d',
+            'payment_method_id' => 'nullable|exists:payment_methods,id',
+            'payment_reference' => 'nullable|string|max:255',
+            'payment_status' => 'required|in:unpaid,partial,paid',
+            'paid_amount' => 'nullable|numeric|min:0',
             'productAttributes' => 'nullable|array',
             'productAttributes.*' => 'nullable|array',
             'productAttributes.*.name' => 'nullable|string|max:100',
@@ -104,8 +113,13 @@ class StockEdit extends Component
         ])->toArray();
 
         $this->status = $this->product->status == 'Active' ? 1 : 0;
-        $this->supplier_id = $this->product->productPurchases()->orderBy('created_at', 'desc')->first()?->supplier_id;
-        $this->purchase_date = $this->product->productPurchases()->orderBy('created_at', 'desc')->first()?->purchase_date?->format('Y-m-d');
+        $latestPurchase = $this->product->productPurchases()->orderBy('created_at', 'desc')->first();
+        $this->supplier_id = $latestPurchase?->supplier_id;
+        $this->purchase_date = $latestPurchase?->purchase_date?->format('Y-m-d');
+        $this->payment_method_id = $latestPurchase?->payment_method_id;
+        $this->payment_reference = $latestPurchase?->payment_reference;
+        $this->payment_status = $latestPurchase?->payment_status ?: 'unpaid';
+        $this->paid_amount = $latestPurchase?->paid_amount ?: 0;
 
         // Load variations
         $this->variations = $this->product->variations->map(fn($v) => [
@@ -272,6 +286,10 @@ class StockEdit extends Component
                 'sale_price' => $validated['price'],
                 'quantity' => $validated['quantity'],
                 'attributes_and_values' => $attributeArray,
+                'payment_method_id' => $validated['payment_method_id'] ?? null,
+                'payment_reference' => $validated['payment_reference'] ?? null,
+                'payment_status' => $validated['payment_status'] ?? 'unpaid',
+                'paid_amount' => $validated['paid_amount'] ?? 0,
             ]);
         }
 
@@ -314,6 +332,7 @@ class StockEdit extends Component
             'brands' => Brand::all(),
             'suppliers' => Supplier::all(),
             'warranties' => Warranty::all(),
+            'paymentMethods' => PaymentMethod::where('is_active', true)->orderBy('sort_order')->get(),
         ]);
     }
 }

@@ -6,6 +6,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Sale;
 use App\Models\Shop;
+use App\Models\PaymentMethod;
 use App\Models\User;
 use App\Services\SaleService;
 use App\Services\PrintService;
@@ -212,6 +213,7 @@ class Sales extends Component
             'sales' => $query->paginate(50),
             'users' => User::all(),
             'shop' => Shop::first(),
+            'paymentMethods' => PaymentMethod::where('is_active', true)->orderBy('sort_order')->get(),
         ]);
     }
 }

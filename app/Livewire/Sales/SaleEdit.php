@@ -11,6 +11,7 @@ use App\Models\ProductVariation;
 use App\Models\Warranty;
 use App\Models\Shop;
 use App\Models\Customer;
+use App\Models\PaymentMethod;
 use App\Services\AuditLogger;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -413,7 +414,7 @@ class SaleEdit extends Component
         }
 
         $this->validate([
-            'payment_method' => 'required|in:cash,card,bank_transfer',
+            'payment_method' => 'required|exists:payment_methods,code',
             'payment_reference' => 'nullable|string|max:255',
             'payment_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:3072',
             'sale_items' => 'required|array',
@@ -587,6 +588,7 @@ class SaleEdit extends Component
         return view('livewire.sales.sale-edit', [
             'warranties' => Warranty::all(),
             'shop' => Shop::first(),
+            'paymentMethods' => PaymentMethod::where('is_active', true)->orderBy('sort_order')->get(),
         ]);
     }
 }

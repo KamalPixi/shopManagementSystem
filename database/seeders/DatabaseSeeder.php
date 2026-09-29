@@ -12,6 +12,7 @@ use App\Models\Brand;
 use App\Models\Supplier;
 use App\Models\Shop;
 use App\Models\SystemMeta;
+use App\Models\PaymentMethod;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -23,6 +24,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        foreach ([
+            ['name' => 'Cash', 'code' => 'cash', 'sort_order' => 1],
+            ['name' => 'Card', 'code' => 'card', 'sort_order' => 2],
+            ['name' => 'Bank Transfer', 'code' => 'bank_transfer', 'sort_order' => 3],
+            ['name' => 'Other', 'code' => 'other', 'sort_order' => 4],
+        ] as $method) {
+            PaymentMethod::firstOrCreate(['code' => $method['code']], $method);
+        }
         $userAdmin = User::firstOrCreate([
             'username' => 'admin',
         ],[

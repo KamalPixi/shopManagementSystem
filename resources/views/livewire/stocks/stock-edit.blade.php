@@ -298,6 +298,27 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="col-12 col-md-4">
+                            <div class="mb-3">
+                                <label>{{ __('Payment Method') }}</label>
+                                <select wire:model="payment_method_id" class="form-select">
+                                    <option value="">{{ __('Select Payment Method') }}</option>
+                                    @foreach ($paymentMethods as $method)
+                                        <option value="{{ $method->id }}">{{ $method->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="mb-3">
+                                <label>{{ __('Payment Status') }}</label>
+                                <select wire:model="payment_status" class="form-select">
+                                    <option value="unpaid">{{ __('Unpaid') }}</option>
+                                    <option value="partial">{{ __('Partial') }}</option>
+                                    <option value="paid">{{ __('Paid') }}</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="row">

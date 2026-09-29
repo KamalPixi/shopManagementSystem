@@ -22,4 +22,8 @@ class ProductPurchase extends Model
     public function createdBy() {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    public function paymentMethod() {
+        return $this->belongsTo(PaymentMethod::class);
+    }
 }

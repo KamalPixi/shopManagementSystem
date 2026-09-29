@@ -67,6 +67,12 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-12 col-md-4"><label>{{ __('Payment Method') }}</label><select wire:model="payment_method_id" class="form-select"><option value="">{{ __('Select Payment Method') }}</option>@foreach($paymentMethods as $method)<option value="{{ $method->id }}">{{ $method->name }}</option>@endforeach</select></div>
+                        <div class="col-12 col-md-4"><label>{{ __('Payment Status') }}</label><select wire:model="payment_status" class="form-select"><option value="unpaid">{{ __('Unpaid') }}</option><option value="partial">{{ __('Partial') }}</option><option value="paid">{{ __('Paid') }}</option></select></div>
+                        <div class="col-12 col-md-4"><label>{{ __('Paid Amount') }}</label><input wire:model="paid_amount" type="number" step="0.01" min="0" class="form-control" placeholder="0"></div>
+                    </div>
+                    <div class="mb-3"><label>{{ __('Payment Reference') }}</label><input wire:model="payment_reference" type="text" class="form-control" placeholder="{{ __('Reference or note') }}"></div>
                     @if ($has_variations)
                         <div class="alert alert-info d-flex align-items-center mb-4">
                             <i class="fa-solid fa-boxes-stacked me-2"></i>

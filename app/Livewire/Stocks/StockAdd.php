@@ -9,6 +9,7 @@ use App\Models\Supplier;
 use App\Models\Warranty;
 use App\Models\Product;
 use App\Models\ProductVariation;
+use App\Models\PaymentMethod;
 use App\Services\AuditLogger;
 use App\Services\VariationGenerator;
 
@@ -33,6 +34,10 @@ class StockAdd extends Component
     public $status = 1;
     public $supplier_id = null;
     public $purchase_date;
+    public $payment_method_id;
+    public $payment_reference;
+    public $payment_status = 'unpaid';
+    public $paid_amount = 0;
 
     // New requested fields
     public $is_vatable = 1; // 1 = VATable, 0 = Non-VATable
@@ -61,6 +66,10 @@ class StockAdd extends Component
             'status' => 'nullable|numeric|in:0,1',
             'supplier_id' => 'nullable|integer|exists:suppliers,id',
             'purchase_date' => 'nullable|date_format:Y-m-d',
+            'payment_method_id' => 'nullable|exists:payment_methods,id',
+            'payment_reference' => 'nullable|string|max:255',
+            'payment_status' => 'required|in:unpaid,partial,paid',
+            'paid_amount' => 'nullable|numeric|min:0',
             'productAttributes' => 'nullable|array',
             'productAttributes.*' => 'nullable|array',
             'productAttributes.*.name' => 'nullable|string|max:100',
@@ -216,6 +225,10 @@ class StockAdd extends Component
         $product->productPurchases()->create([
             'supplier_id' => !empty($validated['supplier_id']) ? $validated['supplier_id'] : null,
             'purchase_date' => !empty($validated['purchase_date']) ? $validated['purchase_date'] : null,
+            'payment_method_id' => $validated['payment_method_id'] ?? null,
+            'payment_reference' => $validated['payment_reference'] ?? null,
+            'payment_status' => $validated['payment_status'] ?? 'unpaid',
+            'paid_amount' => $validated['paid_amount'] ?? 0,
             'purchase_price' => !empty($validated['purchase_price']) ? $validated['purchase_price'] : 0,
             'sale_price' => $validated['price'],
             'quantity' => $validated['quantity'] ?? 0,
@@ -269,6 +282,7 @@ class StockAdd extends Component
             'categories' => Category::all(),
             'brands' => Brand::all(),
             'suppliers' => Supplier::all(),
+            'paymentMethods' => PaymentMethod::where('is_active', true)->orderBy('sort_order')->get(),
             'warranties' => Warranty::all(),
         ]);
     }
