@@ -436,7 +436,13 @@
         $tickIcon = file_exists(public_path('assets/icons/tick.png')) ? 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('assets/icons/tick.png'))) : null;
         $legal = $shop?->settings['legal'] ?? [];
         $legalCompanyType = $legal['company_type'] ?? 'SAS au capital de 2 010 €';
-        $legalAddress = $shop?->address ?: '33 rue Brézin, 75014 Paris, France';
+        $addressParts = array_filter([
+            $shop?->address,
+            trim(implode(' ', array_filter([$shop?->postal_code, $shop?->city]))),
+            $shop?->state,
+            $shop?->country,
+        ]);
+        $legalAddress = $legal['address'] ?? (count($addressParts) ? implode(', ', $addressParts) : '33 rue Brézin, 75014 Paris, France');
         $legalRegistration = $legal['registration_number'] ?? '109 915 405';
         $legalTaxNumber = $legal['tax_number'] ?? 'FR75 109915405';
         $paymentLabels = [
