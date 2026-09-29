@@ -526,7 +526,7 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                                 {{ $payment_method === 'other' ? __('Other payment details') : __('Payment Reference / Auth / Slip No.') }}
                                 <small class="text-muted fw-normal">({{ __('Optional') }})</small>
                             </label>
-                            <input wire:model="payment_reference" type="text" class="form-control form-control-sm" placeholder="{{ __('e.g. Card TXN-998877 or Bank Ref 12345678') }}">
+                            <input wire:model="payment_reference" type="text" class="form-control form-control-sm" placeholder="">
                         </div>
 
                         <div class="mb-3">
