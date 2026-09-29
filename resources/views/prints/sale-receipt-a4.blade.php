@@ -255,12 +255,14 @@
             font-weight: bold;
             color: #0f2c59;
             font-size: 10px;
+            line-height: 1.2;
+            margin-bottom: 0;
         }
         .product-meta {
             font-size: 8.5px;
             color: #64748b;
             line-height: 1.3;
-            margin-top: 2px;
+            margin-top: 0;
         }
         .product-meta b {
             color: #334155;
@@ -442,6 +444,7 @@
         $discount = (float) ($sale->discount ?? 0);
         $subtotalHt = $sale->saleItems->sum(fn ($item) => (float) $item->price * (int) $item->quantity);
         $totalHt = $sale->saleItems->sum(fn ($item) => (float) $item->total);
+        $hasVatItems = $sale->saleItems->contains(fn ($item) => (bool) $item->is_vatable && $gstPercent > 0);
         $paymentMethod = strtolower($sale->payment_method ?? 'cash');
         $otherPaymentDetails = $paymentMethod === 'other' ? trim((string) ($sale->payment_reference ?? '')) : '';
         $staffName = $sale->createdBy?->name ?: '-';
@@ -528,9 +531,13 @@
             <tr>
                 <th style="width: 4%; text-align: center;">#</th>
                 <th style="width: 44%; text-align: left;">{{ __('Product description') }}</th>
-                <th class="currency-heading" style="width: 14%;"><span class="header-label">{{ __('Unit price excl. tax') }}</span><span class="header-currency">({{ $currencySymbol }})</span></th>
-                <th style="width: 8%; text-align: center;">{{ $taxLabel }} (%)</th>
-                <th class="currency-heading" style="width: 14%;"><span class="header-label">{{ __('Unit price incl. tax') }}</span><span class="header-currency">({{ $currencySymbol }})</span></th>
+                @if($hasVatItems)
+                    <th class="currency-heading" style="width: 14%;"><span class="header-label">{{ __('Unit price excl. tax') }}</span><span class="header-currency">({{ $currencySymbol }})</span></th>
+                @endif
+                @if($hasVatItems)
+                    <th style="width: 8%; text-align: center;">{{ $taxLabel }} (%)</th>
+                @endif
+                <th class="currency-heading" style="width: {{ $hasVatItems ? '14%' : '28%' }};"><span class="header-label">{{ $hasVatItems ? __('Unit price incl. tax') : __('Unit price') }}</span><span class="header-currency">({{ $currencySymbol }})</span></th>
                 <th style="width: 4%; text-align: center;">{{ __('Qty') }}</th>
                 <th class="currency-heading" style="width: 12%;"><span class="header-label">{{ __('Total incl. tax') }}</span><span class="header-currency">({{ $currencySymbol }})</span></th>
             </tr>
@@ -557,10 +564,10 @@
                         </div>
                         <div class="product-meta">
                             @if ($item->product?->model_no)
-                                <br><span><b>{{ __('Model') }}:</b> {{ $item->product?->model_no }}</span>
+                                <span><b>{{ __('Model') }}:</b> {{ $item->product?->model_no }}</span>
                             @endif
                             @if ($sn && $item->show_serial_on_receipt)
-                                <span><b>{{ __('SN/IMEI') }} :</b> {{ $sn }}</span>
+                                @if ($item->product?->model_no)<br>@endif<span><b>{{ __('SN/IMEI') }} :</b> {{ $sn }}</span>
                             @endif
                             @foreach ($item->attributes_and_values ?? [] as $att => $value)
                                 @php
@@ -568,7 +575,7 @@
                                     $attributeValue = is_array($value) ? ($value['value'] ?? '') : $value;
                                 @endphp
                                 @if($attributeName && $attributeValue)
-                                    <br><span><b>{{ ucfirst($attributeName) }} :</b> {{ ucfirst($attributeValue) }}</span>
+                                    @if ($item->product?->model_no || ($sn && $item->show_serial_on_receipt) || $loop->index > 0)<br>@endif<span><b>{{ ucfirst($attributeName) }} :</b> {{ ucfirst($attributeValue) }}</span>
                                 @endif
                             @endforeach
                             @if ($warrantyText && $item->show_warranty_on_receipt)
@@ -576,8 +583,12 @@
                             @endif
                         </div>
                     </td>
-                    <td class="text-end">{{ number_format($unitHt, 2) }}</td>
-                    <td class="text-center">{{ $itemVatRate > 0 ? $itemVatRate.'%' : '0%' }}</td>
+                    @if($hasVatItems)
+                        <td class="text-end">{{ number_format($unitHt, 2) }}</td>
+                    @endif
+                    @if($hasVatItems)
+                        <td class="text-center">{{ $itemVatRate > 0 ? $itemVatRate.'%' : '0%' }}</td>
+                    @endif
                     <td class="text-end">{{ number_format($unitTtc, 2) }}</td>
                     <td class="text-center font-bold">{{ $item->quantity }}</td>
                     <td class="text-end font-bold">{{ number_format($totalLineTtc, 2) }}</td>
@@ -630,14 +641,12 @@
                         <td class="totals-value" style="color: #e11d48;">- {{ number_format($discount, 2) }}</td>
                     </tr>
                     @endif
-                    <tr>
-                        <td class="totals-label">{{ __('Total excl. tax') }}:</td>
-                        <td class="totals-value">{{ number_format($totalHt, 2) }}</td>
-                    </tr>
-                    <tr>
-                        <td class="totals-label">{{ $taxLabel }} ({{ $gstPercent }}%):</td>
-                        <td class="totals-value">{{ number_format($totalGst, 2) }}</td>
-                    </tr>
+                    @if($hasVatItems)
+                        <tr>
+                            <td class="totals-label">{{ $taxLabel }} ({{ $gstPercent }}%):</td>
+                            <td class="totals-value">{{ number_format($totalGst, 2) }}</td>
+                        </tr>
+                    @endif
                     <tr class="grand-total-row">
                         <td class="totals-label">{{ __('Total incl. tax') }} ({{ $currencyCode }}) :</td>
                         <td class="totals-value">{{ number_format($totalTtc, 2) }}</td>
