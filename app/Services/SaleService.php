@@ -9,7 +9,7 @@ use App\Models\Shop;
 final class SaleService
 {
     public function generateSaleReceipt($sale_id): string {  
-        $sale = Sale::findOrFail($sale_id); 
+        $sale = Sale::with(['saleItems.product', 'saleItems.productVariation', 'saleItems.warranty', 'customer', 'createdBy'])->findOrFail($sale_id);
         $customWidth = 3.27 * 72; // ~235.44 pts
 
         $shop = Shop::first();
@@ -74,4 +74,3 @@ final class SaleService
         return asset('sales/sales_report.pdf');
     }
 }
-

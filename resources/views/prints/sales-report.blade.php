@@ -77,11 +77,11 @@
         <thead>
             <tr>
                 <th style="width:3%;" class="text-center">#</th>
-                <th class="text-start" style="width:65%">Products</th>
-                <th class="text-end">Discount</th>
-                <th class="text-end">GST<small class="text-muted" style="font-size: 0.4rem;">({{ $shop->gst_percent }}%)</small> </th>
-                <th class="text-end">Total</th>
-                <th class="text-end">Profit</th>
+                <th class="text-start" style="width:72%">Products</th>
+                <th class="text-end" style="width:7%">Discount</th>
+                <th class="text-end" style="width:7%">GST<small class="text-muted" style="font-size: 0.4rem;">({{ $shop->gst_percent }}%)</small> </th>
+                <th class="text-end" style="width:7%">Total</th>
+                <th class="text-end" style="width:7%">Profit</th>
             </tr>
         </thead>
         <tbody>
@@ -91,8 +91,8 @@
                 <td>
                     <div style="background-color: #f1f3f5; padding: 2px 4px; margin-bottom: 3px; font-size: 8px;">
                         <strong>Receipt:</strong> {{ $sale->receipt_no ?? sprintf('TP-%06d', $sale->id) }} &nbsp;|&nbsp;
-                        <strong>Cashier:</strong> {{ $sale->user?->name ?? 'Staff' }} &nbsp;|&nbsp;
-                        <strong>Payment:</strong> {{ ucfirst($sale->payment_method ?? 'Cash') }}@if($sale->payment_reference) ({{ $sale->payment_reference }})@endif &nbsp;|&nbsp;
+                        <strong>Cashier:</strong> {{ $sale->createdBy?->name ?? 'Staff' }} &nbsp;|&nbsp;
+                        <strong>Payment:</strong> {{ $sale->payment_method === 'other' ? 'Other' : ucfirst(str_replace('_', ' ', $sale->payment_method ?? 'Cash')) }}@if($sale->payment_reference) ({{ $sale->payment_reference }})@endif &nbsp;|&nbsp;
                         <strong>Date:</strong> {{ $sale->created_at?->format('d/m/Y H:i') }}
                     </div>
                     <table class="table-product w-100" border="0" cellpadding="1" cellspacing="0">
@@ -105,11 +105,15 @@
                                     <small style="color: #0dcaf0;">(Custom)</small>
                                 @endif
                                 <br>
-                                @if ($item->product?->serial_no)
-                                    <small class="text-muted">SN:{{ $item->product->serial_no }}</small> <br>
+                                @php
+                                    $itemSerial = $item->productVariation?->serial_no ?: $item->product?->serial_no;
+                                    $itemSku = $item->productVariation?->sku ?: $item->product?->sku;
+                                @endphp
+                                @if ($itemSerial && $item->show_serial_on_receipt)
+                                    <small class="text-muted">SN:{{ $itemSerial }}</small> <br>
                                 @endif
-                                @if ($item->product?->sku || $item->product?->model_no)
-                                    <small class="text-muted">SKU: {{ $item->productVariation?->sku ?: $item->product?->sku }} | Model: {{ $item->product?->model_no }}</small>
+                                @if ($itemSku || $item->product?->model_no)
+                                    <small class="text-muted">@if($itemSku)SKU: {{ $itemSku }}@endif @if($item->product?->model_no) | Model: {{ $item->product->model_no }}@endif</small>
                                 @endif
                             </td>
                             <td style="width: 18%;"> 
@@ -130,19 +134,19 @@ $attributeValue = is_array($value) ? ($value['value'] ?? '') : $value
                             </td>
                             <td class="text-center"><small>Warranty</small><br><b>{{ $item?->warranty?->name ?? '-' }}</b></td>
                             <td class="text-center"><small>Qty</small><br><b>{{ $item?->quantity }}</b></td>
-                            <td class="text-end" style="padding-right:1px;"><small>UnitPurchasePrice</small><br><b>{{ $item?->purchase_price }}</b></td>
-                            <td class="text-end" style="padding-right:1px;"><small>UnitSalePrice</small><br><b>{{ $item->price }}</b></td>
-                            <td class="text-end" style="padding-right:1px;"><small>Discount</small><br><b>{{ $item?->discount }}</b></td>
-                            <td class="text-end" style="padding-right:1px;"><small>Subtotal</small><br><b>{{ $item?->total }}</b></td>
-                            <td class="text-end" style="padding-right:1px;"><small>Profit</small><br><b>{{ $item?->profit }}</b></td>
+                            <td class="text-end" style="padding-right:1px;"><small>Unit Purchase Price</small><br><b>{{ number_format((float) $item->purchase_price, 2) }}</b></td>
+                            <td class="text-end" style="padding-right:1px;"><small>Unit Sale Price</small><br><b>{{ number_format((float) $item->price, 2) }}</b></td>
+                            <td class="text-end" style="padding-right:1px;"><small>Discount</small><br><b>{{ number_format((float) $item->discount, 2) }}</b></td>
+                            <td class="text-end" style="padding-right:1px;"><small>Subtotal</small><br><b>{{ number_format((float) $item->total, 2) }}</b></td>
+                            <td class="text-end" style="padding-right:1px;"><small>Profit</small><br><b>{{ number_format((float) $item->profit, 2) }}</b></td>
                         </tr>
                         @endforeach
                     </table>
                 </td>
-                <td class="text-end">{{ $sale->discount }}</td>
-                <td class="text-end">{{ $sale->gst }}</td>
-                <td class="text-end fw-bold">{{ $sale->total_price }}</td>
-                <td class="text-end fw-bold">{{ $sale->profit }}</td>
+                <td class="text-end">{{ number_format((float) $sale->discount, 2) }}</td>
+                <td class="text-end">{{ number_format((float) $sale->gst, 2) }}</td>
+                <td class="text-end fw-bold">{{ number_format((float) $sale->total_price, 2) }}</td>
+                <td class="text-end fw-bold">{{ number_format((float) $sale->profit, 2) }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -154,7 +158,7 @@ $attributeValue = is_array($value) ? ($value['value'] ?? '') : $value
         <thead>
             <tr>
                 <th style="width:5%;"></th>
-                <th class="text-start" style="width:65%;"></th>
+                <th class="text-start" style="width:72%;"></th>
                 <th class="text-end"> <small class="text-muted">T.Discount</small> {{ number_format($sales->sum('discount'), 2) }}</th>
                 <th class="text-end"><small class="text-muted">T.GST</small>  {{ number_format($sales->sum('gst'), 2) }}</th>
                 <th class="text-end"><small class="text-muted">T.Price</small>  {{ number_format($sales->sum('total_price'), 2) }}</th>
