@@ -314,5 +314,6 @@
     "Retrait de fonds par un associé (Partner Withdrawal)": "Partner Fund Withdrawal",
     "Versement des espèces en banque (Bank Deposit)": "Bank Cash Deposit",
     "Dépenses courantes de petite caisse (Petty Cash)": "Petty Cash Expenses",
-    "Autre opération de caisse (Other)": "Other Cash Movement"
+    "Autre opération de caisse (Other)": "Other Cash Movement",
+    "Processing": "Processing"
 }

@@ -39,14 +39,17 @@
                     <a href="{{ route('sales.edit', $sale->id) }}" class="btn btn-sm btn-primary shadow-sm px-3">
                         {{ __('Edit Sale') }}
                     </a>
-                    <button type="button" wire:click="printSaleReceiptPos" class="btn btn-sm btn-outline-dark shadow-sm px-3">
-                        {{ __('Print POS') }}
+                    <button type="button" wire:click="printSaleReceiptPos" wire:loading.attr="disabled" wire:target="printSaleReceiptPos" class="btn btn-sm btn-outline-dark shadow-sm px-3">
+                        <span wire:loading.remove wire:target="printSaleReceiptPos">{{ __('Print POS') }}</span>
+                        <span wire:loading wire:target="printSaleReceiptPos"><i class="fa-solid fa-spinner fa-spin me-1"></i>{{ __('Processing') }}</span>
                     </button>
-                    <button type="button" wire:click="printSaleReceipt" class="btn btn-sm btn-outline-secondary shadow-sm px-3">
-                        {{ __('PDF Receipt') }}
+                    <button type="button" wire:click="printSaleReceipt" wire:loading.attr="disabled" wire:target="printSaleReceipt" class="btn btn-sm btn-outline-secondary shadow-sm px-3">
+                        <span wire:loading.remove wire:target="printSaleReceipt">{{ __('PDF Receipt') }}</span>
+                        <span wire:loading wire:target="printSaleReceipt"><i class="fa-solid fa-spinner fa-spin me-1"></i>{{ __('Processing') }}</span>
                     </button>
-                    <button type="button" wire:click="printSaleReceiptA4" class="btn btn-sm btn-outline-secondary shadow-sm px-3">
-                        {{ __('PDF A4') }}
+                    <button type="button" wire:click="printSaleReceiptA4" wire:loading.attr="disabled" wire:target="printSaleReceiptA4" class="btn btn-sm btn-outline-secondary shadow-sm px-3">
+                        <span wire:loading.remove wire:target="printSaleReceiptA4">{{ __('PDF A4') }}</span>
+                        <span wire:loading wire:target="printSaleReceiptA4"><i class="fa-solid fa-spinner fa-spin me-1"></i>{{ __('Processing') }}</span>
                     </button>
                     <a href="{{ route('sales.a4Preview', $sale->id) }}" target="_blank" class="btn btn-sm btn-outline-info shadow-sm px-3">
                         {{ __('A4 Preview') }}
