@@ -149,7 +149,7 @@
             top: -8px;
         }
         .facture-meta-row {
-            font-size: 9.5px;
+            font-size: 11.5px;
             color: #334155;
             display: grid;
             grid-template-columns: 122px 12px 1fr;
@@ -244,6 +244,9 @@
             border-left: 1px solid #e2e8f0;
             border-right: 1px solid #e2e8f0;
             vertical-align: top;
+        }
+        .items-table tbody td.text-end {
+            font-size: 10.5px;
         }
         .items-table tbody tr:nth-child(even) {
             background-color: #f8fafc;
@@ -364,6 +367,7 @@
             font-weight: normal;
             color: #1e293b;
             text-align: right;
+            font-size: 12px;
         }
         .grand-total-row td {
             background-color: #0f2c59;
