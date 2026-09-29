@@ -119,6 +119,16 @@
         </div>
     </div>
 
+    <div class="card border-0 shadow components-section mt-4">
+        <div class="card-body">
+            <h2 class="h5 mb-1">{{ __('Invoice Legal Text') }}</h2>
+            <p class="text-muted small">{{ __('Enter the fixed legal lines shown on invoices. Use {address} where the live shop address should appear.') }}</p>
+            <textarea wire:model="invoice_legal_text" rows="5" class="form-control" placeholder="SAS au capital de 2 010 €&#10;{address}&#10;SIREN : 109 915 405&#10;TVA intracommunautaire: FR75 109915405"></textarea>
+            @error('invoice_legal_text') <span class="text-danger small">{{ $message }}</span> @enderror
+            <small class="text-muted d-block mt-2">{{ __('The {address} placeholder is replaced automatically from the address fields above.') }}</small>
+        </div>
+    </div>
+
     {{-- Cloudflare Tunnel / Internet Remote Access Section --}}
     <div class="card border-0 shadow components-section mt-4">
         <div class="card-body">

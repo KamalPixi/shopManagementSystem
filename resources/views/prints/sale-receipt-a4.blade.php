@@ -429,22 +429,23 @@
         $totalHt = $sale->saleItems->sum(fn ($item) => (float) $item->total);
         $paymentMethod = strtolower($sale->payment_method ?? 'cash');
         $otherPaymentDetails = $paymentMethod === 'other' ? trim((string) ($sale->payment_reference ?? '')) : '';
-        $staffName = $sale->createdBy?->name ?? __('Unknown');
-        $taxLabel = $shop?->tax_label ?? 'VAT';
-        $currencyCode = $shop?->currency['code'] ?? 'EUR';
-        $currencySymbol = $shop?->currency['symbol'] ?? $currencyCode;
+        $staffName = $sale->createdBy?->name ?: '-';
+        $taxLabel = $shop?->tax_label ?: '-';
+        $currencyCode = $shop?->currency['code'] ?: '-';
+        $currencySymbol = $shop?->currency['symbol'] ?: $currencyCode;
         $tickIcon = file_exists(public_path('assets/icons/tick.png')) ? 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('assets/icons/tick.png'))) : null;
         $legal = $shop?->settings['legal'] ?? [];
-        $legalCompanyType = $legal['company_type'] ?? 'SAS au capital de 2 010 €';
         $addressParts = array_filter([
             $shop?->address,
             trim(implode(' ', array_filter([$shop?->postal_code, $shop?->city]))),
             $shop?->state,
             $shop?->country,
         ]);
-        $legalAddress = $legal['address'] ?? (count($addressParts) ? implode(', ', $addressParts) : '33 rue Brézin, 75014 Paris, France');
-        $legalRegistration = $legal['registration_number'] ?? '109 915 405';
-        $legalTaxNumber = $legal['tax_number'] ?? 'FR75 109915405';
+        $legalAddress = implode(', ', $addressParts) ?: '-';
+        $legalText = trim((string) ($shop?->settings['invoice_legal_text'] ?? ''));
+        $legalLines = $legalText !== ''
+            ? preg_split('/\r\n|\r|\n/', str_replace('{address}', $legalAddress, $legalText))
+            : ['-'];
         $paymentLabels = [
             'cash' => __('Cash'), 'card' => __('Card'),
             'bank_transfer' => __('Bank transfer'),
@@ -462,9 +463,9 @@
             <td style="width: 55%; vertical-align: middle;">
                 <div style="padding-left: 18px;">
                 @if ($logoData)
-                    <img src="{{ $logoData }}" alt="{{ $shop->name ?? 'Tech Parisien' }}" class="shop-logo">
+                    <img src="{{ $logoData }}" alt="{{ $shop?->name ?: '-' }}" class="shop-logo">
                 @else
-                    <div class="brand-name">{{ $shop->name ?? 'TECH PARISIEN' }}</div>
+                    <div class="brand-name">{{ $shop?->name ?: '-' }}</div>
                     <div class="brand-slogan">{{ __('Buy · Sell · Exchange') }}</div>
                 @endif
                 </div>
@@ -472,11 +473,10 @@
             <td style="width: 45%; vertical-align: middle;" class="top-contact-info">
                 <div class="contact-panel">
                 @php
-                    $contactAddress = $shop?->address ?: '33 rue Brézin, 75014 Paris, France';
-                    $contactPhone = $shop?->contact_no ?: '07 53 74 59 97';
-                    $contactEmail = $shop?->email ?: 'techparisien@gmail.com';
+                    $contactPhone = $shop?->contact_no ?: '-';
+                    $contactEmail = $shop?->email ?: '-';
                 @endphp
-                <div class="contact-row"><img src="{{ $locationIcon }}" class="contact-icon"><span class="contact-value">{{ $contactAddress }}@if(!$shop?->address && !$shop?->postal_code && !$shop?->city)@else{{ $shop?->postal_code || $shop?->city ? ', ' . trim(($shop?->postal_code ?? '') . ' ' . ($shop?->city ?? '')) : '' }}{{ $shop?->country ? ', ' . $shop->country : '' }}@endif</span></div>
+                <div class="contact-row"><img src="{{ $locationIcon }}" class="contact-icon"><span class="contact-value">{{ implode(', ', $addressParts) ?: '-' }}</span></div>
                 <div class="contact-row"><img src="{{ $contactIcon }}" class="contact-icon"><span class="contact-value">{{ $contactPhone }}</span></div>
                 <div class="contact-row"><img src="{{ $emailIcon }}" class="contact-icon"><span class="contact-value">{{ $contactEmail }}</span></div>
                 </div>
@@ -488,11 +488,10 @@
     <table class="meta-table" cellpadding="0" cellspacing="0">
         <tr>
             <td style="width: 52%; vertical-align: top; padding-right: 15px;" class="company-legal-box">
-                <div class="company-legal-title">{{ $shop->name ?? 'TECH PARISIEN' }}</div>
-                <div class="company-legal-value" style="font-weight: 700; color: #0f172a;">{{ $legalCompanyType }}</div>
-                <div class="company-legal-value">{{ $legalAddress }}</div>
-                <div><span class="company-legal-label">{{ __('SIREN') }} :</span> <span class="company-legal-value">{{ $legalRegistration }}</span></div>
-                <div><span class="company-legal-label-normal">TVA intracommunautaire:</span> <span class="company-legal-value">{{ $legalTaxNumber }}</span></div>
+                <div class="company-legal-title">{{ $shop?->name ?: '-' }}</div>
+                @foreach($legalLines as $legalLine)
+                    <div class="company-legal-value">{{ trim($legalLine) !== '' ? $legalLine : '-' }}</div>
+                @endforeach
             </td>
             <td style="width: 48%; vertical-align: top;">
                 <div class="facture-title">{{ __('Invoice') }}</div>

@@ -29,6 +29,7 @@ class Settings extends Component
     public $timezone = 'Asia/Kuala_Lumpur';
     public $language = 'en';
     public $settings;
+    public $invoice_legal_text = "SAS au capital de 2 010 €\n{address}\nSIREN : 109 915 405\nTVA intracommunautaire: FR75 109915405";
 
     // Cloudflare Tunnel Properties
     public $cf_enabled = false;
@@ -51,6 +52,7 @@ class Settings extends Component
         'currency' => 'nullable|string|max:3',
         'timezone' => 'nullable|string|max:100',
         'language' => 'nullable|string|in:en,fr',
+        'invoice_legal_text' => 'nullable|string|max:2000',
         'cf_enabled' => 'nullable|boolean',
         'cf_auto_start' => 'nullable|boolean',
         'cf_custom_domain' => 'nullable|string|max:255',
@@ -68,6 +70,7 @@ class Settings extends Component
             $this->cf_auto_start = (bool) ($cf['auto_start'] ?? false);
             $this->cf_custom_domain = $cf['custom_domain'] ?? '';
             $this->cf_tunnel_token = $cf['tunnel_token'] ?? '';
+            $this->invoice_legal_text = $shop->settings['invoice_legal_text'] ?? $this->invoice_legal_text;
 
             $this->fill([
                 'name' => $shop->name,
@@ -119,6 +122,7 @@ class Settings extends Component
             'custom_domain' => trim($this->cf_custom_domain ?? ''),
             'tunnel_token' => trim($this->cf_tunnel_token ?? ''),
         ];
+        $shopSettings['invoice_legal_text'] = trim($validated['invoice_legal_text'] ?? '');
         $validated['settings'] = $shopSettings;
 
         // Apply immediately to current user session & app
