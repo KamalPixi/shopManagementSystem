@@ -13,19 +13,19 @@ class DBImportExport extends Component
 
     public $file;
 
-    public function import() {
+    public function restore() {
         $this->validate([
-            'file' => 'required|file|mimes:csv,txt|max:51200', // Max 50MB
+            'file' => 'required|file|max:512000',
         ]);
 
-        $storedPath = $this->file->storeAs('imports', uniqid() . '.csv');
-        app(DBImportExportService::class)->importFromCSV($storedPath);
+        app(DBImportExportService::class)->restoreDatabase($this->file);
 
-        session()->flash('success', __('Import successful.'));
+        session()->flash('success', __('Database restored successfully.'));
+        $this->reset('file');
     }
 
     public function export() {
-        return app(DBImportExportService::class)->exportToCSV();
+        return app(DBImportExportService::class)->exportDatabase();
     }
 
     public function render()

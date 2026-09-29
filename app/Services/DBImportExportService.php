@@ -2,150 +2,70 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Response;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\LazyCollection;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
-
+use RuntimeException;
 
 final class DBImportExportService
 {
-    protected $tables = ['users', 'brands', 'categories', 'suppliers', 'warranties', 'customers', 'products', 'product_purchases', 'sales', 'sale_items', 'warranty_sends'];
-
-    public function exportToCSV() {
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="all_data.csv"',
-        ];
-
-        $callback = function () {
-            $handle = fopen('php://output', 'w');
-
-            foreach ($this->tables as $table) {
-                // Separator
-                fputcsv($handle, ["-- table: $table"]);
-
-                // Get column names
-                $columns = DB::getSchemaBuilder()->getColumnListing($table);
-                fputcsv($handle, $columns);
-
-                // Stream data using cursor
-                foreach (DB::table($table)->cursor() as $row) {
-                    fputcsv($handle, (array) $row);
-                }
-
-                // Extra blank line between tables (optional)
-                fputcsv($handle, []);
-            }
-
-            fclose($handle);
-        };
-
-        return Response::streamDownload($callback, 'shop_db_backup.csv', $headers);
+    public function exportDatabase()
+    {
+        $this->ensureSqlite();
+        $backup = storage_path('app/private/backups/shop-' . now()->format('Ymd-His') . '.sqlite');
+        $this->createSnapshot($this->databasePath(), $backup);
+        return response()->download($backup, basename($backup), ['Content-Type' => 'application/vnd.sqlite3'])->deleteFileAfterSend(true);
     }
 
-    public function importFromCSV($filePath)
+    public function restoreDatabase(UploadedFile $file): void
     {
-        $currentTable = null;
-        $columns = [];
-        $rows = [];
-    
-        // Define the skip rules at the top
-        $skipRules = [
-            'users' => ['name' => ['admin']],
-            'brands' => ['name' => ['default']],
-            'categories' => ['name' => ['default']],
-            'warranties' => ['name' => ['6 Months', '1 Year', '2 Years']],
-        ];
-    
-        LazyCollection::make(function () use ($filePath) {
-            $handle = fopen(Storage::path($filePath), 'r');
-    
-            while (($line = fgetcsv($handle)) !== false) {
-                yield $line;
-            }
-    
-            fclose($handle);
-        })
-        ->each(function ($row) use (&$currentTable, &$columns, &$rows, $skipRules) {
-            if (empty(array_filter($row))) {
-                return; // skip empty lines
-            }
-    
-            if (str_starts_with($row[0], '-- table:')) {
-                // Insert/update previous table before moving to next
-                if ($currentTable && !empty($rows)) {
-                    $this->bulkUpsert($currentTable, $rows);
-                    $rows = [];
-                }
-    
-                $currentTable = trim(str_replace('-- table:', '', $row[0]));
-                $columns = [];
-            } elseif (!$columns) {
-                $columns = $row;
-            } else {
-                if (count($row) !== count($columns)) {
-                    return; // mismatch, skip
-                }
-    
-                $data = array_combine($columns, $row);
+        $this->ensureSqlite();
+        if (!in_array(strtolower($file->getClientOriginalExtension()), ['sqlite', 'db', 'sqlite3'], true)) {
+            throw new RuntimeException(__('Please select a SQLite database backup file.'));
+        }
+        $incoming = $file->storeAs('private/restore', 'incoming-' . uniqid('', true) . '.sqlite');
+        $incomingPath = Storage::path($incoming);
+        $this->assertIntegrity($incomingPath);
+        $databasePath = $this->databasePath();
+        $this->createSnapshot($databasePath, storage_path('app/private/backups/pre-restore-' . now()->format('Ymd-His') . '.sqlite'));
+        DB::disconnect();
+        if (!@rename($incomingPath, $databasePath)) {
+            throw new RuntimeException(__('Could not replace the active database file.'));
+        }
+        DB::purge();
+        DB::reconnect();
+        Artisan::call('migrate', ['--force' => true]);
+        $this->assertIntegrity($databasePath);
+    }
 
-                // Convert empty strings to null
-                $data = array_map(function ($value) {
-                    return $value === '' ? null : $value;
-                }, $data);
-                
-    
-                // ✅ Apply skip rules
-                if (isset($skipRules[$currentTable])) {
-                    foreach ($skipRules[$currentTable] as $field => $skipValues) {
-                        if (isset($data[$field]) && in_array(strtolower($data[$field]), array_map('strtolower', $skipValues))) {
-                            \Log::info('Skipped row due to skip rule.', [
-                                'table' => $currentTable,
-                                'field' => $field,
-                                'value' => $data[$field],
-                            ]);
-                            return;
-                        }
-                    }
-                }
-    
-                $rows[] = $data;
-    
-                if (count($rows) >= 500) {
-                    $this->bulkUpsert($currentTable, $rows);
-                    $rows = [];
-                }
-            }
-        });
-    
-        // Insert/update remaining rows after loop
-        if ($currentTable && !empty($rows)) {
-            $this->bulkUpsert($currentTable, $rows);
+    private function createSnapshot(string $source, string $destination): void
+    {
+        if (!is_dir(dirname($destination))) mkdir(dirname($destination), 0750, true);
+        if (file_exists($destination)) unlink($destination);
+        $pdo = DB::connection()->getPdo();
+        $pdo->exec('PRAGMA wal_checkpoint(TRUNCATE)');
+        $pdo->exec('VACUUM INTO ' . $pdo->quote($destination));
+        $this->assertIntegrity($destination);
+    }
+
+    private function assertIntegrity(string $path): void
+    {
+        $pdo = new \PDO('sqlite:' . $path);
+        if ($pdo->query('PRAGMA integrity_check')->fetchColumn() !== 'ok') {
+            throw new RuntimeException(__('The SQLite database failed its integrity check.'));
         }
     }
-    
-    /**
-     * Insert or update records in bulk.
-     */
-    protected function bulkUpsert($table, $rows)
+
+    private function databasePath(): string
     {
-        if (empty($rows)) return;
-    
-        // Try to detect primary key if you want
-        $uniqueBy = 'id'; // you can improve this later
-    
-        if (isset($rows[0][$uniqueBy])) {
-            // If ID exists, use upsert
-            DB::table($table)->upsert(
-                $rows,
-                [$uniqueBy],    // unique key(s)
-                array_keys($rows[0]) // columns to update
-            );
-        } else {
-            // Else normal insert
-            DB::table($table)->insert($rows);
-        }
+        $path = DB::connection()->getDatabaseName();
+        if (!$path || $path === ':memory:' || !is_file($path)) throw new RuntimeException(__('The active SQLite database file could not be found.'));
+        return $path;
     }
-    
+
+    private function ensureSqlite(): void
+    {
+        if (DB::connection()->getDriverName() !== 'sqlite') throw new RuntimeException(__('Database backup and restore currently require SQLite.'));
+    }
 }
