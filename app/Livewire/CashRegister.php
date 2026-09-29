@@ -41,6 +41,11 @@ class CashRegister extends Component
 
     public function startSession()
     {
+        if (!auth()->user()->hasPermissionTo('cash-register:create')) {
+            session()->flash('failed', __('Access denied!'));
+            return;
+        }
+
         $this->validate([
             'opening_balance' => 'required|numeric|min:0',
         ]);
@@ -92,6 +97,11 @@ class CashRegister extends Component
 
     public function endSession()
     {
+        if (!auth()->user()->hasPermissionTo('cash-register:update')) {
+            session()->flash('failed', __('Access denied!'));
+            return;
+        }
+
         $this->validate([
             'closing_balance' => 'required|numeric|min:0',
             'note' => 'nullable|string|max:1000',
@@ -150,6 +160,10 @@ class CashRegister extends Component
 
     public function render()
     {
+        if (!auth()->user()->hasPermissionTo('cash-register:read')) {
+            return view('includes.unauthorized');
+        }
+
         $currentSession = CashRegisterSession::currentOpenSession();
         $expectedCash = $currentSession ? $currentSession->calculateExpectedCash() : 0;
 

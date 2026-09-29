@@ -382,6 +382,11 @@ class Pos extends Component
 
     public function submitClosePreviousDay()
     {
+        if (!auth()->user()->hasPermissionTo('cash-register:update')) {
+            session()->flash('failed', __('Access denied!'));
+            return;
+        }
+
         $this->validate([
             'pos_closing_balance' => 'required|numeric|min:0',
             'pos_closing_note' => 'nullable|string|max:1000',
@@ -435,6 +440,11 @@ class Pos extends Component
 
     public function submitOpeningBalance()
     {
+        if (!auth()->user()->hasPermissionTo('cash-register:create')) {
+            session()->flash('failed', __('Access denied!'));
+            return;
+        }
+
         // First verify no past day session remains unclosed
         $overdueSession = CashRegisterSession::previousDayUnclosedSession();
         if ($overdueSession) {
@@ -479,6 +489,11 @@ class Pos extends Component
     }
 
     public function sale() {
+        if (!auth()->user()->hasPermissionTo('sales:create')) {
+            session()->flash('failed', __('Access denied!'));
+            return;
+        }
+
         // Option B Strict Date Cutoff:
         // 1. Check if an unclosed session from yesterday/past days exists -> MUST close it first!
         $overdueSession = CashRegisterSession::previousDayUnclosedSession();
@@ -810,6 +825,10 @@ class Pos extends Component
 
     public function render()
     {
+        if (!auth()->user()->hasPermissionTo('pos:read')) {
+            return view('includes.unauthorized');
+        }
+
         $currentSession = CashRegisterSession::currentOpenSession();
         $todaySession = CashRegisterSession::todayOpenSession();
         $overdueSession = CashRegisterSession::previousDayUnclosedSession();

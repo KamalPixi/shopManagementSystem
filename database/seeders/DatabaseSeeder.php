@@ -134,6 +134,16 @@ class DatabaseSeeder extends Seeder
             'cash-register:update',
 
             'audit-logs:read',
+
+            'dashboard:read',
+            'pos:read',
+            'reports:read',
+            'db-backup:read',
+            'db-backup:create',
+            'db-backup:restore',
+            'payment-methods:read',
+            'payment-methods:create',
+            'payment-methods:update',
         ];
         foreach ($permissions as $p) {
             Permission::firstOrCreate(['name' => $p]);

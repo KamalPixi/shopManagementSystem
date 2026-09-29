@@ -60,11 +60,18 @@
                             <div class="col">
                                 <div class="mb-2">
                                     <label>{{ __('Staff Permissions') }}</label>
-                                    <select wire:model="staff_permissions" class="form-select" multiple style="height: 20rem;">
-                                        @foreach ($permissions as $p)
-                                        <option value="{{ $p->id }}">{{ $p->name }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class="border rounded p-3 bg-light overflow-auto" style="height: 32rem;">
+                                        <div class="row g-2">
+                                            @foreach ($permissions as $p)
+                                                <div class="col-12 col-md-6 col-xl-4">
+                                                    <label class="form-check d-flex align-items-center gap-2 mb-0">
+                                                        <input type="checkbox" class="form-check-input mt-0" wire:model="staff_permissions" value="{{ $p->id }}">
+                                                        <span class="small">{{ $p->name }}</span>
+                                                    </label>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -90,6 +97,7 @@
                             <th class="border-0">{{ __('Name') }}</th>
                             <th class="border-0">{{ __('Username') }}</th>
                             <th class="border-0">{{ __('User Type') }}</th>
+                            <th class="border-0">{{ __('Permissions') }}</th>
                             <th style="width: 8%;" class="border-0 text-end rounded-end">{{ __('Action') }}</th>
                         </tr>
                     </thead>
@@ -100,6 +108,15 @@
                             <td class="fw-bold align-items-center"> {{ $user->name }} </td>
                             <td class="fw-bold align-items-center"> {{ $user->username }} </td>
                             <td class="fw-bold align-items-center"> {{ $user->user_type == 'admin' ? __('Admin') : __('Staff') }} </td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-1" style="max-height: 4.5rem; max-width: 28rem; overflow-y: auto;">
+                                    @forelse ($user->getAllPermissions() as $permission)
+                                        <span class="badge bg-light border" style="color: #212529 !important;">{{ $permission->name }}</span>
+                                    @empty
+                                        <span class="text-muted">-</span>
+                                    @endforelse
+                                </div>
+                            </td>
                             <td class="text-end">
                                 <div class="dropdown">
                                     <button class="btn btn-primary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">

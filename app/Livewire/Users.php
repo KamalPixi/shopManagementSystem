@@ -29,6 +29,11 @@ class Users extends Component
     }
 
     public function create() {
+        if (!auth()->user()->hasPermissionTo('users:create')) {
+            session()->flash('failed', __('Access denied!'));
+            return;
+        }
+
         $validated = $this->validate([
             'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username',
@@ -120,6 +125,11 @@ class Users extends Component
     }
 
     public function updateStaffPermissions() {
+        if (!auth()->user()->hasPermissionTo('users:update')) {
+            session()->flash('failed', __('Access denied!'));
+            return;
+        }
+
         $role = Role::findByName('staff');
         $role->syncPermissions([]);
 
@@ -137,7 +147,7 @@ class Users extends Component
 
         return view('livewire.users', [
             'permissions' => Permission::get(),
-            'users' => User::paginate(20)
+            'users' => User::with(['roles.permissions', 'permissions'])->paginate(20)
         ]);
     }
 }

@@ -14,6 +14,11 @@ class DBImportExport extends Component
     public $file;
 
     public function restore() {
+        if (!auth()->user()->hasPermissionTo('db-backup:restore')) {
+            session()->flash('failed', __('Access denied!'));
+            return;
+        }
+
         $this->validate([
             'file' => 'required|file|max:512000',
         ]);
@@ -25,11 +30,20 @@ class DBImportExport extends Component
     }
 
     public function export() {
+        if (!auth()->user()->hasPermissionTo('db-backup:create')) {
+            session()->flash('failed', __('Access denied!'));
+            return;
+        }
+
         return app(DBImportExportService::class)->exportDatabase();
     }
 
     public function render()
     {
+        if (!auth()->user()->hasPermissionTo('db-backup:read')) {
+            return view('includes.unauthorized');
+        }
+
         return view('livewire.db-import-export');
     }
 }

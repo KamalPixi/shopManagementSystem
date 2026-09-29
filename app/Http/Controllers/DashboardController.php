@@ -9,6 +9,10 @@ use App\Models\Shop;
 class DashboardController extends Controller
 {
     public function dashboard() {
+        if (!auth()->user()->hasPermissionTo('dashboard:read')) {
+            return view('includes.unauthorized');
+        }
+
         $shop = Shop::first();
         $defaultThreshold = (int) ($shop?->low_stock_threshold ?? 10);
 
@@ -85,6 +89,10 @@ class DashboardController extends Controller
     }
 
     public function salesReports() {
+        if (!auth()->user()->hasPermissionTo('reports:read')) {
+            return view('includes.unauthorized');
+        }
+
         return redirect()->route('sales.index');
     }
 
