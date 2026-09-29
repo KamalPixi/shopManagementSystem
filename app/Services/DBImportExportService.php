@@ -18,6 +18,27 @@ final class DBImportExportService
         return response()->download($backup, basename($backup), ['Content-Type' => 'application/vnd.sqlite3'])->deleteFileAfterSend(true);
     }
 
+    public function uploadAutomaticBackup(): string
+    {
+        $this->ensureSqlite();
+        $disk = config('backup.disk', 's3');
+        $prefix = trim(config('backup.prefix', 'shop-management/backups'), '/');
+        $filename = 'shop-' . now()->format('Ymd-His') . '.sqlite';
+        $local = storage_path('app/private/backups/' . $filename);
+        $this->createSnapshot($this->databasePath(), $local);
+
+        $stored = \Storage::disk($disk)->put($prefix . '/' . $filename, fopen($local, 'rb'), ['visibility' => 'private']);
+        @unlink($local);
+        if (!$stored) throw new RuntimeException(__('The automatic backup could not be uploaded.'));
+
+        $files = \Storage::disk($disk)->files($prefix);
+        $backups = collect($files)->filter(fn ($file) => str_ends_with($file, '.sqlite'))->sort()->values();
+        $keep = max(1, (int) config('backup.retention', 30));
+        $backups->slice(0, max(0, $backups->count() - $keep))->each(fn ($file) => \Storage::disk($disk)->delete($file));
+
+        return $prefix . '/' . $filename;
+    }
+
     public function restoreDatabase(UploadedFile $file): void
     {
         $this->ensureSqlite();
