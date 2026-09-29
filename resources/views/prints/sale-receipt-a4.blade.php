@@ -413,6 +413,7 @@
         $subtotalHt = $sale->saleItems->sum(fn ($item) => (float) $item->price * (int) $item->quantity);
         $totalHt = $sale->saleItems->sum(fn ($item) => (float) $item->total);
         $paymentMethod = strtolower($sale->payment_method ?? 'cash');
+        $staffName = $sale->createdBy?->name ?? __('Unknown');
         $taxLabel = $shop?->tax_label ?? 'VAT';
         $currencyCode = $shop?->currency['code'] ?? 'EUR';
         $currencySymbol = $shop?->currency['symbol'] ?? $currencyCode;
@@ -475,7 +476,7 @@
                 <div class="facture-box">
                     <div class="facture-meta-row"><span class="facture-meta-label">{{ __('Invoice no.') }}</span><span class="facture-meta-colon">:</span><span>{{ $sale->receipt_no }}</span></div>
                     <div class="facture-meta-row"><span class="facture-meta-label">{{ __('Date') }}</span><span class="facture-meta-colon">:</span><span>{{ $sale->created_at->format('d/m/Y') }}</span></div>
-                    <div class="facture-meta-row"><span class="facture-meta-label">{{ __('Payment method') }}</span><span class="facture-meta-colon">:</span><span>{{ $paymentLabels[$paymentMethod] ?? __('Other') }}</span></div>
+                    <div class="facture-meta-row"><span class="facture-meta-label">{{ __('Staff') }}</span><span class="facture-meta-colon">:</span><span>{{ $staffName }}</span></div>
                 </div>
             </td>
         </tr>
