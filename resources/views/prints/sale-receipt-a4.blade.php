@@ -151,17 +151,22 @@
         .facture-meta-row {
             font-size: 11.5px;
             color: #334155;
-            display: grid;
-            grid-template-columns: 122px 12px 1fr;
-            align-items: baseline;
+            display: table;
+            width: 100%;
             text-align: left;
             padding: 1px 0;
         }
+        .facture-meta-row > span {
+            display: table-cell;
+            vertical-align: baseline;
+        }
         .facture-meta-label {
             font-weight: 700;
+            width: 92px;
         }
         .facture-meta-colon {
             text-align: center;
+            width: 16px;
         }
 
         /* Client Section */
