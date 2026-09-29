@@ -74,8 +74,8 @@
             display: block;
             position: relative;
             width: 100%;
-            min-height: 22px;
-            margin: 4px 0;
+            min-height: 20px;
+            margin: 1px 0;
             padding-left: 32px;
             text-align: left !important;
         }
@@ -84,15 +84,17 @@
             position: absolute;
             left: 0;
             top: 0;
-            width: 22px;
-            height: 22px;
-            max-width: 22px;
-            max-height: 22px;
+            width: 18px;
+            height: 18px;
+            max-width: 18px;
+            max-height: 18px;
+            top: 1px;
             object-fit: contain;
         }
         .contact-value {
             display: block;
-            line-height: 22px;
+            line-height: 18px;
+            padding-top: 1px;
             padding-left: 0;
             text-align: left !important;
             color: #1e293b;

@@ -204,6 +204,10 @@ class BarcodePdfService
      */
     private function combinePages($pages)
     {
+        if (empty($pages)) {
+            return '<!DOCTYPE html><html><head><style></style></head><body></body></html>';
+        }
+
         $combinedBody = '';
         
         foreach ($pages as $index => $pageHtml) {

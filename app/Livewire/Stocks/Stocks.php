@@ -90,13 +90,9 @@ class Stocks extends Component
         if (!count($ids)) {
             $ids = Product::pluck('id')->toArray();
         }
-        // here make ids even if its odd remove one and make even
-        if (count($ids) % 2 !== 0) {
-            array_pop($ids);
-        }
-
-        if (count($ids) % 2 !== 0) {
-            return session()->flash('failed', 'Please select even items.');
+        if (count($ids) < 2 || count($ids) % 2 !== 0) {
+            session()->flash('failed', __('Please select an even number of products (at least two) for two-column barcode printing.'));
+            return;
         }
 
         $barcodeService = new BarcodePdfService();
