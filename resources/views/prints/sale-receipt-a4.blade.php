@@ -69,24 +69,29 @@
             text-align: left !important;
         }
         .contact-row {
-            display: table;
+            display: block;
+            position: relative;
             width: 100%;
+            min-height: 22px;
             margin: 4px 0;
+            padding-left: 32px;
+            text-align: left !important;
         }
         .contact-icon {
-            display: table-cell;
+            display: block;
+            position: absolute;
+            left: 0;
+            top: 0;
             width: 22px;
             height: 22px;
             max-width: 22px;
             max-height: 22px;
-            vertical-align: middle;
-            text-align: center;
             object-fit: contain;
         }
         .contact-value {
-            display: table-cell;
-            vertical-align: middle;
-            padding-left: 8px;
+            display: block;
+            line-height: 22px;
+            padding-left: 0;
             text-align: left !important;
             color: #1e293b;
         }
