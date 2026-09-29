@@ -48,6 +48,9 @@
                     <button type="button" wire:click="printSaleReceiptA4" class="btn btn-sm btn-outline-secondary shadow-sm px-3">
                         {{ __('PDF A4') }}
                     </button>
+                    <a href="{{ route('sales.a4Preview', $sale->id) }}" target="_blank" class="btn btn-sm btn-outline-info shadow-sm px-3">
+                        {{ __('A4 Preview') }}
+                    </a>
                     <a href="{{ route('sales.index') }}" class="btn btn-sm btn-outline-secondary shadow-sm px-3">
                         {{ __('Back to Sales') }}
                     </a>

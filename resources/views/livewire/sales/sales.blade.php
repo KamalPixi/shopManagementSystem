@@ -234,6 +234,7 @@
                                         <li><a class="dropdown-item" href="#" wire:click="printSaleReceiptPos('{{$sale->id}}')"><i class="fa-solid fa-print pe-2"></i>{{ __('Receipt (POS)') }}</a></li>
                                         <li><a class="dropdown-item" href="#" wire:click="printSaleReceipt('{{$sale->id}}')"><i class="fa-solid fa-file-pdf pe-2 text-danger"></i>{{ __('Receipt (PDF)') }}</a></li>
                                         <li><a class="dropdown-item" href="#" wire:click="printSaleReceiptA4('{{$sale->id}}')"><i class="fa-solid fa-file-lines pe-2 text-info"></i>{{ __('Receipt A4 (PDF)') }}</a></li>
+                                        <li><a class="dropdown-item" href="{{ route('sales.a4Preview', $sale->id) }}" target="_blank"><i class="fa-solid fa-eye pe-2 text-info"></i>{{ __('A4 Preview') }}</a></li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li><a class="dropdown-item text-danger" href="#" wire:confirm="{{ __('Are you sure you want to delete this sale? Stock will be restored.') }}" wire:click="deleteSale('{{$sale->id}}')"><i class="fa-solid fa-trash pe-2"></i>{{ __('Delete') }}</a></li>
                                     </ul>

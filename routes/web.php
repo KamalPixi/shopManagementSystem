@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Models\Sale;
+use App\Models\Shop;
 
 Route::controller(AuthController::class)->group(function () {
     Route::get('/', 'login')->name('login');
@@ -23,6 +25,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/sales/index', 'sales')->name('sales.index');
         Route::get('/sales/edit/{sale_id}', 'saleEdit')->name('sales.edit');
         Route::get('/sales/show/{sale_id}', 'saleShow')->name('sales.show');
+        Route::get('/sales/show/{sale_id}/a4-preview', function ($sale_id) {
+            $sale = Sale::with(['saleItems.product', 'saleItems.productVariation', 'saleItems.warranty', 'customer', 'createdBy'])->findOrFail($sale_id);
+            return view('prints.sale-receipt-a4', ['sale' => $sale, 'shop' => Shop::first()]);
+        })->name('sales.a4Preview');
         Route::get('/sales/report', 'salesReports')->name('sales.report');
         Route::get('/brands', 'brands')->name('brands');
         Route::get('/categories', 'categories')->name('categories');

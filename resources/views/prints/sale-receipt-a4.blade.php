@@ -59,13 +59,14 @@
             font-size: 9.5px;
             color: #475569;
             line-height: 1.35;
-            text-align: left;
+            text-align: left !important;
             padding-left: 18px;
         }
         .contact-panel {
             border-left: 1px solid #0f2c59;
             padding-left: 18px;
             padding-bottom: 6px;
+            text-align: left !important;
         }
         .contact-row {
             display: table;
@@ -86,7 +87,7 @@
             display: table-cell;
             vertical-align: middle;
             padding-left: 8px;
-            text-align: left;
+            text-align: left !important;
             color: #1e293b;
         }
 
