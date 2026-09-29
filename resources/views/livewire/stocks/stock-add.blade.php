@@ -48,10 +48,6 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-12 col-md-4"><label>{{ __('Payment Method') }}</label><select wire:model="payment_method_id" class="form-select"><option value="">{{ __('Select Payment Method') }}</option>@foreach($paymentMethods as $method)<option value="{{ $method->id }}">{{ $method->name }}</option>@endforeach</select></div>
-                    </div>
-
-                    <div class="row">
                         <div class="col-12 col-md-4">
                             <div class="mb-3">
                                 <label>{{ __('SKU / Barcode*') }}</label>
@@ -77,21 +73,33 @@
 
                     {{-- Pricing & Stock Settings --}}
                     <div class="row">
-                        <div class="col-12 col-md-3">
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="mb-3">
+                                <label>{{ __('Payment Method') }}</label>
+                                <select wire:model="payment_method_id" class="form-select form-select-sm">
+                                    <option value="">{{ __('Select Payment Method') }}</option>
+                                    @foreach($paymentMethods as $method)
+                                        <option value="{{ $method->id }}">{{ $method->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('payment_method_id') <span class="text-danger small">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-2">
                             <div class="mb-3">
                                 <label>{{ __('Purchase / Cost Price*') }} @if($has_variations)<small class="text-muted">({{ __('set per variation below') }})</small>@endif</label>
                                 <input wire:model="purchase_price" required type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0" @disabled($has_variations)>
                                 @error('purchase_price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>
-                        <div class="col-12 col-md-3">
+                        <div class="col-12 col-md-6 col-lg-2">
                             <div class="mb-3">
                                 <label>{{ __('Sale Price*') }}</label>
                                 <input wire:model="price" required type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0" @disabled($has_variations)>
                                 @error('price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>
-                        <div class="col-12 col-md-3">
+                        <div class="col-12 col-md-6 col-lg-2">
                             <div class="mb-3">
                                 <label>{{ __('Stock Quantity*') }}</label>
                                 <input wire:model="quantity" required type="number" min="0" class="form-control form-control-sm text-center" {{ $has_variations ? 'readonly' : '' }} placeholder="0">
@@ -101,7 +109,7 @@
                                 @error('quantity') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>
-                        <div class="col-12 col-md-3">
+                        <div class="col-12 col-md-6 col-lg-3">
                             <div class="mb-3">
                                 <label>{{ __('Low Stock Alert Threshold') }} @if($has_variations)<small class="text-muted">({{ __('set per variation below') }})</small>@endif</label>
                                 <input wire:model="low_stock_threshold" type="number" min="0" class="form-control form-control-sm text-center" placeholder="0" @disabled($has_variations)>

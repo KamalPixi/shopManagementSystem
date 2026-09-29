@@ -67,9 +67,6 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-12 col-md-4"><label>{{ __('Payment Method') }}</label><select wire:model="payment_method_id" class="form-select"><option value="">{{ __('Select Payment Method') }}</option>@foreach($paymentMethods as $method)<option value="{{ $method->id }}">{{ $method->name }}</option>@endforeach</select></div>
-                    </div>
                     @if ($has_variations)
                         <div class="alert alert-info d-flex align-items-center mb-4">
                             <i class="fa-solid fa-boxes-stacked me-2"></i>
@@ -162,25 +159,36 @@
                         @endforeach
                     </div>
                     <div class="row">
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-3">
+                            <div class="mb-4">
+                                <label>{{ __('Payment Method') }}</label>
+                                <select wire:model="payment_method_id" class="form-select form-select-sm">
+                                    <option value="">{{ __('Select Payment Method') }}</option>
+                                    @foreach($paymentMethods as $method)
+                                        <option value="{{ $method->id }}">{{ $method->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('payment_method_id') <span class="text-danger small">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-3">
                             <div class="mb-4">
                                 <label for="brand">{{ $has_variations ? __('Default Purchase Price') : __('New Purchase Price*') }} @if($has_variations)<small class="text-muted">({{ __('set per variation above') }})</small>@endif</label>
                                 <input wire:model="purchase_price" type="text" class="form-control form-control-sm" {{ $has_variations ? 'readonly' : '' }}>
                             </div>
                         </div>
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-3">
                             <div class="mb-4">
                                 <label>{{ $has_variations ? __('Default Sale Price') : __('Sale Price*') }}</label> <small class="text-muted small">({{ $has_variations ? __('set per variation') : __('Price Per Unit') }})</small>
                                 <input wire:model="price" required type="text" class="form-control form-control-sm" readonly>
                             </div>
                         </div>
-                        <div class="col-12 col-md-4">
+                        <div class="col-12 col-md-3">
                             <div class="mb-4">
                                 <label>{{ $has_variations ? __('Total quantity received (calculated)') : __('New Purchase Quantity*') }} | <small>{{ $has_variations ? __('Use the variation table above') : __('Current Qty: ' . $current_quantity) }}</small></label>
                                 <input wire:model="quantity" required type="number" class="form-control form-control-sm" {{ $has_variations ? 'readonly' : '' }} placeholder="0">
                             </div>
                         </div>
-
                     </div>
                     <div class="row">
                         <div class="col-12 col-md-4">
