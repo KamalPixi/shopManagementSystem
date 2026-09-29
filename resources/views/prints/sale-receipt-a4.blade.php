@@ -139,6 +139,8 @@
             margin: 0 0 6px 0;
             text-align: right;
             text-transform: uppercase;
+            position: relative;
+            top: -8px;
         }
         .facture-meta-row {
             font-size: 9.5px;
@@ -337,8 +339,14 @@
             background-color: #0f2c59;
             color: #ffffff !important;
             font-weight: bold;
-            font-size: 12px;
-            padding: 8px 10px;
+            font-size: 14px;
+            padding: 9px 10px;
+        }
+        .grand-total-row td:first-child {
+            border-radius: 0 0 0 4px;
+        }
+        .grand-total-row td:last-child {
+            border-radius: 0 0 4px 0;
         }
         .grand-total-row .totals-label {
             color: #ffffff;
@@ -369,17 +377,15 @@
             margin-bottom: 12px;
         }
         .services-bar {
-            font-size: 8.5px;
-            font-weight: 600;
-            color: #475569;
-            background-color: #f1f5f9;
-            padding: 6px 10px;
-            border-radius: 4px;
-            letter-spacing: 0.5px;
+            font-size: 11px;
+            font-weight: 400;
+            color: #0f2c59;
+            padding: 0;
+            letter-spacing: 0.2px;
         }
         .services-bar span {
-            color: #94a3b8;
-            margin: 0 6px;
+            color: #c81e32;
+            margin: 0 12px;
         }
         .system-note {
             font-size: 7.5px;
@@ -529,11 +535,11 @@
                             @endif
                         </div>
                     </td>
-                    <td class="text-end">{{ number_format($unitHt, 2) }} {{ $currencySymbol }}</td>
+                    <td class="text-end">{{ number_format($unitHt, 2) }}</td>
                     <td class="text-center">{{ $itemVatRate > 0 ? $itemVatRate.'%' : '0%' }}</td>
-                    <td class="text-end">{{ number_format($unitTtc, 2) }} {{ $currencySymbol }}</td>
+                    <td class="text-end">{{ number_format($unitTtc, 2) }}</td>
                     <td class="text-center font-bold">{{ $item->quantity }}</td>
-                    <td class="text-end font-bold">{{ number_format($totalLineTtc, 2) }} {{ $currencySymbol }}</td>
+                    <td class="text-end font-bold">{{ number_format($totalLineTtc, 2) }}</td>
                 </tr>
             @endforeach
         </tbody>
@@ -583,25 +589,25 @@
                 <table class="totals-card">
                     <tr>
                         <td class="totals-label">{{ __('Subtotal excl. tax') }}:</td>
-                        <td class="totals-value">{{ number_format($subtotalHt, 2) }} {{ $currencySymbol }}</td>
+                        <td class="totals-value">{{ number_format($subtotalHt, 2) }}</td>
                     </tr>
                     @if($discount > 0)
                     <tr>
                         <td class="totals-label" style="color: #e11d48;">{{ __('Discount') }}:</td>
-                        <td class="totals-value" style="color: #e11d48;">- {{ number_format($discount, 2) }} {{ $currencySymbol }}</td>
+                        <td class="totals-value" style="color: #e11d48;">- {{ number_format($discount, 2) }}</td>
                     </tr>
                     @endif
                     <tr>
                         <td class="totals-label">{{ __('Total excl. tax') }}:</td>
-                        <td class="totals-value">{{ number_format($totalHt, 2) }} {{ $currencySymbol }}</td>
+                        <td class="totals-value">{{ number_format($totalHt, 2) }}</td>
                     </tr>
                     <tr>
                         <td class="totals-label">{{ $taxLabel }} ({{ $gstPercent }}%):</td>
-                        <td class="totals-value">{{ number_format($totalGst, 2) }} {{ $currencySymbol }}</td>
+                        <td class="totals-value">{{ number_format($totalGst, 2) }}</td>
                     </tr>
                     <tr class="grand-total-row">
-                        <td class="totals-label">{{ __('Total incl. tax') }} ({{ $currencyCode }}):</td>
-                        <td class="totals-value">{{ number_format($totalTtc, 2) }} {{ $currencySymbol }}</td>
+                        <td class="totals-label">{{ __('Total incl. tax') }} ({{ $currencyCode }}) :</td>
+                        <td class="totals-value">{{ number_format($totalTtc, 2) }}</td>
                     </tr>
                 </table>
             </td>
@@ -610,14 +616,8 @@
 
     <!-- Footer -->
     <div class="footer-section">
-        <div class="signature-msg">{{ __('Thank you for your trust!') }}</div>
-        <div class="signature-team">{{ __('The team at :shop', ['shop' => $shop?->name ?? 'Tech Parisien']) }}</div>
-        
         <div class="services-bar">
             {{ __('Buy') }} <span>|</span> {{ __('Sell') }} <span>|</span> {{ __('Repair') }} <span>|</span> {{ __('IT services') }} <span>|</span> {{ __('Exchange & trade-in') }}
-        </div>
-        <div class="system-note">
-            {{ __('Electronically generated document') }} &bull; {{ $shop?->name ?? 'Tech Parisien' }}
         </div>
     </div>
 
