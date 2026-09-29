@@ -228,7 +228,7 @@
                 <div class="row">
                     {{-- Enable Remote Access Toggle --}}
                     <div class="col-md-6 mb-3">
-                        <div class="form-check form-switch mt-2">
+                        <div class="form-check mt-2">
                             <input class="form-check-input" type="checkbox" id="cf_enabled" wire:model="cf_enabled">
                             <label class="form-check-label fw-bold" for="cf_enabled">
                                 {{ __('Enable Remote Internet Access') }}
@@ -238,7 +238,7 @@
 
                     {{-- Auto Start Toggle --}}
                     <div class="col-md-6 mb-3">
-                        <div class="form-check form-switch mt-2">
+                        <div class="form-check mt-2">
                             <input class="form-check-input" type="checkbox" id="cf_auto_start" wire:model="cf_auto_start">
                             <label class="form-check-label fw-bold" for="cf_auto_start">
                                 {{ __('Auto-start Tunnel when App Boots') }}

@@ -122,8 +122,8 @@
                     {{-- VATable Setting --}}
                     <div class="row mb-3">
                         <div class="col-12 col-md-6">
-                            <div class="form-check form-switch p-2 bg-light rounded border">
-                                <input wire:model="is_vatable" class="form-check-input ms-0 me-2" type="checkbox" id="is_vatable" value="1">
+                            <div class="form-check p-2 bg-light rounded border">
+                                <input wire:model.live="is_vatable" class="form-check-input ms-0 me-2" type="checkbox" id="is_vatable" value="1" @checked($is_vatable)>
                                 <label class="form-check-label fw-bold mb-0" for="is_vatable">
                                     <i class="fa-solid fa-receipt me-1 text-primary"></i> {{ __('VAT\'able Product') }}
                                 </label>
@@ -131,7 +131,7 @@
                             </div>
                         </div>
                         <div class="col-12 col-md-6">
-                            <div class="form-check form-switch p-2 bg-light rounded border">
+                            <div class="form-check p-2 bg-light rounded border">
                                 <input wire:model.live="has_variations" class="form-check-input ms-0 me-2" type="checkbox" id="has_variations">
                                 <label class="form-check-label fw-bold mb-0" for="has_variations">
                                     <i class="fa-solid fa-boxes-stacked me-1 text-info"></i> {{ __('Product Has Variations') }}

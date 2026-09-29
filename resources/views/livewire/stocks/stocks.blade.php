@@ -82,7 +82,7 @@
 
                         <div class="col-12 pt-1">
                             <div class="d-flex align-items-center">
-                                <div class="form-check form-switch m-0">
+                                <div class="form-check m-0">
                                     <input wire:model.live="low_stock_only" class="form-check-input" type="checkbox" id="low_stock_only" style="cursor: pointer;">
                                     <label class="form-check-label fw-bold text-danger ms-1" for="low_stock_only" style="cursor: pointer; font-size: 0.82rem;">
                                         <i class="fa-solid fa-triangle-exclamation me-1"></i>{{ __('Low stock only') }}

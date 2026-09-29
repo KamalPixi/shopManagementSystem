@@ -40,7 +40,7 @@ class StockAdd extends Component
     public $paid_amount = 0;
 
     // New requested fields
-    public $is_vatable = 1; // 1 = VATable, 0 = Non-VATable
+    public $is_vatable = 0; // 1 = VATable, 0 = Non-VATable
     public $low_stock_threshold = null; // null uses shop default
     public $has_variations = false;
     public $variations = [];
@@ -59,7 +59,7 @@ class StockAdd extends Component
             'price' => 'required|numeric|min:0',
             'purchase_price' => 'required|numeric|min:0',
             'quantity' => 'nullable|numeric|min:0',
-            'is_vatable' => 'boolean',
+            'is_vatable' => 'present|boolean',
             'low_stock_threshold' => 'nullable|integer|min:0',
             'has_variations' => 'boolean',
             'remark' => 'nullable|string|max:255',
@@ -92,7 +92,7 @@ class StockAdd extends Component
 
     public function mount() {
         $this->purchase_date = date('Y-m-d');
-        $this->is_vatable = 1;
+        $this->is_vatable = 0;
     }
 
     public function addVariationField()
@@ -206,7 +206,7 @@ class StockAdd extends Component
         $validated['warranty_id'] = !empty($validated['warranty_id']) && Warranty::whereKey($validated['warranty_id'])->exists()
             ? (int) $validated['warranty_id'] : null;
         $validated['created_by'] = auth()->user()?->exists ? auth()->id() : null;
-        $validated['is_vatable'] = (bool) $this->is_vatable;
+        $validated['is_vatable'] = filter_var($validated['is_vatable'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $validated['has_variations'] = (bool) $this->has_variations;
         $validated['low_stock_threshold'] = !is_null($this->low_stock_threshold) && $this->low_stock_threshold !== '' ? (int) $this->low_stock_threshold : null;
 
@@ -262,7 +262,7 @@ class StockAdd extends Component
             ['name' => '','values' => '']
         ];
         $this->variations = [];
-        $this->is_vatable = 1;
+        $this->is_vatable = 0;
         $this->purchase_date = date('Y-m-d');
 
         session()->flash('success', __('Product added successfully with inventory records.'));

@@ -233,7 +233,7 @@ class StockEdit extends Component
 
         $validated['attributes_and_values'] = $attributeArray;
         $validated['updated_by'] = auth()->id();
-        $validated['is_vatable'] = (bool) $this->is_vatable;
+        $validated['is_vatable'] = filter_var($validated['is_vatable'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $validated['has_variations'] = (bool) $this->has_variations;
         $validated['low_stock_threshold'] = !is_null($this->low_stock_threshold) && $this->low_stock_threshold !== '' ? (int) $this->low_stock_threshold : null;
 

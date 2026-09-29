@@ -297,37 +297,6 @@
             margin-bottom: 7px;
             line-height: 16px;
         }
-        .checkbox-box {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 1px solid #475569;
-            text-align: center;
-            line-height: 14px;
-            font-size: 9px;
-            font-weight: bold;
-            margin-right: 7px;
-            background: #fff;
-            vertical-align: middle;
-            position: relative;
-            top: -1px;
-        }
-        .checkbox-box.checked {
-            background-color: #0f2c59;
-            color: #ffffff;
-            border-color: #0f2c59;
-        }
-        .checkbox-box.checked {
-            padding: 0;
-            border: 0;
-            background: transparent;
-        }
-        .checkbox-box .payment-tick-icon {
-            display: block;
-            width: 22.5px;
-            height: 22.5px;
-            object-fit: contain;
-        }
         .payment-other-line {
             display: inline-block;
             width: 125px;
@@ -435,7 +404,6 @@
         $taxLabel = $shop?->tax_label ?: '-';
         $currencyCode = $shop?->currency['code'] ?: '-';
         $currencySymbol = $shop?->currency['symbol'] ?: $currencyCode;
-        $tickIcon = file_exists(public_path('assets/icons/tick.png')) ? 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('assets/icons/tick.png'))) : null;
         $legal = $shop?->settings['legal'] ?? [];
         $addressParts = array_filter([
             $shop?->address,
@@ -448,10 +416,6 @@
         $legalLines = $legalText !== ''
             ? preg_split('/\r\n|\r|\n/', str_replace('{address}', $legalAddress, $legalText))
             : ['-'];
-        $paymentLabels = [
-            'cash' => __('Cash'), 'card' => __('Card'),
-            'bank_transfer' => __('Bank transfer'),
-        ];
         $logoPath = public_path('assets/img/tp-horizontal.png');
         $logoData = file_exists($logoPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($logoPath)) : null;
         $locationIcon = file_exists(public_path('assets/icons/location.png')) ? 'data:image/png;base64,' . base64_encode(file_get_contents(public_path('assets/icons/location.png'))) : null;
@@ -551,7 +515,7 @@
                                 <br><span><b>{{ __('Model') }}:</b> {{ $item->product?->model_no }}</span>
                             @endif
                             @if ($sn && $item->show_serial_on_receipt)
-                                <span><b>SN / IMEI :</b> {{ $sn }}</span>
+                                <span><b>{{ __('SN/IMEI') }} :</b> {{ $sn }}</span>
                             @endif
                             @foreach ($item->attributes_and_values ?? [] as $att => $value)
                                 @php
@@ -585,23 +549,19 @@
                 <div class="payment-mode-box">
                     <div class="payment-mode-title">{{ __('Payment method') }}</div>
                     <div class="payment-option">
-                        <span class="checkbox-box {{ in_array($paymentMethod, ['cash', 'especes', 'espèce', 'espece']) ? 'checked' : '' }}">@if(in_array($paymentMethod, ['cash', 'especes', 'espèce', 'espece']) && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif
-                        </span>
+                        <input type="checkbox" disabled {{ in_array($paymentMethod, ['cash', 'especes', 'espèce', 'espece']) ? 'checked' : '' }}>
                         {{ __('Cash') }}
                     </div>
                     <div class="payment-option">
-                        <span class="checkbox-box {{ in_array($paymentMethod, ['card', 'carte', 'cb', 'credit_card', 'carte bancaire']) ? 'checked' : '' }}">@if(in_array($paymentMethod, ['card', 'carte', 'cb', 'credit_card', 'carte bancaire']) && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif
-                        </span>
+                        <input type="checkbox" disabled {{ in_array($paymentMethod, ['card', 'carte', 'cb', 'credit_card', 'carte bancaire']) ? 'checked' : '' }}>
                         {{ __('Card') }}
                     </div>
                     <div class="payment-option">
-                        <span class="checkbox-box {{ in_array($paymentMethod, ['bank_transfer', 'virement', 'transfer']) ? 'checked' : '' }}">@if(in_array($paymentMethod, ['bank_transfer', 'virement', 'transfer']) && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif
-                        </span>
+                        <input type="checkbox" disabled {{ in_array($paymentMethod, ['bank_transfer', 'virement', 'transfer']) ? 'checked' : '' }}>
                         {{ __('Bank transfer') }}
                     </div>
                     <div class="payment-option">
-                        <span class="checkbox-box {{ in_array($paymentMethod, ['cheque', 'check', 'other', 'autre']) ? 'checked' : '' }}">@if(in_array($paymentMethod, ['cheque', 'check', 'other', 'autre']) && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif
-                        </span>
+                        <input type="checkbox" disabled {{ in_array($paymentMethod, ['cheque', 'check', 'other', 'autre']) ? 'checked' : '' }}>
                             {{ __('Other') }} : @if($otherPaymentDetails)<span>{{ $otherPaymentDetails }}</span>@else<span class="payment-other-line"></span>@endif
                     </div>
                     @if($sale->payment_reference)

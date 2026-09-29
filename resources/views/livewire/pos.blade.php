@@ -166,7 +166,7 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
 
                         <div class="row g-2 p-3 bg-light rounded border">
                             <div class="col-md-6 col-12">
-                                <div class="form-check form-switch m-0">
+                                <div class="form-check m-0">
                                     <input wire:model="custom_is_vatable" class="form-check-input" type="checkbox" id="custom_is_vatable" style="cursor: pointer;">
                                     <label class="form-check-label fw-bold small text-dark ms-1" for="custom_is_vatable" style="cursor: pointer;">
                                         {{ __('Subject to VAT / TVA') }}
@@ -174,7 +174,7 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                                 </div>
                             </div>
                             <div class="col-md-6 col-12">
-                                <div class="form-check form-switch m-0">
+                                <div class="form-check m-0">
                                     <input wire:model="custom_show_warranty_on_receipt" class="form-check-input" type="checkbox" id="custom_show_warranty" style="cursor: pointer;">
                                     <label class="form-check-label fw-bold small text-dark ms-1" for="custom_show_warranty" style="cursor: pointer;">
                                         {{ __('Print Warranty on Receipt') }}
@@ -402,7 +402,7 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                                         </select>
                                     </div>
                                     <div>
-                                        <div class="form-check form-switch m-0" title="{{ __('Toggle VAT') }}">
+                                        <div class="form-check m-0" title="{{ __('Toggle VAT') }}">
                                             <input type="checkbox" wire:model.live="sale_items.{{ $itemKey }}.is_vatable" class="form-check-input" id="vat_{{ $itemKey }}" style="cursor: pointer;">
                                             <label class="form-check-label badge {{ !empty($item['is_vatable']) ? 'bg-success' : 'bg-secondary' }}" for="vat_{{ $itemKey }}" style="cursor: pointer; font-size: 0.65rem;">
                                                 {{ !empty($item['is_vatable']) ? 'VAT' : 'NO VAT' }}

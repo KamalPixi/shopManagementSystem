@@ -97,13 +97,13 @@
 
                         <div class="row">
                             <div class="col-6">
-                                <div class="form-check form-switch">
+                                <div class="form-check">
                                     <input wire:model="custom_is_vatable" class="form-check-input" type="checkbox" id="c_vat">
                                     <label class="form-check-label small fw-bold" for="c_vat">{{ __('VAT\'able') }}</label>
                                 </div>
                             </div>
                             <div class="col-6">
-                                <div class="form-check form-switch">
+                                <div class="form-check">
                                     <input wire:model="custom_show_warranty_on_receipt" class="form-check-input" type="checkbox" id="c_warr">
                                     <label class="form-check-label small fw-bold" for="c_warr">{{ __('Show Warranty on Receipt') }}</label>
                                 </div>
