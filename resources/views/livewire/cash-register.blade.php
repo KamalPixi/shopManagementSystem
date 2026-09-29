@@ -114,6 +114,9 @@
                                 <span class="input-group-text">{{ $currencySymbol }}</span>
                                 <input wire:model="opening_balance" type="number" step="0.01" min="0" class="form-control form-control-lg text-end fw-bold" placeholder="0" autofocus required>
                             </div>
+                            @if($suggested_opening_balance > 0)
+                                <small class="text-muted">{{ __('Suggested from last closing balance: :amount', ['amount' => number_format($suggested_opening_balance, 2)]) }}</small>
+                            @endif
                             <small class="text-muted">{{ __('Count the starting cash present in the drawer.') }}</small>
                             @error('opening_balance') <span class="text-danger small d-block">{{ $message }}</span> @enderror
                         </div>

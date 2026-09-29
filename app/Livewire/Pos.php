@@ -61,6 +61,7 @@ class Pos extends Component
     // Register Opening Modal for POS
     public $showOpenRegisterModal = false;
     public $pos_opening_balance = 0;
+    public $suggested_opening_balance = 0;
     public $pos_opening_note = '';
 
     // Register Close Previous Day Modal for POS (Option B)
@@ -345,7 +346,9 @@ class Pos extends Component
 
     public function openRegisterModal()
     {
-        $this->pos_opening_balance = 0;
+        $lastSession = CashRegisterSession::where('status', 'closed')->latest('closed_at')->first();
+        $this->suggested_opening_balance = (float) ($lastSession?->closing_balance ?? $lastSession?->expected_closing_balance ?? 0);
+        $this->pos_opening_balance = $this->suggested_opening_balance;
         $this->pos_opening_note = '';
         $this->showOpenRegisterModal = true;
     }

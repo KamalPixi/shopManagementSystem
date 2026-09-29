@@ -14,6 +14,7 @@ class CashRegister extends Component
     use WithPagination;
 
     public $opening_balance = 0;
+    public $suggested_opening_balance = 0;
     public $closing_balance = 0;
     public $note = '';
 
@@ -27,7 +28,9 @@ class CashRegister extends Component
 
     public function openRegisterModal()
     {
-        $this->opening_balance = 0;
+        $lastSession = CashRegisterSession::where('status', 'closed')->latest('closed_at')->first();
+        $this->suggested_opening_balance = (float) ($lastSession?->closing_balance ?? $lastSession?->expected_closing_balance ?? 0);
+        $this->opening_balance = $this->suggested_opening_balance;
         $this->showOpenModal = true;
     }
 

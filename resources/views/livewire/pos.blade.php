@@ -217,8 +217,11 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                             <label class="form-label fw-bold small mb-1">{{ __('Opening Cash in Drawer (:currency)', ['currency' => $currencySymbol]) }} <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light fw-bold">{{ $currencySymbol }}</span>
-                                <input wire:model="pos_opening_balance" type="number" step="0.01" min="0" class="form-control form-control-lg text-end fw-bold" placeholder="0" autofocus required>
+                            <input wire:model="pos_opening_balance" type="number" step="0.01" min="0" class="form-control form-control-lg text-end fw-bold" placeholder="0" autofocus required>
                             </div>
+                            @if($suggested_opening_balance > 0)
+                                <small class="text-muted">{{ __('Suggested from last closing balance: :amount', ['amount' => number_format($suggested_opening_balance, 2)]) }}</small>
+                            @endif
                             @error('pos_opening_balance') <span class="text-danger small">{{ $message }}</span> @enderror
                         </div>
 
