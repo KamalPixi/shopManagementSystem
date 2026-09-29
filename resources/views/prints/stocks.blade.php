@@ -58,7 +58,7 @@
     <h1>{{ $shop->name }}</h1>
     <p>{{ $shop->address }}, {{ $shop->city }} {{ $shop->postal_code }}, {{ $shop->state }}, {{ $shop->country }} </p>
     <p style="padding-bottom: 0.5rem;">Phone: {{ $shop->contact_no }} | Email: {{ $shop->email }}</p>
-    <p class="print_date"> <strong class="print_date">Stock Date:</strong> <small>{{  $stock_date ? $stock_date : '(All)' }} @if($stock_date) &#40;{{ $stock_date_filter_type }}&#41; @endif </small> | <strong class="print_date">Print Date:</strong> <small>{{ $stock_print_date }}</small> </p>
+    <p class="print_date"> <strong class="print_date">{{ __('Stock Date') }}:</strong> <small>{{  $stock_date ? $stock_date : '(All)' }} @if($stock_date) &#40;{{ $stock_date_filter_type }}&#41; @endif </small> | <strong class="print_date">{{ __('Print Date') }}:</strong> <small>{{ $stock_print_date }}</small> </p>
 </div>
 
 <div class="">
@@ -66,13 +66,13 @@
         <thead>
             <tr>
                 <th style="width:2%;">#</th>
-                <th>Product</th>
-                <th style="width:9%;" class="text-center">Unit Price</th>
-                <th style="width:9%;" class="text-center">Stock Qty</th>
-                <th style="width:9%;" class="text-center">P.Price</th>
-                <th style="width:9%;" class="text-center">Total Price</th>
-                <th class="text-center" style="width:6%;">Warranty</th>
-                <th class="text-center" style="width:8%;">Supplier</th>
+                <th>{{ __('Product') }}</th>
+                <th style="width:9%;" class="text-center">{{ __('Unit Price') }}</th>
+                <th style="width:9%;" class="text-center">{{ __('Stock Qty') }}</th>
+                <th style="width:9%;" class="text-center">{{ __('P.Price') }}</th>
+                <th style="width:9%;" class="text-center">{{ __('Total Price') }}</th>
+                <th class="text-center" style="width:6%;">{{ __('Warranty') }}</th>
+                <th class="text-center" style="width:8%;">{{ __('Supplier') }}</th>
             </tr>
         </thead>
         <tbody>

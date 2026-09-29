@@ -70,18 +70,18 @@
     </div>
 
     <!-- Report Title -->
-    <h2 class="fw-bold" style="margin-bottom: 20px;">Sales Report</h2>
+    <h2 class="fw-bold" style="margin-bottom: 20px;">{{ __('Sales Report') }}</h2>
 
     <!-- Sales Table -->
     <table class="table table-bordered">
         <thead>
             <tr>
                 <th style="width:3%;" class="text-center">#</th>
-                <th class="text-start" style="width:72%">Products</th>
-                <th class="text-end" style="width:7%">Discount</th>
-                <th class="text-end" style="width:7%">GST<small class="text-muted" style="font-size: 0.4rem;">({{ $shop->gst_percent }}%)</small> </th>
-                <th class="text-end" style="width:7%">Total</th>
-                <th class="text-end" style="width:7%">Profit</th>
+                <th class="text-start" style="width:72%">{{ __('Products') }}</th>
+                <th class="text-end" style="width:7%">{{ __('Discount') }}</th>
+                <th class="text-end" style="width:7%">{{ __('GST') }}<small class="text-muted" style="font-size: 0.4rem;">({{ $shop->gst_percent }}%)</small> </th>
+                <th class="text-end" style="width:7%">{{ __('Total') }}</th>
+                <th class="text-end" style="width:7%">{{ __('Profit') }}</th>
             </tr>
         </thead>
         <tbody>

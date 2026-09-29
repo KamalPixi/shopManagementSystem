@@ -1,6 +1,6 @@
 <div class="bg-white shadow border-0 rounded border-light p-4 p-lg-5 w-100 fmxw-500">
     <div class="text-center text-md-center mb-4 mt-md-0">
-       <h1 class="mb-0 h3">Sign in</h1>
+       <h1 class="mb-0 h3">{{ __('Sign in') }}</h1>
     </div>
 
     <div wire:loading.flex wire:target="login">
@@ -13,7 +13,7 @@
 
        <!-- Form -->
        <div class="form-group mb-4">
-          <label for="username">Your Username</label>
+          <label for="username">{{ __('Your Username') }}</label>
           <div class="input-group">
              <span class="input-group-text" id="basic-addon1">
                <div class="icon icon-xs text-gray-600">
@@ -27,7 +27,7 @@
        <div class="form-group">
           <!-- Form -->
           <div class="form-group mb-4">
-             <label for="password">Your Password</label>
+          <label for="password">{{ __('Your Password') }}</label>
              <div class="input-group">
                 <span class="input-group-text" id="basic-addon2">
                    <svg class="icon icon-xs text-gray-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -41,14 +41,14 @@
           <div class="d-flex justify-content-between align-items-top mb-4">
              <div class="form-check">
                 <input wire:model="remember" class="form-check-input" type="checkbox" value="true" id="remember"> 
-                <label class="form-check-label mb-0" for="remember">Remember me</label>
+                <label class="form-check-label mb-0" for="remember">{{ __('Remember me') }}</label>
             </div>
              {{-- <div><a href="./forgot-password.html" class="small text-right">Lost password?</a></div> --}}
           </div>
        </div>
 
 
-       <div class="d-grid"><button type="submit" class="btn btn-gray-800">Sign in</button></div>
+       <div class="d-grid"><button type="submit" class="btn btn-gray-800">{{ __('Sign in') }}</button></div>
     </form>
 
  </div>
