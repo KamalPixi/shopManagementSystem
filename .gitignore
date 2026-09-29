@@ -4,6 +4,7 @@
 /public/stocks
 /public/sales
 /public/barcodes
+/public/uploads
 /public/hot
 /public/storage
 /storage/*.key
