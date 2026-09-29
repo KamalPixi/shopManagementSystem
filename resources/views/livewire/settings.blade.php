@@ -126,6 +126,7 @@
             <textarea wire:model="invoice_legal_text" rows="5" class="form-control" placeholder="SAS au capital de 2 010 €&#10;{address}&#10;SIREN : 109 915 405&#10;TVA intracommunautaire: FR75 109915405"></textarea>
             @error('invoice_legal_text') <span class="text-danger small">{{ $message }}</span> @enderror
             <small class="text-muted d-block mt-2">{{ __('The {address} placeholder is replaced automatically from the address fields above.') }}</small>
+            <button type="button" wire:click="update" class="btn btn-primary btn-sm mt-3">{{ __('Save Invoice Legal Text') }}</button>
         </div>
     </div>
 
