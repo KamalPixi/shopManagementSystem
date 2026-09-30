@@ -355,5 +355,15 @@
     "Use **text** to make part of a line bold.": "Use **text** to make part of a line bold.",
     "This product cannot be deleted because it has sales history. Mark it inactive instead.": "This product cannot be deleted because it has sales history. Mark it inactive instead.",
     "Special VAT regime on margin - Second-hand goods.": "Special VAT regime on margin - Second-hand goods.",
-    "Article 297 A of the CGI": "Article 297 A of the CGI"
+    "Article 297 A of the CGI": "Article 297 A of the CGI",
+    "Expected cash in drawer": "Expected cash in drawer",
+    "View Cash Register": "View Cash Register",
+    "Open Cash Register": "Open Cash Register",
+    "Open the cash register before recording a cash movement.": "Open the cash register before recording a cash movement.",
+    ":count cash movement(s) are not assigned to a register and are excluded from the drawer balance.": ":count cash movement(s) are not assigned to a register and are excluded from the drawer balance.",
+    "Outside register": "Outside register",
+    "Add to drawer": "Add to drawer",
+    "Add this movement to the current drawer? Check that it is not already included in the opening balance.": "Add this movement to the current drawer? Check that it is not already included in the opening balance.",
+    "Cash movement assigned to the current register.": "Cash movement assigned to the current register.",
+    "Cash movement added to the current drawer.": "Cash movement added to the current drawer."
 }

@@ -366,5 +366,15 @@
     "Use **text** to make part of a line bold.": "Utilisez **texte** pour mettre une partie de la ligne en gras.",
     "This product cannot be deleted because it has sales history. Mark it inactive instead.": "Ce produit ne peut pas être supprimé car il possède un historique de ventes. Désactivez-le plutôt.",
     "Special VAT regime on margin - Second-hand goods.": "Régime particulier de la TVA sur la marge - Biens d'occasion.",
-    "Article 297 A of the CGI": "(Article 297 A du CGI)"
+    "Article 297 A of the CGI": "(Article 297 A du CGI)",
+    "Expected cash in drawer": "Espèces attendues dans la caisse",
+    "View Cash Register": "Voir la caisse",
+    "Open Cash Register": "Ouvrir la caisse",
+    "Open the cash register before recording a cash movement.": "Ouvrez la caisse avant d'enregistrer un mouvement d'espèces.",
+    ":count cash movement(s) are not assigned to a register and are excluded from the drawer balance.": ":count mouvement(s) d'espèces ne sont pas affectés à une caisse et sont exclus du solde.",
+    "Outside register": "Hors caisse",
+    "Add to drawer": "Ajouter à la caisse",
+    "Add this movement to the current drawer? Check that it is not already included in the opening balance.": "Ajouter ce mouvement à la caisse actuelle ? Vérifiez qu'il n'est pas déjà inclus dans le solde d'ouverture.",
+    "Cash movement assigned to the current register.": "Mouvement d'espèces affecté à la caisse actuelle.",
+    "Cash movement added to the current drawer.": "Mouvement d'espèces ajouté à la caisse actuelle."
 }

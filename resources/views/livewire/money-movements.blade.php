@@ -1,7 +1,7 @@
 <div>
     @include('includes.breadcrumb', ['data' => [__('Money Movements') => '']])
 
-    <div wire:loading.flex wire:target="recordMovement,saveCategory,deleteMovement">
+    <div wire:loading.flex wire:target="recordMovement,saveCategory,deleteMovement,addUnassignedToDrawer">
         @include('includes.spinner')
     </div>
 
@@ -10,6 +10,22 @@
     @php
         $currencySymbol = $shop?->currency['symbol'] ?? '€';
     @endphp
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <div class="small text-muted fw-bold">{{ __('Expected cash in drawer') }}</div>
+                <div class="fs-4 fw-bold text-dark">{{ $currentSession ? $currencySymbol . number_format($expectedCash, 2) : '-' }}</div>
+            </div>
+            <a href="{{ route('cashRegister') }}" class="btn btn-sm btn-outline-primary">{{ $currentSession ? __('View Cash Register') : __('Open Cash Register') }}</a>
+        </div>
+    </div>
+
+    @if ($unassignedCount > 0)
+        <div class="alert alert-warning mb-4">
+            {{ __(':count cash movement(s) are not assigned to a register and are excluded from the drawer balance.', ['count' => $unassignedCount]) }}
+        </div>
+    @endif
 
     {{-- Page Header --}}
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-4">
@@ -113,6 +129,9 @@
                         </button>
                     </div>
 
+                    @if (!$currentSession)
+                        <div class="alert alert-warning">{{ __('Open the cash register before recording a cash movement.') }}</div>
+                    @endif
                     <form wire:submit.prevent="recordMovement">
                         @if ($type === 'in')
                             <div class="alert alert-success-subtle border border-success-subtle py-2 px-3 mb-3 small text-success-emphasis rounded">
@@ -174,7 +193,7 @@
                             @error('attachment') <span class="text-danger small">{{ $message }}</span> @enderror
                         </div>
 
-                        <button type="submit" class="btn w-100 py-2 {{ $type === 'in' ? 'btn-success' : 'btn-danger' }} text-white fw-bold shadow-sm">
+                        <button type="submit" @disabled(!$currentSession) class="btn w-100 py-2 {{ $type === 'in' ? 'btn-success' : 'btn-danger' }} text-white fw-bold shadow-sm">
                             @if ($type === 'in')
                                 <i class="fa-solid fa-circle-check me-1"></i> {{ __('Record Cash In') }}
                             @else
@@ -280,6 +299,12 @@
                                         @endif
                                     </td>
                                     <td class="px-2 py-2 align-middle text-end">
+                                        @if (!$m->cash_register_session_id)
+                                            <span class="badge bg-warning text-dark d-block mb-1">{{ __('Outside register') }}</span>
+                                            @if ($currentSession && auth()->user()->hasPermissionTo('money-movements:create'))
+                                                <button type="button" wire:click="addUnassignedToDrawer({{ $m->id }})" wire:confirm="{{ __('Add this movement to the current drawer? Check that it is not already included in the opening balance.') }}" class="btn btn-xs btn-outline-primary mb-1">{{ __('Add to drawer') }}</button>
+                                            @endif
+                                        @endif
                                         @if (auth()->user()->hasRole('admin'))
                                             <button wire:click="deleteMovement({{ $m->id }})" wire:confirm="{{ __('Delete this record?') }}" class="btn btn-xs btn-outline-danger px-2" title="{{ __('Delete') }}">
                                                 <i class="fa-solid fa-trash"></i>

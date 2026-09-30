@@ -75,6 +75,17 @@ class MoneyMovements extends Component
 
     public function recordMovement()
     {
+        if (!auth()->user()->hasPermissionTo('money-movements:create')) {
+            session()->flash('failed', __('Access denied!'));
+            return;
+        }
+
+        $currentSession = CashRegisterSession::currentOpenSession();
+        if (!$currentSession) {
+            session()->flash('failed', __('Open the cash register before recording a cash movement.'));
+            return;
+        }
+
         $this->validate();
 
         $attachmentPath = null;
@@ -88,10 +99,8 @@ class MoneyMovements extends Component
             $attachmentPath = $this->attachment->storeAs($directory, $filename, 'public_direct');
         }
 
-        $currentSession = CashRegisterSession::currentOpenSession();
-
         $movement = MoneyMovement::create([
-            'cash_register_session_id' => $currentSession?->id,
+            'cash_register_session_id' => $currentSession->id,
             'type' => $this->type,
             'amount' => $this->amount,
             'money_category_id' => !empty($this->money_category_id) ? $this->money_category_id : null,
@@ -124,6 +133,29 @@ class MoneyMovements extends Component
 
         $this->reset(['amount', 'reason', 'money_category_id', 'attachment']);
         session()->flash('success', __('Money entry recorded successfully.'));
+    }
+
+    public function addUnassignedToDrawer($id)
+    {
+        if (!auth()->user()->hasPermissionTo('money-movements:create')) {
+            session()->flash('failed', __('Access denied!'));
+            return;
+        }
+
+        $currentSession = CashRegisterSession::currentOpenSession();
+        if (!$currentSession) {
+            session()->flash('failed', __('Open the cash register before recording a cash movement.'));
+            return;
+        }
+
+        $movement = MoneyMovement::whereNull('cash_register_session_id')->findOrFail($id);
+        $movement->update(['cash_register_session_id' => $currentSession->id]);
+
+        AuditLogger::log('money_movement_assigned_to_register', __('Cash movement assigned to the current register.'), $movement, [
+            'cash_register_session_id' => $currentSession->id,
+        ]);
+
+        session()->flash('success', __('Cash movement added to the current drawer.'));
     }
 
     public function openCategoryModal()
@@ -246,6 +278,7 @@ class MoneyMovements extends Component
 
     public function render()
     {
+        $currentSession = CashRegisterSession::currentOpenSession();
         $query = MoneyMovement::with(['user', 'category'])->latest();
 
         if (!empty($this->filter_type)) {
@@ -288,6 +321,9 @@ class MoneyMovements extends Component
             'allCategories' => $allCategories,
             'users' => User::all(),
             'shop' => Shop::first(),
+            'currentSession' => $currentSession,
+            'expectedCash' => $currentSession?->calculateExpectedCash(),
+            'unassignedCount' => MoneyMovement::whereNull('cash_register_session_id')->count(),
         ]);
     }
 }
