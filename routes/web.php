@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Models\Sale;
 use App\Models\Shop;
+use App\Models\CashRegisterSession;
 
 Route::controller(AuthController::class)->group(function () {
     Route::get('/', 'login')->name('login');
@@ -48,6 +49,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/profile', 'profile')->name('profile');
         Route::get('/db-import-export', 'dbImportExport')->name('dbImportExport');
         Route::get('/cash-register', 'cashRegister')->name('cashRegister');
+        Route::get('/cash-register/{session}/details', function (CashRegisterSession $session) {
+            abort_unless(auth()->user()->hasPermissionTo('cash-register:read'), 403);
+            $session->load(['user', 'closedBy', 'moneyMovements.user', 'moneyMovements.category', 'sales.createdBy']);
+            return view('cash-register-session-details', compact('session'));
+        })->name('cashRegister.details');
         Route::get('/money-movements', 'moneyMovements')->name('moneyMovements');
         Route::get('/audit-logs', 'auditLogs')->name('auditLogs');
     });

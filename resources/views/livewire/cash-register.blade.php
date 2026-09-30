@@ -250,6 +250,7 @@
                             <th class="text-center">{{ __('Difference') }}</th>
                             <th>{{ __('Closed By & Time') }}</th>
                             <th>{{ __('Notes') }}</th>
+                            <th class="text-end">{{ __('Details') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -306,6 +307,9 @@
                             </td>
                             <td style="max-width: 200px; white-space: normal;">
                                 <small class="text-muted">{{ $session->note ?: '-' }}</small>
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ route('cashRegister.details', $session) }}" class="btn btn-sm btn-outline-primary">{{ __('View') }}</a>
                             </td>
                         </tr>
                         @empty
