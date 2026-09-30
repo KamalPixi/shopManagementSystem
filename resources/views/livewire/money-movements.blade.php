@@ -164,7 +164,7 @@
                                 {{ $type === 'in' ? __('Remark / Explanation') : __('Reason Why Money Taken') }}
                                 <span class="text-danger">*</span>
                             </label>
-                            <textarea wire:model="reason" class="form-control" rows="3" placeholder="{{ $type === 'in' ? __('e.g. Added €200 from personal account for daily change...') : __('e.g. Took €30 for cleaning supplies / petty cash / owner withdrawal...') }}" required></textarea>
+                            <textarea wire:model="reason" class="form-control" rows="3" placeholder="" required></textarea>
                             @error('reason') <span class="text-danger small">{{ $message }}</span> @enderror
                         </div>
 
