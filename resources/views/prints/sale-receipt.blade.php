@@ -110,6 +110,12 @@
     </style>
 </head>
 <body>
+    @php
+        $gstPercent = (float) ($shop?->gst_percent ?? 0);
+        $hasVatItems = $sale->saleItems->contains(fn ($item) => (bool) $item->is_vatable && $gstPercent > 0);
+        $hasNonVatItems = $sale->saleItems->contains(fn ($item) => !(bool) $item->is_vatable);
+        $taxLabel = $shop?->tax_label ?: '-';
+    @endphp
     <div class="company-info">
         @if (!empty($shop->logo) && file_exists(public_path($shop->logo)))
             <img src="{{ public_path($shop->logo) }}" alt="{{ $shop->name }}" class="shop-logo">
@@ -199,15 +205,24 @@ $attributeValue = is_array($value) ? ($value['value'] ?? '') : $value
             <th class="left">Discount:</td>
             <td class="right">{{ $sale->discount }}</td>
         </tr>
+        @if($hasVatItems)
         <tr>
-            <th class="left">{{ $shop->tax_label ?? 'GST' }} ({{ $shop->gst_percent }}%):</td>
+            <th class="left">{{ $taxLabel }} ({{ $gstPercent }}%):</td>
             <td class="right">{{ $sale->gst }}</td>
         </tr>
+        @endif
         <tr>
             <th class="left">Total: <small>({{  $shop->currency['code'] }})</small></td>
             <td class="right total-amount">{{ $sale->total_price }}</td>
         </tr>
     </table>
+
+    @if($hasNonVatItems)
+        <div style="margin-top: 8px; padding: 6px; background: #f2f5f8; font-size: 7px; line-height: 1.25;">
+            <strong>{{ __('Special VAT regime on margin - Second-hand goods.') }}</strong><br>
+            {{ __('Article 297 A of the CGI') }}
+        </div>
+    @endif
 
     <div class="footer">
         <p style="margin-bottom: 10px;color: #888;">Thank you for your purchase!</p>
