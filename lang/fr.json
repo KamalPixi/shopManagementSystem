@@ -364,5 +364,7 @@
     "Received from repair shop": "Reçu de l'atelier de réparation",
     "Unit price": "Prix unitaire",
     "Use **text** to make part of a line bold.": "Utilisez **texte** pour mettre une partie de la ligne en gras.",
-    "This product cannot be deleted because it has sales history. Mark it inactive instead.": "Ce produit ne peut pas être supprimé car il possède un historique de ventes. Désactivez-le plutôt."
+    "This product cannot be deleted because it has sales history. Mark it inactive instead.": "Ce produit ne peut pas être supprimé car il possède un historique de ventes. Désactivez-le plutôt.",
+    "Special VAT regime on margin - Second-hand goods.": "Régime particulier de la TVA sur la marge - Biens d'occasion.",
+    "Article 297 A of the CGI": "(Article 297 A du CGI)"
 }

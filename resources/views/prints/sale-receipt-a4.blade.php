@@ -450,6 +450,7 @@
         $subtotalHt = $sale->saleItems->sum(fn ($item) => (float) $item->price * (int) $item->quantity);
         $totalHt = $sale->saleItems->sum(fn ($item) => (float) $item->total);
         $hasVatItems = $sale->saleItems->contains(fn ($item) => (bool) $item->is_vatable && $gstPercent > 0);
+        $hasNonVatItems = $sale->saleItems->contains(fn ($item) => !(bool) $item->is_vatable);
         $paymentMethod = strtolower($sale->payment_method ?? 'cash');
         $otherPaymentDetails = $paymentMethod === 'other' ? trim((string) ($sale->payment_reference ?? '')) : '';
         $staffName = $sale->createdBy?->name ?: '-';
@@ -662,6 +663,12 @@
                         <td class="totals-value">{{ number_format($totalTtc, 2) }}</td>
                     </tr>
                 </table>
+                @if($hasNonVatItems)
+                    <div style="background: #eef3f8; border-radius: 7px; margin-top: 10px; padding: 9px 14px; color: #173765; font-size: 9px; line-height: 1.25;">
+                        <div style="font-weight: 700;">{{ __('Special VAT regime on margin - Second-hand goods.') }}</div>
+                        <div style="margin-top: 3px;">{{ __('Article 297 A of the CGI') }}</div>
+                    </div>
+                @endif
             </td>
         </tr>
     </table>
