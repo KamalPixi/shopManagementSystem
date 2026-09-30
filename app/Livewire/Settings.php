@@ -29,7 +29,7 @@ class Settings extends Component
     public $timezone = 'Asia/Kuala_Lumpur';
     public $language = 'en';
     public $settings;
-    public $invoice_legal_text = "SAS au capital de 2 010 €\n{address}\nSIREN : 109 915 405\nTVA intracommunautaire: FR75 109915405";
+    public $invoice_legal_text = "**SAS au capital de 2 010 €**\n{address}\n**SIREN** : 109 915 405\nTVA intracommunautaire: FR75 109915405";
 
     // Cloudflare Tunnel Properties
     public $cf_enabled = false;

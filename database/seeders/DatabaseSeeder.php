@@ -61,14 +61,17 @@ class DatabaseSeeder extends Seeder
         ]);
         Shop::firstOrCreate([
             'name' => 'TECH PARISIEN', 
-            'address' => 'NO. 52, JALAN LANDAK',
-            'city' => 'PUDU',
-            'state' => 'KUALA LUMPUR',
-            'postal_code' => '55100',
+            'address' => '33 rue',
+            'city' => 'Brézin',
+            'state' => 'Paris,',
+            'postal_code' => '75014',
             'country' => 'France', 
             'gst_percent' => 0,
             'currency' => ['code' => 'EUR', 'symbol' => '€', 'name' => 'Euro'],
             'timezone' => 'Europe/Paris',
+            'settings' => [
+                'invoice_legal_text' => "**SAS au capital de 2 010 €**\n{address}\n**SIREN** : 109 915 405\nTVA intracommunautaire: FR75 109915405",
+            ],
         ]);
 
         // create role and permissions & assign admin as admin role
