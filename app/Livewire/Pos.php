@@ -13,7 +13,6 @@ use App\Models\Customer;
 use App\Models\CashRegisterSession;
 use App\Models\PaymentMethod;
 use App\Services\SaleService;
-use App\Services\PrintService;
 use App\Services\AuditLogger;
 use Illuminate\Support\Str;
 
@@ -701,11 +700,8 @@ class Pos extends Component
 
         $this->clearPos();
 
-        // Print physical/virtual receipt
-        $printService = new PrintService();
-        $msg = $printService->printReceipt($sale);
-
-        return session()->flash('message', $msg);
+        // Receipt printing remains available from the sale details page.
+        return session()->flash('message', __('Sale completed successfully.'));
     }
 
     protected function calculate() {
