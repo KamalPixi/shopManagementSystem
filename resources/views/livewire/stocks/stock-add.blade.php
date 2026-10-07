@@ -87,22 +87,22 @@
                         </div>
                         <div class="col-12 col-md-6 col-lg-2">
                             <div class="mb-3">
-                                <label>{{ __('Purchase / Cost Price*') }} @if($has_variations)<small class="text-muted">({{ __('set per variation below') }})</small>@endif</label>
-                                <input wire:model="purchase_price" required type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0" @disabled($has_variations)>
+                                <label>{{ $has_variations ? __('Purchase / Cost Price') : __('Purchase / Cost Price*') }} @if($has_variations)<small class="text-muted">({{ __('set per variation below') }})</small>@endif</label>
+                                <input wire:model="purchase_price" {{ $has_variations ? '' : 'required' }} type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0" @disabled($has_variations)>
                                 @error('purchase_price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-12 col-md-6 col-lg-2">
                             <div class="mb-3">
-                                <label>{{ __('Sale Price*') }}</label>
-                                <input wire:model="price" required type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0" @disabled($has_variations)>
+                                <label>{{ $has_variations ? __('Sale Price') : __('Sale Price*') }} @if($has_variations)<small class="text-muted">({{ __('set per variation below') }})</small>@endif</label>
+                                <input wire:model="price" {{ $has_variations ? '' : 'required' }} type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0" @disabled($has_variations)>
                                 @error('price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-12 col-md-6 col-lg-2">
                             <div class="mb-3">
-                                <label>{{ __('Stock Quantity*') }}</label>
-                                <input wire:model="quantity" required type="number" min="0" class="form-control form-control-sm text-center" {{ $has_variations ? 'readonly' : '' }} placeholder="0">
+                                <label>{{ $has_variations ? __('Stock Quantity') : __('Stock Quantity*') }}</label>
+                                <input wire:model="quantity" {{ $has_variations ? '' : 'required' }} type="number" min="0" class="form-control form-control-sm text-center" {{ $has_variations ? 'readonly' : '' }} placeholder="0">
                                 @if ($has_variations)
                                     <small class="text-muted d-block">{{ __('Auto-calculated from variations') }}</small>
                                 @endif

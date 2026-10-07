@@ -56,9 +56,9 @@ class StockAdd extends Component
             'model_no' => 'nullable|string|max:100',
             'serial_no' => 'nullable|string|max:100',
             'sku' => 'required|string|max:100|unique:products,sku',
-            'price' => 'required|numeric|min:0',
-            'purchase_price' => 'required|numeric|min:0',
-            'quantity' => 'nullable|numeric|min:0',
+            'price' => $this->has_variations ? 'nullable|numeric|min:0' : 'required|numeric|min:0',
+            'purchase_price' => $this->has_variations ? 'nullable|numeric|min:0' : 'required|numeric|min:0',
+            'quantity' => $this->has_variations ? 'nullable|numeric|min:0' : 'required|numeric|min:0',
             'is_vatable' => 'present|boolean',
             'low_stock_threshold' => 'nullable|integer|min:0',
             'has_variations' => 'boolean',
@@ -190,9 +190,16 @@ class StockAdd extends Component
             ];
         })->filter(fn($a) => !empty($a['name']))->values()->toArray();
         
-        // If variations are present, product total quantity can be sum of variations
+        // If variations are present, calculate total quantity and base price from variations
         if ($this->has_variations && count($this->variations) > 0) {
-            $validated['quantity'] = collect($this->variations)->sum('quantity');
+            $validated['quantity'] = (int) collect($this->variations)->sum('quantity');
+            $firstVar = collect($this->variations)->first();
+            $validated['price'] = !empty($validated['price']) ? (float) $validated['price'] : (float) ($firstVar['price'] ?? 0);
+            $validated['purchase_price'] = !empty($validated['purchase_price']) ? (float) $validated['purchase_price'] : (float) ($firstVar['purchase_price'] ?? 0);
+        } else {
+            $validated['price'] = (float) ($validated['price'] ?? 0);
+            $validated['purchase_price'] = (float) ($validated['purchase_price'] ?? 0);
+            $validated['quantity'] = (int) ($validated['quantity'] ?? 0);
         }
 
         // Create the product
