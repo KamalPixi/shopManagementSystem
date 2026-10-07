@@ -24,6 +24,11 @@ class ProductVariation extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class);
+    }
+
     public function saleItems()
     {
         return $this->hasMany(SaleItem::class);

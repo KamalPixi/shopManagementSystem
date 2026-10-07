@@ -74,11 +74,19 @@
                         </div>
                         <div class="table-responsive rounded border border-info-subtle mb-4">
                             <table class="table table-sm align-middle mb-0">
-                                <thead class="table-light"><tr><th>{{ __('Variation') }}</th><th>{{ __('Current stock') }}</th><th>{{ __('Sale price') }}</th><th>{{ __('Purchase price') }}</th><th>{{ __('Receive quantity') }}</th></tr></thead>
+                                <thead class="table-light"><tr><th>{{ __('Variation') }}</th><th>{{ __('Supplier') }}</th><th>{{ __('Current stock') }}</th><th>{{ __('Sale price') }}</th><th>{{ __('Purchase price') }}</th><th>{{ __('Receive quantity') }}</th></tr></thead>
                                 <tbody>
                                     @foreach ($variations as $index => $variation)
                                         <tr wire:key="bulk_variation_{{ $variation['id'] }}">
                                             <td class="fw-semibold">{{ $variation['variation_name'] }}</td>
+                                            <td>
+                                                <select wire:model="variations.{{ $index }}.supplier_id" class="form-select form-select-sm" style="min-width:130px">
+                                                    <option value="">{{ __('Default / None') }}</option>
+                                                    @foreach ($suppliers as $sup)
+                                                        <option value="{{ $sup->id }}">{{ $sup->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </td>
                                             <td>{{ $variation['quantity'] }}</td>
                                             <td>{{ number_format($variation['price'], 2) }}</td>
                                             <td placeholder="0"><input wire:model="variations.{{ $index }}.add_purchase_price" type="number" min="0" step="0.01" class="form-control form-control-sm" style="min-width:110px"></td>

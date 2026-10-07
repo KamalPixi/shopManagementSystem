@@ -214,13 +214,14 @@
                                 <table class="table table-sm table-centered table-bordered bg-white mb-0 align-middle">
                                     <thead class="thead-light">
                                         <tr>
-                                            <th style="width: 24%;">{{ __('Variation Name / Option') }} <span class="text-danger">*</span></th>
-                                            <th style="width: 16%;">{{ __('SKU / Barcode') }}</th>
-                                            <th style="width: 16%;">{{ __('Serial No / IMEI') }}</th>
-                                            <th style="width: 12%;" class="text-end">{{ __('Sale Price') }} <span class="text-danger">*</span></th>
-                                            <th style="width: 12%;" class="text-end">{{ __('Cost Price') }}</th>
-                                            <th style="width: 9%;" class="text-center">{{ __('Stock') }} <span class="text-danger">*</span></th>
-                                            <th style="width: 8%;" class="text-center">{{ __('Low Alert') }}</th>
+                                            <th style="width: 20%;">{{ __('Variation Name / Option') }} <span class="text-danger">*</span></th>
+                                            <th style="width: 14%;">{{ __('Supplier') }}</th>
+                                            <th style="width: 14%;">{{ __('SKU / Barcode') }}</th>
+                                            <th style="width: 14%;">{{ __('Serial No / IMEI') }}</th>
+                                            <th style="width: 11%;" class="text-end">{{ __('Sale Price') }} <span class="text-danger">*</span></th>
+                                            <th style="width: 11%;" class="text-end">{{ __('Cost Price') }}</th>
+                                            <th style="width: 7%;" class="text-center">{{ __('Stock') }} <span class="text-danger">*</span></th>
+                                            <th style="width: 6%;" class="text-center">{{ __('Low Alert') }}</th>
                                             <th style="width: 3%;" class="text-center">-</th>
                                         </tr>
                                     </thead>
@@ -229,6 +230,14 @@
                                         <tr wire:key="var_edit_row_{{ $idx }}">
                                             <td>
                                                 <input wire:model="variations.{{ $idx }}.variation_name" type="text" class="form-control form-control-sm font-monospace fw-bold" placeholder="{{ __('e.g. 128GB / Black') }}" required>
+                                            </td>
+                                            <td>
+                                                <select wire:model="variations.{{ $idx }}.supplier_id" class="form-select form-select-sm">
+                                                    <option value="">{{ __('Default / None') }}</option>
+                                                    @foreach ($suppliers as $sup)
+                                                        <option value="{{ $sup->id }}">{{ $sup->name }}</option>
+                                                    @endforeach
+                                                </select>
                                             </td>
                                             <td>
                                                 <input wire:model="variations.{{ $idx }}.sku" type="text" class="form-control form-control-sm font-monospace" placeholder="{{ __('Auto or Barcode') }}">
@@ -256,7 +265,7 @@
                                         </tr>
                                         @empty
                                         <tr>
-                                            <td colspan="8" class="text-center text-muted py-4">
+                                            <td colspan="9" class="text-center text-muted py-4">
                                                 <i class="fa-solid fa-boxes-stacked fs-4 d-block mb-2 text-gray-400"></i>
                                                 {{ __('No variations yet. Enter attributes above and click "Generate Variations From Attributes".') }}
                                             </td>

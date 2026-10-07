@@ -200,6 +200,7 @@
                         <thead class="thead-light">
                             <tr>
                                 <th class="border-0 rounded-start text-start ps-3">{{ __('Variation') }}</th>
+                                <th class="border-0">{{ __('Supplier') }}</th>
                                 <th class="border-0">{{ __('SKU') }}</th>
                                 <th class="border-0">{{ __('Serial / IMEI') }}</th>
                                 <th class="border-0 text-end">{{ __('Sale Price') }}</th>
@@ -213,6 +214,9 @@
                                 <tr>
                                     <td class="text-start ps-3 fw-bold text-dark">
                                         <span class="badge bg-primary text-white me-1">{{ $variation->variation_name }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="text-dark fw-semibold">{{ $variation->supplier?->name ?? $product->supplier?->name ?? '-' }}</span>
                                     </td>
                                     <td class="font-monospace">{{ $variation->sku ?: '-' }}</td>
                                     <td class="font-monospace text-muted">{{ $variation->serial_no ?: '-' }}</td>
@@ -233,7 +237,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center text-muted py-4">{{ __('No variations configured.') }}</td>
+                                    <td colspan="8" class="text-center text-muted py-4">{{ __('No variations configured.') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>

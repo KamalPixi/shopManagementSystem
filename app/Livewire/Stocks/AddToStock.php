@@ -83,7 +83,11 @@ class AddToStock extends Component
 
         $this->has_variations = (bool) $product->has_variations;
         $this->variations = $product->variations()->orderBy('variation_name')->get()->map(function ($variation) {
-            return array_merge($variation->toArray(), ['add_quantity' => 0, 'add_purchase_price' => $variation->purchase_price]);
+            return array_merge($variation->toArray(), [
+                'add_quantity' => 0,
+                'add_purchase_price' => $variation->purchase_price,
+                'supplier_id' => $variation->supplier_id
+            ]);
         })->toArray();
         $this->selected_variation_id = $product->matchedVariation?->id;
         $latestPurchase = $product->productPurchases()->latest('created_at')->first();
@@ -142,8 +146,15 @@ class AddToStock extends Component
                 if (!$dbVariation) continue;
                 $qty = (int) $row['add_quantity'];
                 $dbVariation->increment('quantity', $qty);
+                $updateData = [];
                 if (isset($row['add_purchase_price']) && $row['add_purchase_price'] !== '') {
-                    $dbVariation->update(['purchase_price' => (float) $row['add_purchase_price']]);
+                    $updateData['purchase_price'] = (float) $row['add_purchase_price'];
+                }
+                if (!empty($row['supplier_id'])) {
+                    $updateData['supplier_id'] = (int) $row['supplier_id'];
+                }
+                if (!empty($updateData)) {
+                    $dbVariation->update($updateData);
                 }
                 $bulkQuantity += $qty;
             }

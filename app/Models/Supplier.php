@@ -20,4 +20,14 @@ class Supplier extends Model
         'notes',
         'website',
     ];
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    public function variations()
+    {
+        return $this->hasMany(ProductVariation::class);
+    }
 }

@@ -87,6 +87,7 @@ class StockEdit extends Component
         if ($this->has_variations) {
             $rules['variations'] = 'required|array|min:1';
             $rules['variations.*.variation_name'] = 'required|string|max:255';
+            $rules['variations.*.supplier_id'] = 'nullable|integer|exists:suppliers,id';
             $rules['variations.*.sku'] = 'nullable|string|max:100';
             $rules['variations.*.serial_no'] = 'nullable|string|max:100';
             $rules['variations.*.price'] = 'required|numeric|min:0';
@@ -125,6 +126,7 @@ class StockEdit extends Component
         $this->variations = $this->product->variations->map(fn($v) => [
             'id' => $v->id,
             'variation_name' => $v->variation_name,
+            'supplier_id' => $v->supplier_id,
             'attributes_and_values' => $v->attributes_and_values ?? [],
             'sku' => $v->sku,
             'serial_no' => $v->serial_no,
@@ -140,6 +142,7 @@ class StockEdit extends Component
         $this->variations[] = [
             'id' => null,
             'variation_name' => '',
+            'supplier_id' => $this->supplier_id ?: null,
             'sku' => '',
             'serial_no' => '',
             'price' => $this->price ?: 0,
@@ -188,6 +191,7 @@ class StockEdit extends Component
                 $suffix = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $definition['name']), 0, 12));
                 $existing = [
                     'id' => null, 'variation_name' => $definition['name'],
+                    'supplier_id' => $this->supplier_id ?: null,
                     'sku' => $baseSku ? $baseSku . '-' . ($suffix ?: ($index + 1)) : '',
                     'serial_no' => '', 'price' => $this->price ?: 0,
                     'purchase_price' => $this->purchase_price ?: 0, 'quantity' => 1,
@@ -248,7 +252,8 @@ class StockEdit extends Component
                     if ($existing) {
                         $existing->update([
                             'variation_name' => trim($var['variation_name']),
-                    'attributes_and_values' => $var['attributes_and_values'] ?? [],
+                            'supplier_id' => !empty($var['supplier_id']) ? (int) $var['supplier_id'] : null,
+                            'attributes_and_values' => $var['attributes_and_values'] ?? [],
                             'sku' => !empty($var['sku']) ? trim($var['sku']) : null,
                             'serial_no' => !empty($var['serial_no']) ? trim($var['serial_no']) : null,
                             'price' => (float) $var['price'],
@@ -261,7 +266,8 @@ class StockEdit extends Component
                 } else {
                     $newVar = $this->product->variations()->create([
                         'variation_name' => trim($var['variation_name']),
-                    'attributes_and_values' => $var['attributes_and_values'] ?? [],
+                        'supplier_id' => !empty($var['supplier_id']) ? (int) $var['supplier_id'] : (!empty($validated['supplier_id']) ? (int) $validated['supplier_id'] : null),
+                        'attributes_and_values' => $var['attributes_and_values'] ?? [],
                         'sku' => !empty($var['sku']) ? trim($var['sku']) : null,
                         'serial_no' => !empty($var['serial_no']) ? trim($var['serial_no']) : null,
                         'price' => (float) $var['price'],

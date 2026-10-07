@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\ProductVariation;
+use App\Models\Supplier;
 use App\Models\CashRegisterSession;
 use App\Models\MoneyCategory;
 use App\Models\MoneyMovement;
@@ -198,8 +199,14 @@ class AuditingAndPosImprovementsTest extends TestCase
         $varSku = 'SKU-' . $unique;
         $varSn = 'SN-' . $unique;
 
+        $supplier = Supplier::create([
+            'name' => 'Supplier ' . $unique,
+            'phone' => '12345678',
+        ]);
+
         $variation = ProductVariation::create([
             'product_id' => $product->id,
+            'supplier_id' => $supplier->id,
             'variation_name' => 'Black / Silicone',
             'sku' => $varSku,
             'serial_no' => $varSn,
@@ -208,6 +215,9 @@ class AuditingAndPosImprovementsTest extends TestCase
             'quantity' => 8,
             'low_stock_threshold' => 2,
         ]);
+
+        $this->assertEquals($supplier->id, $variation->supplier->id);
+        $this->assertEquals($supplier->name, $variation->supplier->name);
 
         // Verify Product::findBySkuSerialOrModel finds the variation
         $foundBySku = Product::findBySkuSerialOrModel($varSku);
