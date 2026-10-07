@@ -378,5 +378,10 @@
     "Cash movement assigned to the current register.": "Mouvement d'espèces affecté à la caisse actuelle.",
     "Cash movement added to the current drawer.": "Mouvement d'espèces ajouté à la caisse actuelle.",
     "SKU / Barcode / Serial": "SKU / Code-barres / N° de série",
-    "SKU, barcode, or serial...": "SKU, code-barres ou n° de série..."
+    "SKU, barcode, or serial...": "SKU, code-barres ou n° de série...",
+    "Search by product, SKU, serial, or model...": "Rechercher par produit, SKU, n° de série ou modèle...",
+    "Matching Products": "Produits correspondants",
+    "Press Enter to view": "Appuyez sur Entrée pour voir",
+    "in stock": "en stock",
+    "No products found for": "Aucun produit trouvé pour"
 }

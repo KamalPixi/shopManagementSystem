@@ -367,5 +367,10 @@
     "Cash movement assigned to the current register.": "Cash movement assigned to the current register.",
     "Cash movement added to the current drawer.": "Cash movement added to the current drawer.",
     "SKU / Barcode / Serial": "SKU / Barcode / Serial",
-    "SKU, barcode, or serial...": "SKU, barcode, or serial..."
+    "SKU, barcode, or serial...": "SKU, barcode, or serial...",
+    "Search by product, SKU, serial, or model...": "Search by product, SKU, serial, or model...",
+    "Matching Products": "Matching Products",
+    "Press Enter to view": "Press Enter to view",
+    "in stock": "in stock",
+    "No products found for": "No products found for"
 }
