@@ -43,6 +43,7 @@ class AuditingAndPosImprovementsTest extends TestCase
         $role = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
         foreach ([
             'sales:read', 'sales:create', 'sales:update', 'sales:delete',
+            'pos:read',
             'stock:read', 'stock:create', 'stock:update', 'stock:delete',
             'cash-register:create', 'cash-register:read', 'cash-register:update',
             'money-movements:create', 'money-movements:read', 'money-movements:delete',
@@ -123,6 +124,13 @@ class AuditingAndPosImprovementsTest extends TestCase
 
     public function test_money_movements_cash_in_and_cash_out(): void
     {
+        CashRegisterSession::create([
+            'user_id' => $this->user->id,
+            'opening_balance' => 100.00,
+            'status' => 'open',
+            'opened_at' => now(),
+        ]);
+
         $category = MoneyCategory::firstOrCreate(
             ['name' => 'Test Capital Injection ' . uniqid(), 'type' => 'in'],
             ['description' => 'Test category']

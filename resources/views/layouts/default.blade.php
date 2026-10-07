@@ -89,6 +89,23 @@
           color: #ffffff;
         }
 
+        /* Badge contrast and typography standards */
+        .badge.bg-light,
+        .badge.bg-white,
+        .badge.bg-gray-100,
+        .badge.bg-gray-200 {
+          color: #1f2937 !important;
+          background-color: #f3f4f6 !important;
+          border: 1px solid #d1d5db !important;
+        }
+        .badge.bg-light.text-secondary,
+        .badge.text-secondary {
+          color: #4b5563 !important;
+        }
+        .badge.text-dark {
+          color: #111827 !important;
+        }
+
         /* Sticky footer styling - full width edge to edge */
         .site-footer {
           position: sticky;

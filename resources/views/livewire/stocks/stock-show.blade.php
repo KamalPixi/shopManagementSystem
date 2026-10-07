@@ -224,7 +224,7 @@
                                                 {{ $variation->quantity }}
                                             </span>
                                         @else
-                                            <span class="badge bg-light text-dark border py-1 px-2 fw-bold">{{ $variation->quantity }}</span>
+                                            <span class="badge bg-light text-dark border py-1 px-2 fw-bold" style="color: #1f2937 !important;">{{ $variation->quantity }}</span>
                                         @endif
                                     </td>
                                     <td class="text-center pe-3 text-muted">
@@ -287,7 +287,7 @@
                             <td class="text-end font-monospace text-muted">€{{ number_format((float) $p->purchase_price, 2) }}</td>
                             <td class="text-end font-monospace fw-bold text-dark">€{{ number_format((float) $p->sale_price, 2) }}</td>
                             <td class="text-center">
-                                <span class="badge bg-light text-dark border fw-bold">{{ $p->quantity }}</span>
+                                <span class="badge bg-light text-dark border fw-bold" style="color: #1f2937 !important;">{{ $p->quantity }}</span>
                             </td>
                             <td class="text-center text-muted">{{ $p->supplier?->name ?? '-' }}</td>
                             <td class="text-center text-muted">{{ $p->paymentMethod?->name ?? '-' }}</td>

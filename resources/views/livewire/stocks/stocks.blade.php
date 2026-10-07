@@ -215,7 +215,7 @@
                                         <i class="fa-solid fa-triangle-exclamation me-1"></i>{{ $product->quantity }}
                                     </span>
                                 @else
-                                    <span class="badge bg-light text-dark border py-1 px-2 fw-bold">{{ $product->quantity }}</span>
+                                    <span class="badge bg-light text-dark border py-1 px-2 fw-bold" style="color: #1f2937 !important;">{{ $product->quantity }}</span>
                                 @endif
                                 @if ($product->has_variations && $product->variations->count() > 0)
                                     <small class="d-block text-muted mt-1" style="font-size: 0.7rem;">{{ $product->variations->count() }} {{ __('variants') }}</small>
