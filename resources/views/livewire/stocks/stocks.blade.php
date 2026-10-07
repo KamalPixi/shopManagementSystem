@@ -29,8 +29,8 @@
                         </div>
 
                         <div class="col-12 col-md-6 col-lg-3">
-                            <label class="form-label mb-1 text-muted" style="font-size: 0.8rem;">{{ __('SKU / Barcode') }}</label>
-                            <input wire:model.live="sku" type="text" class="form-control form-control-sm" placeholder="{{ __('SKU or barcode...') }}">
+                            <label class="form-label mb-1 text-muted" style="font-size: 0.8rem;">{{ __('SKU / Barcode / Serial') }}</label>
+                            <input wire:model.live="sku" type="text" class="form-control form-control-sm" placeholder="{{ __('SKU, barcode, or serial...') }}">
                         </div>
 
                         <div class="col-12 col-md-6 col-lg-3">

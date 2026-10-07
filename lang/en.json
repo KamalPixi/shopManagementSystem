@@ -365,5 +365,7 @@
     "Add to drawer": "Add to drawer",
     "Add this movement to the current drawer? Check that it is not already included in the opening balance.": "Add this movement to the current drawer? Check that it is not already included in the opening balance.",
     "Cash movement assigned to the current register.": "Cash movement assigned to the current register.",
-    "Cash movement added to the current drawer.": "Cash movement added to the current drawer."
+    "Cash movement added to the current drawer.": "Cash movement added to the current drawer.",
+    "SKU / Barcode / Serial": "SKU / Barcode / Serial",
+    "SKU, barcode, or serial...": "SKU, barcode, or serial..."
 }

@@ -205,7 +205,12 @@ class Stocks extends Component
         if (!empty($this->sku)) {
             $term = '%' . $this->sku . '%';
             $query->where(function ($q) use ($term) {
-                $q->where('sku', 'like', $term)->orWhereHas('variations', fn ($variation) => $variation->where('sku', 'like', $term));
+                $q->where('sku', 'like', $term)
+                  ->orWhere('serial_no', 'like', $term)
+                  ->orWhereHas('variations', fn ($variation) => 
+                      $variation->where('sku', 'like', $term)
+                                ->orWhere('serial_no', 'like', $term)
+                  );
             });
         }
         if ($this->has_variations_filter !== '') {
