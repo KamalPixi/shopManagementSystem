@@ -218,9 +218,8 @@ $attributeValue = is_array($value) ? ($value['value'] ?? '') : $value
     </table>
 
     @if($hasNonVatItems)
-        <div style="margin-top: 8px; padding: 6px; background: #f2f5f8; font-size: 7px; line-height: 1.25;">
-            <strong>{{ __('Special VAT regime on margin - Second-hand goods.') }}</strong><br>
-            {{ __('Article 297 A of the CGI') }}
+        <div style="margin-top: 8px; padding: 6px; background: #f2f5f8; font-size: 6px; font-weight: normal; line-height: 1.25;">
+            {{ __('Special scheme - Second-hand goods') }}
         </div>
     @endif
 
