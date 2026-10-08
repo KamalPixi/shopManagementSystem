@@ -65,7 +65,7 @@
                         <div class="col-12 col-md-4">
                             <div class="mb-3">
                                 <label>{{ __('Serial No / IMEI') }}</label>
-                                <input wire:model="serial_no" type="text" class="form-control form-control-sm" placeholder="{{ __('Serial Number') }}">
+                                <input wire:model.blur="serial_no" type="text" class="form-control form-control-sm" placeholder="{{ __('Serial Number') }}">
                                 @error('serial_no') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>
@@ -256,7 +256,8 @@
                                                 <input wire:model="variations.{{ $idx }}.sku" type="text" class="form-control form-control-sm font-monospace" placeholder="{{ __('Auto or Barcode') }}">
                                             </td>
                                             <td>
-                                                <input wire:model="variations.{{ $idx }}.serial_no" type="text" class="form-control form-control-sm font-monospace" placeholder="{{ __('Optional Serial/IMEI') }}">
+                                                <input wire:model.blur="variations.{{ $idx }}.serial_no" type="text" class="form-control form-control-sm font-monospace" placeholder="{{ __('Optional Serial/IMEI') }}">
+                                                @error('variations.' . $idx . '.serial_no') <span class="text-danger small">{{ $message }}</span> @enderror
                                             </td>
                                             <td>
                                                 <input wire:model="variations.{{ $idx }}.price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end fw-semibold" placeholder="0" required>

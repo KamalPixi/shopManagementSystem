@@ -15,6 +15,7 @@ use App\Services\VariationGenerator;
 
 class StockAdd extends Component
 {
+    use ValidatesSerialNumbers;
     public $productAttributes = [
         ['name' => '','values' => '']
     ];
@@ -180,6 +181,7 @@ class StockAdd extends Component
     }
 
     public function create() {
+        $this->validateSerialNumbers();
         $validated = $this->validate();
 
         $attributeArray = collect($this->productAttributes)->map(function ($att) {

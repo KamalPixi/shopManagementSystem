@@ -16,6 +16,7 @@ use Illuminate\Validation\Rule;
 
 class StockEdit extends Component
 {
+    use ValidatesSerialNumbers;
     public $product_id;
     public $product;
 
@@ -218,6 +219,7 @@ class StockEdit extends Component
     }
 
     public function update() {
+        $this->validateSerialNumbers();
         $validated = $this->validate();
 
         $attributeArray = collect($this->productAttributes)->map(function ($att) {
