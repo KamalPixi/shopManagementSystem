@@ -97,6 +97,12 @@ class Sales extends Component
     public function printSaleReceiptA4($id) {
         $s = new SaleService();
         $url = $s->generateSaleReceiptA4($id);
+
+        $printerManager = app(\App\Services\PrinterManagerService::class);
+        $a4Settings = $printerManager->getSettings()['a4'];
+        if (!empty($a4Settings['auto_print'])) {
+            $printerManager->printA4Document(public_path('sales/sale_receipt_a4.pdf'));
+        }
         
         $this->dispatch('print-pdf', ['url' => $url]);
     }

@@ -240,6 +240,16 @@
                 </a>
             </li>
 
+            {{-- Printers --}}
+            <li class="nav-item {{ request()->routeIs('printers*') ? 'active' : '' }}">
+                <a href="{{ route('printers.index') }}" class="nav-link {{ request()->routeIs('printers*') ? 'active' : '' }} d-flex align-items-center">
+                    <span class="sidebar-icon">
+                        <i class="fa-solid fa-print"></i>
+                    </span>
+                    <span class="sidebar-text">{{ __('Printers') }}</span>
+                </a>
+            </li>
+
             {{-- Audit Logs --}}
             <li class="nav-item {{ request()->routeIs('auditLogs') ? 'active' : '' }}">
                 <a href="{{ route('auditLogs') }}" class="nav-link {{ request()->routeIs('auditLogs') ? 'active' : '' }} d-flex align-items-center">

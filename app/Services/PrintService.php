@@ -79,13 +79,9 @@ final class PrintService
     public function printReceipt(Sale $sale): string
     {
         try {
-            if (PHP_OS_FAMILY === 'Windows') {
-                return $this->printReceiptWin($sale);
-            } elseif (PHP_OS_FAMILY === 'Darwin') {
-                return $this->printReceiptMac($sale);
-            } else {
-                return 'Printing not supported on this OS: ' . PHP_OS_FAMILY;
-            }
+            $manager = app(PrinterManagerService::class);
+            $result = $manager->printPosReceipt($sale);
+            return $result['message'];
         } catch (\Throwable $e) {
             return 'Printer error: ' . $e->getMessage();
         }

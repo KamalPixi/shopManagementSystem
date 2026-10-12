@@ -134,5 +134,16 @@
     <script src="{{ asset('/vendor/@popperjs/core/dist/umd/popper.min.js') }}"></script>
     <script src="{{ asset('/vendor/bootstrap/dist/js/bootstrap.min.js') }}"></script>
     <script src="{{ asset('/assets/js/volt.js') }}"></script>
+    <script>
+      window.addEventListener('print-pdf', function (event) {
+        var url = event.detail?.[0]?.url || event.detail?.url;
+        if (url) {
+          var printWin = window.open(url, '_blank');
+          if (printWin) {
+            printWin.focus();
+          }
+        }
+      });
+    </script>
   </body>
 </html>

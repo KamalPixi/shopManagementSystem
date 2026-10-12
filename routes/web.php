@@ -43,6 +43,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/stocks/edit/{product_id}', 'stockEdit')->name('stocks.edit');
         Route::get('/stocks/show/{product_id}', 'stockShow')->name('stocks.show');
         Route::get('/settings', 'settings')->name('settings');
+        Route::get('/printers', 'printers')->name('printers.index');
         Route::get('/users', 'users')->name('users');
         Route::get('/suppliers', 'suppliers')->name('suppliers');
         Route::get('/customers', 'customers')->name('customers');

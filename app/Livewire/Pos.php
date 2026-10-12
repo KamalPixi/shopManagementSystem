@@ -698,10 +698,24 @@ class Pos extends Component
             ]
         );
 
+        $autoPrintNotice = '';
+        try {
+            $printerManager = app(\App\Services\PrinterManagerService::class);
+            $posSettings = $printerManager->getSettings()['pos'];
+            if (!empty($posSettings['auto_print_on_sale'])) {
+                $printResult = $printerManager->printPosReceipt($sale);
+                if (!empty($printResult['success'])) {
+                    $autoPrintNotice = ' (' . __('Receipt auto-printed') . ')';
+                }
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('POS auto-print failed: ' . $e->getMessage());
+        }
+
         $this->clearPos();
 
         // Receipt printing remains available from the sale details page.
-        return session()->flash('message', __('Sale completed successfully.'));
+        return session()->flash('message', __('Sale completed successfully.') . $autoPrintNotice);
     }
 
     protected function calculate() {
@@ -743,6 +757,26 @@ class Pos extends Component
     public function printSaleReceipt($sale_id) {
         $s = new SaleService();
         $url = $s->generateSaleReceipt($sale_id);
+        $this->dispatch('print-pdf', ['url' => $url]);
+    }
+
+    public function printSaleReceiptPos($sale_id) {
+        $sale = Sale::findOrFail($sale_id);
+        $printerManager = app(\App\Services\PrinterManagerService::class);
+        $result = $printerManager->printPosReceipt($sale);
+        session()->flash($result['success'] ? 'message' : 'failed', $result['message']);
+    }
+
+    public function printSaleReceiptA4($sale_id) {
+        $s = new SaleService();
+        $url = $s->generateSaleReceiptA4($sale_id);
+
+        $printerManager = app(\App\Services\PrinterManagerService::class);
+        $a4Settings = $printerManager->getSettings()['a4'];
+        if (!empty($a4Settings['auto_print'])) {
+            $printerManager->printA4Document(public_path('sales/sale_receipt_a4.pdf'));
+        }
+
         $this->dispatch('print-pdf', ['url' => $url]);
     }
 

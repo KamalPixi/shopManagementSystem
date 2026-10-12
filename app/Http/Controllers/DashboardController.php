@@ -116,6 +116,10 @@ class DashboardController extends Controller
         return view('settings');
     }
 
+    public function printers() {
+        return view('printers');
+    }
+
     public function users() {
         return view('users');
     }

@@ -9,7 +9,12 @@
 
     <div class="card border-0 shadow components-section">
         <div class="card-body">
-            <h1 class="h5 mb-4">{{ __('Shop Settings') }}</h1>
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                <h1 class="h5 mb-0">{{ __('Shop Settings') }}</h1>
+                <a href="{{ route('printers.index') }}" class="btn btn-sm btn-outline-primary shadow-sm">
+                    <i class="fa-solid fa-print me-1"></i> {{ __('Printer Management') }}
+                </a>
+            </div>
 
             <form wire:submit.prevent="update">
                 <div class="row">
