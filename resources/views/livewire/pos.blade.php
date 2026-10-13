@@ -118,24 +118,86 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                     </h5>
                     <button wire:click="closeCustomModal" type="button" class="btn-close btn-close-white" aria-label="{{ __('Cancel') }}"></button>
                 </div>
-                <form wire:submit.prevent="addCustomItem">
+                <form wire:submit.prevent="addCustomItem" autocomplete="off">
                     <div class="modal-body p-4">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-dark mb-1">{{ __('Item or Service Name') }} <span class="text-danger">*</span></label>
-                            <input wire:model="custom_item_name" type="text" class="form-control" autofocus required>
-                            @error('custom_item_name') <span class="text-danger small">{{ $message }}</span> @enderror
+                        <div class="mb-3 position-relative">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label fw-bold small text-dark mb-0">{{ __('Item or Service Name') }} <span class="text-danger">*</span></label>
+                                @if ($show_custom_suggestions && count($custom_item_suggestions) > 0)
+                                    <span class="small text-muted" style="font-size: 0.72rem;">
+                                        </i>{{ count($custom_item_suggestions) }} {{ __('suggestions') }}
+                                    </span>
+                                @endif
+                            </div>
+                            <input 
+                                wire:model.live.debounce.150ms="custom_item_name" 
+                                type="text" 
+                                class="form-control" 
+                                placeholder=""
+                                autocomplete="off"
+                                autocapitalize="off"
+                                autocorrect="off"
+                                spellcheck="false"
+                                name="custom_item_input_{{ time() }}"
+                                id="custom_item_name_input"
+                                data-lpignore="true"
+                                data-1p-ignore
+                                autofocus 
+                                required>
+                            @error('custom_item_name') <span class="text-danger small d-block mt-1">{{ $message }}</span> @enderror
+
+                            {{-- Google search style floating suggestions dropdown --}}
+                            @if ($show_custom_suggestions && count($custom_item_suggestions) > 0)
+                                <div class="position-absolute w-100 rounded-3 border bg-white mt-1 z-3" style="max-height: 260px; overflow-y: auto; z-index: 1060; box-shadow: none;">
+                                    <div class="px-3 py-1 bg-light border-bottom d-flex justify-content-between align-items-center" style="font-size: 0.72rem;">
+                                        <span class="text-muted fw-bold text-uppercase">
+                                            <i class="fa-solid fa-clock-rotate-left me-1 text-primary"></i>{{ __('Previously Used Items / Services') }}
+                                        </span>
+                                        <button type="button" wire:click="hideCustomSuggestions" class="btn btn-link btn-xs p-0 text-muted text-decoration-none" style="font-size: 0.7rem;">
+                                            {{ __('Close') }} &times;
+                                        </button>
+                                    </div>
+                                    <ul class="list-group list-group-flush mb-0">
+                                        @foreach ($custom_item_suggestions as $suggestion)
+                                            <li wire:key="custom_sug_{{ $suggestion['id'] }}"
+                                                wire:click="selectCustomSuggestion({{ $suggestion['id'] }})"
+                                                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3 border-bottom"
+                                                style="cursor: pointer;">
+                                                <div class="d-flex align-items-center text-truncate me-2">
+                                                    <span class="badge bg-secondary-subtle text-secondary rounded-circle me-2 p-1" style="width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;">
+                                                        <i class="fa-solid fa-arrow-turn-up text-muted" style="transform: rotate(90deg); font-size: 0.65rem;"></i>
+                                                    </span>
+                                                    <div>
+                                                        <span class="fw-bold text-dark d-block">{{ $suggestion['name'] }}</span>
+                                                        @if (!empty($suggestion['warranty_description']))
+                                                            <small class="text-muted d-block" style="font-size: 0.72rem;">{{ \Illuminate\Support\Str::limit($suggestion['warranty_description'], 40) }}</small>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                                                    @if ((float) $suggestion['price'] > 0)
+                                                        <span class="badge bg-success-subtle text-success border border-success-subtle font-monospace fw-bold">
+                                                            {{ $currencySymbol }}{{ number_format($suggestion['price'], 2) }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="row g-3 mb-3">
                             <div class="col-md-6 col-12">
                                 <label class="form-label fw-bold small text-dark mb-1">{{ __('Sale Price') }} ({{ $currencySymbol }}) <span class="text-danger">*</span></label>
-                                <input wire:model="custom_price" type="number" step="0.01" min="0" class="form-control font-monospace" required>
+                                <input wire:model="custom_price" type="number" step="any" min="0" class="form-control font-monospace" placeholder="0" required onfocus="this.select()">
                                 @error('custom_price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
 
                             <div class="col-md-6 col-12">
                                 <label class="form-label fw-bold small text-dark mb-1">{{ __('Cost / Purchase Price') }} ({{ $currencySymbol }}) <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
-                                <input wire:model="custom_purchase_price" type="number" step="0.01" min="0" class="form-control font-monospace">
+                                <input wire:model="custom_purchase_price" type="number" step="any" min="0" class="form-control font-monospace" placeholder="0" onfocus="this.select()">
                                 @error('custom_purchase_price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>

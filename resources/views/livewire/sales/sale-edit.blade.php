@@ -56,21 +56,75 @@
                     </h5>
                     <button wire:click="closeCustomModal" type="button" class="btn-close btn-close-white"></button>
                 </div>
-                <form wire:submit.prevent="addCustomItem">
+                <form wire:submit.prevent="addCustomItem" autocomplete="off">
                     <div class="modal-body p-4">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small mb-1">{{ __('Item Name') }} <span class="text-danger">*</span></label>
-                            <input wire:model="custom_item_name" type="text" class="form-control" placeholder="{{ __('Item / Service Name') }}" required>
+                        <div class="mb-3 position-relative">
+                            <label class="form-label fw-bold small mb-1">{{ __('Item or Service Name') }} <span class="text-danger">*</span></label>
+                            <input wire:model.live.debounce.150ms="custom_item_name"
+                                   type="text"
+                                   class="form-control"
+                                   placeholder="{{ __('e.g., Screen Repair, Cleaning, Service charge...') }}"
+                                   autocomplete="off"
+                                   autocapitalize="off"
+                                   autocorrect="off"
+                                   spellcheck="false"
+                                   name="custom_item_edit_input_{{ time() }}"
+                                   id="custom_item_name_edit_input"
+                                   data-lpignore="true"
+                                   data-1p-ignore
+                                   required>
+                            <small class="text-muted" style="font-size: 0.72rem;">{{ __('Type letters to search previously used items or add a brand new one.') }}</small>
+                            @error('custom_item_name') <span class="text-danger small d-block">{{ $message }}</span> @enderror
+
+                            {{-- Autocomplete Dropdown (Google Search style) --}}
+                            @if ($show_custom_suggestions && count($custom_item_suggestions) > 0)
+                                <div class="position-absolute start-0 end-0 bg-white border rounded-3 mt-1"
+                                     style="z-index: 1060; max-height: 250px; overflow-y: auto; box-shadow: none;">
+                                    <div class="px-3 py-1.5 bg-light border-bottom d-flex justify-content-between align-items-center">
+                                        <small class="text-uppercase fw-bold text-muted" style="font-size: 0.68rem; letter-spacing: 0.05em;">
+                                            <i class="fa-solid fa-clock-rotate-left me-1"></i>{{ __('Previously Used Items / Services') }}
+                                        </small>
+                                        <button type="button" wire:click="hideCustomSuggestions" class="btn btn-link btn-sm p-0 text-muted text-decoration-none" style="font-size: 0.75rem;">
+                                            {{ __('Close') }} &times;
+                                        </button>
+                                    </div>
+                                    <ul class="list-group list-group-flush mb-0">
+                                        @foreach ($custom_item_suggestions as $suggestion)
+                                            <li wire:key="edit-sugg-{{ $suggestion['id'] }}"
+                                                wire:click="selectCustomSuggestion({{ $suggestion['id'] }})"
+                                                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-2 px-3 border-0 border-bottom cursor-pointer"
+                                                style="cursor: pointer; transition: background 0.15s ease;">
+                                                <div class="d-flex align-items-center gap-2 overflow-hidden me-2">
+                                                    <i class="fa-solid fa-arrow-turn-up text-primary small fa-rotate-90"></i>
+                                                    <div class="text-truncate">
+                                                        <span class="fw-semibold text-dark">{{ $suggestion['name'] }}</span>
+                                                        @if (!empty($suggestion['warranty_description']))
+                                                            <small class="text-muted d-block" style="font-size: 0.72rem;">{{ \Illuminate\Support\Str::limit($suggestion['warranty_description'], 40) }}</small>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                                                    @if ((float) $suggestion['price'] > 0)
+                                                        <span class="badge bg-success-subtle text-success border border-success-subtle font-monospace fw-bold">
+                                                            {{ number_format($suggestion['price'], 2) }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="row g-3 mb-3">
                             <div class="col-md-6 col-12">
                                 <label class="form-label fw-bold small mb-1">{{ __('Sale Price') }} <span class="text-danger">*</span></label>
-                                <input wire:model="custom_price" type="number" step="0.01" min="0" class="form-control text-end" placeholder="0" required>
+                                <input wire:model="custom_price" type="number" step="any" min="0" class="form-control text-end" placeholder="0" required onfocus="this.select()">
                             </div>
                             <div class="col-md-6 col-12">
                                 <label class="form-label fw-bold small mb-1">{{ __('Cost Price') }}</label>
-                                <input wire:model="custom_purchase_price" type="number" step="0.01" min="0" class="form-control text-end" placeholder="0">
+                                <input wire:model="custom_purchase_price" type="number" step="any" min="0" class="form-control text-end" placeholder="0" onfocus="this.select()">
                             </div>
                         </div>
 

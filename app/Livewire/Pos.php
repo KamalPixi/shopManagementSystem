@@ -12,6 +12,7 @@ use App\Models\Sale;
 use App\Models\Customer;
 use App\Models\CashRegisterSession;
 use App\Models\PaymentMethod;
+use App\Models\CustomItem;
 use App\Services\SaleService;
 use App\Services\AuditLogger;
 use Illuminate\Support\Str;
@@ -49,12 +50,14 @@ class Pos extends Component
     // Custom Item Modal
     public $custom_item_name = '';
     public $custom_price = '';
-    public $custom_purchase_price = 0;
+    public $custom_purchase_price = '';
     public $custom_quantity = 1;
     public $custom_warranty_id = '';
     public $custom_warranty_description = '';
     public $custom_is_vatable = 1;
     public $custom_show_warranty_on_receipt = 1;
+    public $custom_item_suggestions = [];
+    public $show_custom_suggestions = false;
     public $showCustomModal = false;
     public $errorMessage = '';
 
@@ -286,9 +289,11 @@ class Pos extends Component
             'custom_warranty_description',
             'custom_is_vatable',
             'custom_show_warranty_on_receipt',
+            'custom_item_suggestions',
+            'show_custom_suggestions',
         ]);
         $this->custom_quantity = 1;
-        $this->custom_purchase_price = 0;
+        $this->custom_purchase_price = '';
         $this->custom_is_vatable = 1;
         $this->custom_show_warranty_on_receipt = 1;
         $this->showCustomModal = true;
@@ -296,6 +301,48 @@ class Pos extends Component
 
     public function closeCustomModal() {
         $this->showCustomModal = false;
+        $this->show_custom_suggestions = false;
+        $this->custom_item_suggestions = [];
+    }
+
+    public function updatedCustomItemName($value)
+    {
+        $trimmed = trim((string) $value);
+        if (mb_strlen($trimmed) >= 1) {
+            $this->custom_item_suggestions = CustomItem::searchSuggestions($trimmed, 8)->toArray();
+            $this->show_custom_suggestions = count($this->custom_item_suggestions) > 0;
+        } else {
+            $this->custom_item_suggestions = [];
+            $this->show_custom_suggestions = false;
+        }
+    }
+
+    public function selectCustomSuggestion($id)
+    {
+        $item = CustomItem::find($id);
+        if ($item) {
+            $this->custom_item_name = $item->name;
+            if ($item->price > 0) {
+                $this->custom_price = (float) $item->price;
+            }
+            if ($item->purchase_price > 0) {
+                $this->custom_purchase_price = (float) $item->purchase_price;
+            }
+            if ($item->warranty_id) {
+                $this->custom_warranty_id = $item->warranty_id;
+            }
+            if ($item->warranty_description) {
+                $this->custom_warranty_description = $item->warranty_description;
+            }
+            $this->custom_is_vatable = $item->is_vatable ? 1 : 0;
+        }
+        $this->custom_item_suggestions = [];
+        $this->show_custom_suggestions = false;
+    }
+
+    public function hideCustomSuggestions()
+    {
+        $this->show_custom_suggestions = false;
     }
 
     public function setCustomSalePrice($amount) {
@@ -316,6 +363,22 @@ class Pos extends Component
             'custom_warranty_description' => 'nullable|string|max:1000',
         ]);
 
+        $cleanName = trim($this->custom_item_name);
+
+        // Record or update usage in custom_items for future instant autocomplete suggestions
+        try {
+            CustomItem::recordUsage(
+                $cleanName,
+                (float) $this->custom_price,
+                (float) ($this->custom_purchase_price ?: 0),
+                !empty($this->custom_warranty_id) ? (int) $this->custom_warranty_id : null,
+                !empty($this->custom_warranty_description) ? trim($this->custom_warranty_description) : null,
+                (bool) $this->custom_is_vatable
+            );
+        } catch (\Throwable $e) {
+            // Ignore if recording fails to not disrupt checkout
+        }
+
         $itemKey = 'custom_' . uniqid();
 
         $this->sale_items[$itemKey] = [
@@ -323,7 +386,7 @@ class Pos extends Component
             'product_id' => null,
             'product_variation_id' => null,
             'variation_name' => null,
-            'item_name' => trim($this->custom_item_name),
+            'item_name' => $cleanName,
             'serial_no' => null,
             'sku' => null,
             'warranty_id' => !empty($this->custom_warranty_id) ? $this->custom_warranty_id : null,
