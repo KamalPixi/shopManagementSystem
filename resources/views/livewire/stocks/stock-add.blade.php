@@ -19,6 +19,8 @@
                                 <label>{{ __('Product Name*') }}</label>
                                 <input 
                                     wire:model.live.debounce.250ms="name" 
+                                    wire:focus="showNameHistorySuggestions"
+                                    wire:click="showNameHistorySuggestions"
                                     required 
                                     type="text" 
                                     class="form-control form-control-sm" 
@@ -272,6 +274,8 @@
                                             <td class="position-relative">
                                                 <input 
                                                     wire:model.live.debounce.250ms="variations.{{ $idx }}.variation_name" 
+                                                    wire:focus="showVariationHistorySuggestions({{ $idx }})"
+                                                    wire:click="showVariationHistorySuggestions({{ $idx }})"
                                                     type="text" 
                                                     class="form-control form-control-sm font-monospace fw-bold" 
                                                     placeholder="{{ __('e.g. 128GB / Black') }}" 

@@ -144,6 +144,27 @@ class StockAdd extends Component
         }
     }
 
+    public function showNameHistorySuggestions()
+    {
+        $trimmed = trim((string) $this->name);
+        $query = Product::query()
+            ->whereNotNull('name')
+            ->where('name', '!=', '');
+
+        if ($trimmed !== '') {
+            $query->where('name', 'like', '%' . $trimmed . '%');
+        }
+
+        $this->name_suggestions = $query
+            ->distinct()
+            ->orderBy('name')
+            ->limit(10)
+            ->pluck('name')
+            ->toArray();
+
+        $this->show_name_suggestions = count($this->name_suggestions) > 0;
+    }
+
     public function selectNameSuggestion($selectedName)
     {
         $this->name = $selectedName;
@@ -156,6 +177,27 @@ class StockAdd extends Component
         $this->show_name_suggestions = false;
     }
 
+    public function showVariationHistorySuggestions($index)
+    {
+        $currentValue = trim((string) ($this->variations[$index]['variation_name'] ?? ''));
+        $this->active_variation_suggestion_index = $index;
+
+        $query = ProductVariation::query()
+            ->whereNotNull('variation_name')
+            ->where('variation_name', '!=', '');
+
+        if ($currentValue !== '') {
+            $query->where('variation_name', 'like', '%' . $currentValue . '%');
+        }
+
+        $this->variation_suggestions = $query
+            ->distinct()
+            ->orderBy('variation_name')
+            ->limit(10)
+            ->pluck('variation_name')
+            ->toArray();
+    }
+
     public function updatedVariations($value, $key)
     {
         // Check if updating variation_name
@@ -164,20 +206,22 @@ class StockAdd extends Component
             $index = (int) $parts[0];
             $trimmed = trim((string) $value);
 
-            if (mb_strlen($trimmed) >= 1) {
-                $this->active_variation_suggestion_index = $index;
-                $this->variation_suggestions = ProductVariation::where('variation_name', 'like', '%' . $trimmed . '%')
-                    ->distinct()
-                    ->orderBy('variation_name')
-                    ->limit(8)
-                    ->pluck('variation_name')
-                    ->toArray();
-            } else {
-                if ($this->active_variation_suggestion_index === $index) {
-                    $this->variation_suggestions = [];
-                    $this->active_variation_suggestion_index = null;
-                }
+            $this->active_variation_suggestion_index = $index;
+
+            $query = ProductVariation::query()
+                ->whereNotNull('variation_name')
+                ->where('variation_name', '!=', '');
+
+            if ($trimmed !== '') {
+                $query->where('variation_name', 'like', '%' . $trimmed . '%');
             }
+
+            $this->variation_suggestions = $query
+                ->distinct()
+                ->orderBy('variation_name')
+                ->limit(10)
+                ->pluck('variation_name')
+                ->toArray();
         }
     }
 
