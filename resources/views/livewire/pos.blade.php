@@ -7,6 +7,65 @@
 
     @include('includes.alert')
 
+    {{-- ── SALE SUCCESS OVERLAY ──────────────────────────────────────── --}}
+    {{-- Shown after every completed sale. Does NOT auto-close.           --}}
+    {{-- Staff must click "Print Receipt" or "Close" manually.           --}}
+    @if ($showSaleSuccess)
+    <div
+        style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99990;display:flex;align-items:center;justify-content:center;"
+        wire:key="sale-success-overlay"
+    >
+        <div class="card border-0 shadow-lg text-center" style="min-width:340px;max-width:440px;border-radius:1rem;overflow:hidden;">
+
+            {{-- Green header bar --}}
+            <div class="bg-success text-white px-4 pt-4 pb-3">
+                <div class="mb-2" style="font-size:3rem;line-height:1;">&#10004;</div>
+                <h5 class="fw-bold mb-1">{{ __('Sale Completed!') }}</h5>
+                <div class="opacity-75 small">{{ $lastReceiptNo }}</div>
+            </div>
+
+            {{-- Body --}}
+            <div class="card-body px-4 py-3">
+                <div class="mb-3">
+                    <span class="text-muted small">{{ __('Total Charged') }}</span>
+                    <div class="fw-bold fs-4 text-dark">
+                        {{ $shop?->currency['symbol'] ?? '€' }}{{ $lastSaleTotal }}
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    {{-- 80mm Print Receipt --}}
+                    <button
+                        type="button"
+                        class="btn btn-dark btn-lg fw-bold"
+                        wire:click="printSaleReceiptPos({{ $lastSaleId }})"
+                        wire:loading.attr="disabled"
+                        wire:target="printSaleReceiptPos"
+                    >
+                        <span wire:loading.remove wire:target="printSaleReceiptPos">
+                            <i class="fa-solid fa-print me-2"></i>{{ __('Print Receipt (80mm)') }}
+                        </span>
+                        <span wire:loading wire:target="printSaleReceiptPos">
+                            <span class="spinner-border spinner-border-sm me-2"></span>{{ __('Printing…') }}
+                        </span>
+                    </button>
+
+                    {{-- Close --}}
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary fw-semibold"
+                        wire:click="dismissSaleSuccess"
+                    >
+                        <i class="fa-solid fa-xmark me-1"></i>{{ __('Close') }}
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    @endif
+    {{-- ─────────────────────────────────────────────────────────────── --}}
+
     @php
         $currencySymbol = $shop?->currency['symbol'] ?? '€';
         $needsPreviousDayClose = !empty($overdueSession);

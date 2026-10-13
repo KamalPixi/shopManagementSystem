@@ -61,6 +61,12 @@ class Pos extends Component
     public $showCustomModal = false;
     public $errorMessage = '';
 
+    // Sale success overlay — shown after every completed sale
+    public $showSaleSuccess = false;
+    public $lastSaleId = null;
+    public $lastReceiptNo = null;
+    public $lastSaleTotal = null;
+
     // Register Opening Modal for POS
     public $showOpenRegisterModal = false;
     public $pos_opening_balance = 0;
@@ -777,8 +783,11 @@ class Pos extends Component
 
         $this->clearPos();
 
-        // Receipt printing remains available from the sale details page.
-        return session()->flash('message', __('Sale completed successfully.') . $autoPrintNotice);
+        // Show the persistent "Sale Complete" overlay with Print + Close buttons
+        $this->lastSaleId    = $sale->id;
+        $this->lastReceiptNo = $sale->receipt_no;
+        $this->lastSaleTotal = number_format($sale->total_price, 2);
+        $this->showSaleSuccess = true;
     }
 
     protected function calculate() {
@@ -815,6 +824,14 @@ class Pos extends Component
         $this->subtotal = number_format($this->subtotal, 2, '.', '');
         $this->gst = number_format($this->gst, 2, '.', '');
         $this->grand_total = number_format($this->grand_total, 2, '.', '');
+    }
+
+    public function dismissSaleSuccess()
+    {
+        $this->showSaleSuccess = false;
+        $this->lastSaleId      = null;
+        $this->lastReceiptNo   = null;
+        $this->lastSaleTotal   = null;
     }
 
     public function printSaleReceipt($sale_id) {
