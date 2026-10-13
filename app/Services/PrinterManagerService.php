@@ -321,63 +321,72 @@ class PrinterManagerService
             $printWidth = $is80mm ? 48 : 32;
             $divider = str_repeat('-', $printWidth) . "\n";
 
-            // Column width distribution
-            $col1 = $is80mm ? 8 : 5;   // Unit
-            $col2 = $is80mm ? 12 : 9;  // Price
-            $col3 = $is80mm ? 12 : 8;  // Discount
-            $col4 = $is80mm ? 16 : 10; // Amount
+            // Column widths for 48-char (80mm) paper
+            $col1 = $is80mm ? 6 : 5;   // Qty
+            $col2 = $is80mm ? 14 : 9;  // Unit Price
+            $col3 = $is80mm ? 10 : 8;  // Discount
+            $col4 = $is80mm ? 18 : 10; // Total
 
             // Open cash drawer kick if configured
             if (!empty($settings['open_drawer'])) {
                 $printer->pulse();
             }
 
-            // Header
-            $printer->setEmphasis(true);
+            // ── HEADER ─────────────────────────────────────────────────────
+            // Use FONT_A only — FONT_B renders blurry on Xprinter / POS-80C drivers.
+            // Shop name: centered, bold, double-size text — NO logo/image.
+            $printer->setFont(Printer::FONT_A);
             $printer->setJustification(Printer::JUSTIFY_CENTER);
-            $printer->setTextSize(1, 1);
-            $printer->text("SALE RECEIPT\n\n");
-
+            $printer->setEmphasis(true);
+            $printer->setTextSize(2, 2); // Double width + height = bold & razor-sharp
             $printer->text(($shop?->name ?? 'TECH PARISIEN') . "\n");
+            $printer->setTextSize(1, 1);
             $printer->setEmphasis(false);
+
             if ($shop?->address) {
-                $printer->text($shop->address . ", " . $shop->city . "\n");
+                $printer->text($shop->address . ', ' . ($shop->city ?? '') . "\n");
             }
             if ($shop?->contact_no) {
-                $printer->text("Tel: " . $shop->contact_no . "\n");
+                $printer->text('Tel: ' . $shop->contact_no . "\n");
             }
+            if ($shop?->email) {
+                $printer->text($shop->email . "\n");
+            }
+
+            $printer->setEmphasis(true);
+            $printer->text("\nSALES RECEIPT\n");
+            $printer->setEmphasis(false);
             $printer->text($divider);
 
-            // Receipt Metadata
+            // ── RECEIPT METADATA ──────────────────────────────────────────
             $printer->setJustification(Printer::JUSTIFY_LEFT);
             $currencyCode = $shop?->currency['code'] ?? 'EUR';
             $shopTimezone = $shop?->timezone ?? 'Europe/Paris';
 
-            $printer->text("Receipt No.: " . $sale->receipt_no . "\n");
-            $printer->text("Date       : " . $sale->created_at->timezone($shopTimezone)->format('d/m/Y h:i:s A') . "\n");
-            $printer->text("Cashier    : " . ($sale->createdBy?->name ?? ($sale->createdBy?->username ?? '-')) . "\n");
-            $printer->text("Payment    : " . ucfirst(str_replace('_', ' ', $sale->payment_method ?: 'Cash')) . "\n");
+            $printer->text('Receipt No.: ' . $sale->receipt_no . "\n");
+            $printer->text('Date       : ' . $sale->created_at->timezone($shopTimezone)->format('d/m/Y H:i') . "\n");
+            $printer->text('Cashier    : ' . ($sale->createdBy?->name ?? ($sale->createdBy?->username ?? '-')) . "\n");
+            $printer->text('Payment    : ' . ucfirst(str_replace('_', ' ', $sale->payment_method ?: 'Cash')) . "\n");
             if ($sale->payment_reference) {
-                $printer->text("Ref        : " . $sale->payment_reference . "\n");
+                $printer->text('Ref        : ' . $sale->payment_reference . "\n");
             }
             if ($sale->customer) {
-                $printer->text("Customer   : " . ($sale->customer->name ?: 'Walk In') . "\n");
+                $printer->text('Customer   : ' . ($sale->customer->name ?: 'Walk In') . "\n");
             }
             $printer->text($divider);
 
-            // Table Header
+            // ── COLUMN HEADER ─────────────────────────────────────────────
             $printer->setEmphasis(true);
-            $printer->text("Item\n");
-            $printer->setEmphasis(false);
             $printer->text(
-                str_pad("Qty", $col1, ' ', STR_PAD_RIGHT) .
-                str_pad("Price", $col2, ' ', STR_PAD_LEFT) .
-                str_pad("Disc", $col3, ' ', STR_PAD_LEFT) .
-                str_pad("Total", $col4, ' ', STR_PAD_LEFT) . "\n"
+                str_pad('Qty', $col1, ' ', STR_PAD_RIGHT) .
+                str_pad('Unit Price', $col2, ' ', STR_PAD_LEFT) .
+                str_pad('Disc', $col3, ' ', STR_PAD_LEFT) .
+                str_pad('Total', $col4, ' ', STR_PAD_LEFT) . "\n"
             );
+            $printer->setEmphasis(false);
             $printer->text($divider);
 
-            // Line items
+            // ── LINE ITEMS ────────────────────────────────────────────────
             foreach ($sale->saleItems as $item) {
                 $name = $item->name ?? ($item->item_name ?? 'Item');
                 if (!empty($item->productVariation?->variation_name)) {
@@ -388,13 +397,13 @@ class PrinterManagerService
 
                 $sn = $item->productVariation?->serial_no ?: $item->product?->serial_no;
                 if ($sn && $item->show_serial_on_receipt) {
-                    $printer->text("  SN: " . $sn . "\n");
+                    $printer->text('  SN: ' . $sn . "\n");
                 }
 
-                $unit = $item->quantity . ' Unit';
-                $price = number_format($item->price, 2);
+                $unit     = $item->quantity . ' x';
+                $price    = number_format($item->price, 2);
                 $discount = number_format(($item->discount ?? 0), 2);
-                $amount = number_format($item->total, 2);
+                $amount   = number_format($item->total, 2);
 
                 $printer->text(
                     str_pad($unit, $col1, ' ', STR_PAD_RIGHT) .
@@ -405,40 +414,48 @@ class PrinterManagerService
 
                 $warrantyText = $item->warranty_description ?: ($item->warranty?->description ?: $item->warranty?->name);
                 if ($warrantyText && $item->show_warranty_on_receipt) {
-                    $wText = mb_strimwidth("  * Warranty: " . $warrantyText, 0, $printWidth - 1, '...');
+                    $wText = mb_strimwidth('  * Warranty: ' . $warrantyText, 0, $printWidth - 1, '...');
                     $printer->text($wText . "\n");
                 }
             }
 
             $printer->text($divider);
 
-            // Totals
-            $subtotal = number_format($sale->total_price - $sale->gst + $sale->discount, 2);
-            $taxLabel = ($shop?->tax_label ?? 'TVA') . ':';
-            $gst = number_format($sale->gst, 2);
-            $total = number_format($sale->total_price, 2);
+            // ── TOTALS ────────────────────────────────────────────────────
+            $subtotal    = number_format($sale->total_price - $sale->gst + $sale->discount, 2);
+            $taxLabel    = ($shop?->tax_label ?? 'TVA') . ':';
+            $gstAmount   = number_format($sale->gst, 2);
+            $discountAmt = number_format($sale->discount, 2);
+            $total       = number_format($sale->total_price, 2);
 
-            $labelWidth = $is80mm ? 25 : 18;
-            $valWidth = $is80mm ? 20 : 13;
+            $labelWidth = $is80mm ? 28 : 18;
+            $valWidth   = $is80mm ? 20 : 14;
 
-            $printer->text(str_pad("Sub Total:", $labelWidth) . str_pad($subtotal, $valWidth, ' ', STR_PAD_LEFT) . "\n");
-            $printer->text(str_pad($taxLabel, $labelWidth) . str_pad($gst, $valWidth, ' ', STR_PAD_LEFT) . "\n");
+            $printer->text(str_pad('Sub Total:', $labelWidth) . str_pad($subtotal, $valWidth, ' ', STR_PAD_LEFT) . "\n");
+            if ($sale->discount > 0) {
+                $printer->text(str_pad('Discount:', $labelWidth) . str_pad('-' . $discountAmt, $valWidth, ' ', STR_PAD_LEFT) . "\n");
+            }
+            $printer->text(str_pad($taxLabel, $labelWidth) . str_pad($gstAmount, $valWidth, ' ', STR_PAD_LEFT) . "\n");
+            $printer->text($divider);
             $printer->setEmphasis(true);
             $printer->text(str_pad("Total ($currencyCode):", $labelWidth) . str_pad($total, $valWidth, ' ', STR_PAD_LEFT) . "\n");
             $printer->setEmphasis(false);
             $printer->text($divider);
 
-            // Footer notes
-            $printer->setJustification(Printer::JUSTIFY_CENTER);
-            $printer->setFont(Printer::FONT_B);
-            $printer->setTextSize(1, 1);
-            $printer->text("Goods sold are not returnable.\n");
-            $printer->text("Please keep your receipt as proof of purchase.\n\n");
-
+            // ── FOOTER ────────────────────────────────────────────────────
+            // FONT_A throughout — avoids the blur caused by FONT_B on Xprinter drivers.
             $printer->setFont(Printer::FONT_A);
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->setTextSize(1, 1);
             $printer->setEmphasis(true);
-            $printer->text("Thank you for your visit!\n");
+            $printer->text("\nThank you for your purchase!\n");
             $printer->setEmphasis(false);
+            if ($shop?->contact_no) {
+                $printer->text("For any inquiry, please call us\n");
+                $printer->text($shop->contact_no . "\n");
+            }
+            $printer->text(now()->timezone($shopTimezone)->format('F j, Y g:i A') . "\n");
+            $printer->feed(3);
 
             // Paper Cut
             if (!empty($settings['cut_paper'])) {
