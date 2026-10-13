@@ -126,6 +126,7 @@
                             <th class="border-0 text-start" style="width: 40%;">{{ __('Product / Item') }}</th>
                             <th class="border-0 text-center">{{ __('Warranty') }}</th>
                             <th class="border-0 text-center">{{ __('Qty') }}</th>
+                            <th class="border-0 text-end">{{ __('Purchase Price') }}</th>
                             <th class="border-0 text-end">{{ __('Unit Price') }}</th>
                             <th class="border-0 text-end">{{ __('Discount') }}</th>
                             <th class="border-0 text-end rounded-end pe-3">{{ __('Line Total') }}</th>
@@ -179,6 +180,13 @@
                                 <td class="text-center">
                                     <span class="badge bg-light text-dark border fw-bold px-2 py-1">{{ $item->quantity }}</span>
                                 </td>
+                                <td class="text-end font-monospace text-muted" style="font-size:0.85rem;">
+                                    @if ((float) $item->purchase_price > 0)
+                                        {{ $currencySymbol }}{{ number_format((float) $item->purchase_price, 2) }}
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
                                 <td class="text-end font-monospace text-muted">{{ $currencySymbol }}{{ number_format((float) $item->price, 2) }}</td>
                                 <td class="text-end font-monospace text-danger">
                                     @if ((float) $item->discount > 0)
@@ -191,7 +199,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center text-muted py-4">{{ __('No items recorded.') }}</td>
+                                <td colspan="8" class="text-center text-muted py-4">{{ __('No items recorded.') }}</td>
                             </tr>
                         @endforelse
                     </tbody>
