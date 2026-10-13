@@ -15,10 +15,38 @@
 
                     <div class="row">
                         <div class="col-12 col-md-4">
-                            <div class="mb-3">
+                            <div class="mb-3 position-relative">
                                 <label>{{ __('Product Name*') }}</label>
-                                <input wire:model="name" required type="text" class="form-control form-control-sm" placeholder="{{ __('Product Name') }}">
+                                <input 
+                                    wire:model.live.debounce.250ms="name" 
+                                    required 
+                                    type="text" 
+                                    class="form-control form-control-sm" 
+                                    placeholder="{{ __('Product Name') }}"
+                                    autocomplete="off"
+                                >
                                 @error('name') <span class="text-danger small">{{ $message }}</span> @enderror
+
+                                {{-- Product Name Suggestions Dropdown --}}
+                                @if ($show_name_suggestions && count($name_suggestions) > 0)
+                                    <div class="position-absolute start-0 end-0 bg-white border rounded shadow-sm py-1 mt-1" style="z-index: 1050; max-height: 200px; overflow-y: auto;">
+                                        <div class="px-2 py-1 small text-muted border-bottom d-flex justify-content-between align-items-center">
+                                            <span>{{ __('Existing Products') }}</span>
+                                            <button type="button" wire:click="hideNameSuggestions" class="btn btn-link btn-xs p-0 text-muted text-decoration-none">&times;</button>
+                                        </div>
+                                        @foreach ($name_suggestions as $suggestion)
+                                            <button 
+                                                type="button" 
+                                                wire:click="selectNameSuggestion('{{ addslashes($suggestion) }}')" 
+                                                class="dropdown-item px-3 py-1 small text-start d-flex align-items-center justify-content-between"
+                                                style="cursor: pointer;"
+                                            >
+                                                <span class="fw-medium text-dark">{{ $suggestion }}</span>
+                                                <i class="fa-solid fa-arrow-turn-down-left text-muted small ms-2"></i>
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         </div>
                         <div class="col-12 col-md-4">
@@ -241,8 +269,34 @@
                                     <tbody>
                                         @forelse ($variations as $idx => $v)
                                         <tr wire:key="var_row_{{ $idx }}">
-                                            <td>
-                                                <input wire:model="variations.{{ $idx }}.variation_name" type="text" class="form-control form-control-sm font-monospace fw-bold" placeholder="{{ __('e.g. 128GB / Black') }}" required>
+                                            <td class="position-relative">
+                                                <input 
+                                                    wire:model.live.debounce.250ms="variations.{{ $idx }}.variation_name" 
+                                                    type="text" 
+                                                    class="form-control form-control-sm font-monospace fw-bold" 
+                                                    placeholder="{{ __('e.g. 128GB / Black') }}" 
+                                                    autocomplete="off"
+                                                    required
+                                                >
+                                                @if ($active_variation_suggestion_index === $idx && count($variation_suggestions) > 0)
+                                                    <div class="position-absolute start-0 end-0 bg-white border rounded shadow-sm py-1 mt-1" style="z-index: 1050; max-height: 180px; overflow-y: auto;">
+                                                        <div class="px-2 py-1 small text-muted border-bottom d-flex justify-content-between align-items-center">
+                                                            <span><i class="fa-solid fa-lightbulb text-warning me-1"></i> {{ __('Known Variations') }}</span>
+                                                            <button type="button" wire:click="hideVariationSuggestions" class="btn btn-link btn-xs p-0 text-muted text-decoration-none">&times;</button>
+                                                        </div>
+                                                        @foreach ($variation_suggestions as $vSuggestion)
+                                                            <button 
+                                                                type="button" 
+                                                                wire:click="selectVariationSuggestion({{ $idx }}, '{{ addslashes($vSuggestion) }}')" 
+                                                                class="dropdown-item px-3 py-1 small text-start d-flex align-items-center justify-content-between"
+                                                                style="cursor: pointer;"
+                                                            >
+                                                                <span class="fw-medium text-dark font-monospace">{{ $vSuggestion }}</span>
+                                                                <i class="fa-solid fa-arrow-turn-down-left text-muted small ms-2"></i>
+                                                            </button>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
                                             </td>
                                             <td>
                                                 <select wire:model="variations.{{ $idx }}.supplier_id" class="form-select form-select-sm">

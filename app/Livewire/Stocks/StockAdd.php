@@ -46,6 +46,12 @@ class StockAdd extends Component
     public $has_variations = false;
     public $variations = [];
 
+    // Suggestions for Product Name and Variation Title
+    public $name_suggestions = [];
+    public $show_name_suggestions = false;
+    public $variation_suggestions = [];
+    public $active_variation_suggestion_index = null;
+
     protected function rules()
     {
         $rules = [
@@ -115,6 +121,79 @@ class StockAdd extends Component
     {
         unset($this->variations[$index]);
         $this->variations = array_values($this->variations);
+        if ($this->active_variation_suggestion_index === $index) {
+            $this->active_variation_suggestion_index = null;
+            $this->variation_suggestions = [];
+        }
+    }
+
+    public function updatedName($value)
+    {
+        $trimmed = trim((string) $value);
+        if (mb_strlen($trimmed) >= 1) {
+            $this->name_suggestions = Product::where('name', 'like', '%' . $trimmed . '%')
+                ->distinct()
+                ->orderBy('name')
+                ->limit(8)
+                ->pluck('name')
+                ->toArray();
+            $this->show_name_suggestions = count($this->name_suggestions) > 0;
+        } else {
+            $this->name_suggestions = [];
+            $this->show_name_suggestions = false;
+        }
+    }
+
+    public function selectNameSuggestion($selectedName)
+    {
+        $this->name = $selectedName;
+        $this->name_suggestions = [];
+        $this->show_name_suggestions = false;
+    }
+
+    public function hideNameSuggestions()
+    {
+        $this->show_name_suggestions = false;
+    }
+
+    public function updatedVariations($value, $key)
+    {
+        // Check if updating variation_name
+        if (str_ends_with($key, '.variation_name')) {
+            $parts = explode('.', $key);
+            $index = (int) $parts[0];
+            $trimmed = trim((string) $value);
+
+            if (mb_strlen($trimmed) >= 1) {
+                $this->active_variation_suggestion_index = $index;
+                $this->variation_suggestions = ProductVariation::where('variation_name', 'like', '%' . $trimmed . '%')
+                    ->distinct()
+                    ->orderBy('variation_name')
+                    ->limit(8)
+                    ->pluck('variation_name')
+                    ->toArray();
+            } else {
+                if ($this->active_variation_suggestion_index === $index) {
+                    $this->variation_suggestions = [];
+                    $this->active_variation_suggestion_index = null;
+                }
+            }
+        }
+    }
+
+    public function selectVariationSuggestion($index, $selectedTitle)
+    {
+        if (isset($this->variations[$index])) {
+            $this->variations[$index]['variation_name'] = $selectedTitle;
+        }
+        $this->variation_suggestions = [];
+        $this->active_variation_suggestion_index = null;
+    }
+
+    public function hideVariationSuggestions()
+    {
+        $this->variation_suggestions = [];
+        $this->active_variation_suggestion_index = null;
     }
 
     public function updatedHasVariations()
