@@ -322,14 +322,17 @@ class PrinterManagerService
 
         try {
             $is80mm = ($settings['paper_width'] ?? '80mm') === '80mm';
-            $printWidth = $is80mm ? 48 : 32;
+            // Reserve two FONT_A columns (24 dots, about 3 mm) on the left.
+            $printWidth = $is80mm ? 46 : 30;
+            $printer->setPrintLeftMargin(24);
+            $printer->setPrintWidth($printWidth * 12);
             $divider = str_repeat('-', $printWidth) . "\n";
 
-            // Column widths for 48-char (80mm) paper
+            // Column widths within the inset print area
             $col1 = $is80mm ? 6 : 5;   // Qty
             $col2 = $is80mm ? 14 : 9;  // Unit Price
             $col3 = $is80mm ? 10 : 8;  // Discount
-            $col4 = $is80mm ? 18 : 10; // Total
+            $col4 = $is80mm ? 16 : 8; // Total
 
             // Open cash drawer kick if configured
             if (!empty($settings['open_drawer'])) {
@@ -433,7 +436,7 @@ class PrinterManagerService
             $total       = number_format($sale->total_price, 2);
 
             $labelWidth = $is80mm ? 28 : 18;
-            $valWidth   = $is80mm ? 20 : 14;
+            $valWidth   = $is80mm ? 18 : 12;
 
             $printer->text(str_pad('Sub Total:', $labelWidth) . str_pad($subtotal, $valWidth, ' ', STR_PAD_LEFT) . "\n");
             if ($sale->discount > 0) {
@@ -560,7 +563,9 @@ class PrinterManagerService
 
         try {
             $is80mm = ($settings['paper_width'] ?? '80mm') === '80mm';
-            $width = $is80mm ? 48 : 32;
+            $width = $is80mm ? 46 : 30;
+            $printer->setPrintLeftMargin(24);
+            $printer->setPrintWidth($width * 12);
             $divider = str_repeat('=', $width) . "\n";
 
             // Drawer kick if enabled
@@ -579,7 +584,7 @@ class PrinterManagerService
 
             $printer->setJustification(Printer::JUSTIFY_LEFT);
             $printer->text("Printer Target : " . $connection['target'] . "\n");
-            $printer->text("Paper Width    : " . ($is80mm ? '80mm (48 chars)' : '58mm (32 chars)') . "\n");
+            $printer->text("Paper Width    : " . ($is80mm ? '80mm (46 chars)' : '58mm (30 chars)') . "\n");
             $printer->text("Cut Enabled    : " . (!empty($settings['cut_paper']) ? 'YES' : 'NO') . "\n");
             $printer->text("Drawer Kick    : " . (!empty($settings['open_drawer']) ? 'YES' : 'NO') . "\n");
             $printer->text("Test Timestamp : " . now()->format('Y-m-d H:i:s') . "\n");
