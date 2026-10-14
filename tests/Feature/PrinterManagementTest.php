@@ -143,6 +143,64 @@ class PrinterManagementTest extends TestCase
         $this->assertIsArray($printers);
     }
 
+    public function test_receipt_submission_failure_is_reported_instead_of_success(): void
+    {
+        $connector = new \App\Printing\WindowsSpoolerConnector('XP-80C (USB)', function ($name, $bytes) {
+            $this->assertSame('XP-80C (USB)', $name);
+            $this->assertStringContainsString('TEST RECEIPT', $bytes);
+            throw new \RuntimeException('Windows print queue is unavailable');
+        });
+        $service = \Mockery::mock(PrinterManagerService::class)->makePartial();
+        $service->shouldReceive('getPosPrinterConnector')->once()->andReturn([
+            'success' => true, 'printer' => new \Mike42\Escpos\Printer($connector),
+            'target' => 'XP-80C (USB)', 'settings' => $service->getDefaultSettings()['pos'],
+        ]);
+
+        $result = $service->testPosPrint();
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('Windows print queue is unavailable', $result['message']);
+    }
+
+    public function test_native_a4_print_rejection_is_reported(): void
+    {
+        config(['nativephp-internal.api_url' => 'http://127.0.0.1:49999/']);
+        \Illuminate\Support\Facades\Http::fake(['*' => \Illuminate\Support\Facades\Http::response('', 500)]);
+        $path = tempnam(sys_get_temp_dir(), 'a4-test-');
+        try {
+            $result = app(PrinterManagerService::class)->printA4Document($path, "Office (USB)", '<html><body>A4 #test</body></html>');
+            $this->assertFalse($result['success']);
+            $this->assertStringContainsString('rejected', $result['message']);
+            \Illuminate\Support\Facades\Http::assertSent(fn ($request) =>
+                $request['printer'] === 'Office (USB)' &&
+                $request['html'] === rawurlencode('<html><body>A4 #test</body></html>') &&
+                $request['settings']['pageSize'] === 'A4');
+        } finally {
+            unlink($path);
+        }
+    }
+
+    public function test_test_print_does_not_run_when_settings_cannot_be_saved(): void
+    {
+        $service = \Mockery::mock(PrinterManagerService::class)->makePartial();
+        $service->shouldReceive('detectSystemPrinters')->andReturn([]);
+        $service->shouldReceive('saveSettings')->once()->andReturn(false);
+        $service->shouldReceive('testPosPrint')->never();
+        $this->app->instance(PrinterManagerService::class, $service);
+        $this->actingAs($this->user);
+        Livewire::test(PrinterSettings::class)->call('testPosPrint')
+            ->assertSee(__('Failed to save printer settings.'));
+    }
+
+    public function test_network_printer_requires_a_valid_ip_address(): void
+    {
+        $this->actingAs($this->user);
+        Livewire::test(PrinterSettings::class)
+            ->set('pos_connection_type', 'network')
+            ->set('pos_ip_address', '')
+            ->call('save')->assertHasErrors(['pos_ip_address']);
+    }
+
     public function test_pos_auto_print_runs_safely_on_sale(): void
     {
         $this->actingAs($this->user);

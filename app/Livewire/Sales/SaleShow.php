@@ -45,7 +45,13 @@ class SaleShow extends Component
         $printerManager = app(\App\Services\PrinterManagerService::class);
         $a4Settings = $printerManager->getSettings()['a4'];
         if (!empty($a4Settings['auto_print'])) {
-            $printerManager->printA4Document(public_path('sales/sale_receipt_a4.pdf'));
+            $sale = Sale::with(['saleItems.product', 'saleItems.productVariation', 'saleItems.warranty', 'customer', 'createdBy'])->findOrFail($this->sale_id);
+            $result = $printerManager->printA4Document(public_path('sales/sale_receipt_a4.pdf'), null,
+                view('prints.sale-receipt-a4', ['sale' => $sale, 'shop' => Shop::first()])->render());
+            session()->flash($result['success'] ? 'message' : 'failed', $result['message']);
+            if ($result['success']) {
+                return;
+            }
         }
 
         $this->dispatch('print-pdf', ['url' => $url]);

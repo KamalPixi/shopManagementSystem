@@ -30,13 +30,14 @@ class PrinterSettings extends Component
     // Status / Testing feedback
     public ?string $test_message = null;
     public ?bool $test_success = null;
+    public ?string $test_pdf_url = null;
 
     protected function rules(): array
     {
         return [
             'pos_printer_name' => 'nullable|string|max:255',
             'pos_connection_type' => 'required|in:windows,cups,network',
-            'pos_ip_address' => 'nullable|string|max:255',
+            'pos_ip_address' => 'required_if:pos_connection_type,network|nullable|ip',
             'pos_port' => 'nullable|integer|min:1|max:65535',
             'pos_paper_width' => 'required|in:80mm,58mm',
             'pos_open_drawer' => 'boolean',
@@ -82,6 +83,7 @@ class PrinterSettings extends Component
     public function selectPosPrinter(string $name): void
     {
         $this->pos_printer_name = $name;
+        $this->pos_connection_type = PHP_OS_FAMILY === 'Windows' ? 'windows' : 'cups';
     }
 
     public function selectA4Printer(string $name): void
@@ -94,9 +96,10 @@ class PrinterSettings extends Component
         $this->barcode_printer_name = $name;
     }
 
-    public function save(PrinterManagerService $service): void
+    public function save(PrinterManagerService $service): bool
     {
-        $validated = $this->validate();
+        abort_unless(auth()->user()?->hasPermissionTo('settings:update'), 403);
+        $this->validate();
 
         $saved = $service->saveSettings([
             'pos' => [
@@ -123,40 +126,33 @@ class PrinterSettings extends Component
         } else {
             session()->flash('error', __('Failed to save printer settings.'));
         }
+        return $saved;
     }
 
     public function testPosPrint(PrinterManagerService $service): void
     {
-        // First save current values to test the latest settings
-        $this->save($service);
-
+        $this->test_pdf_url = null;
+        if (!$this->save($service)) {
+            return;
+        }
+        session()->forget('success');
         $result = $service->testPosPrint();
         $this->test_success = $result['success'];
         $this->test_message = $result['message'];
-
-        if ($result['success']) {
-            session()->flash('test_success', $result['message']);
-        } else {
-            session()->flash('test_error', $result['message']);
-        }
     }
 
     public function testA4Print(PrinterManagerService $service): void
     {
-        $this->save($service);
-
+        $this->test_pdf_url = null;
+        if (!$this->save($service)) {
+            return;
+        }
+        session()->forget('success');
         $result = $service->testA4Print();
         $this->test_success = $result['success'];
         $this->test_message = $result['message'];
-
-        if (!empty($result['pdf_url'])) {
-            $this->dispatch('print-pdf', ['url' => $result['pdf_url']]);
-        }
-
-        if ($result['success']) {
-            session()->flash('test_success', $result['message']);
-        } else {
-            session()->flash('test_error', $result['message']);
+        if (!$result['success']) {
+            $this->test_pdf_url = $result['pdf_url'] ?? null;
         }
     }
 

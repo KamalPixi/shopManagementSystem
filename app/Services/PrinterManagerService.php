@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\Sale;
+use App\Printing\WindowsSpoolerConnector;
+use Symfony\Component\Process\Process;
 use App\Models\Shop;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
@@ -270,8 +272,10 @@ class PrinterManagerService
                 ];
             }
 
-            if ($connType === 'windows' || PHP_OS_FAMILY === 'Windows') {
-                $connector = new WindowsPrintConnector($printerName);
+            if (PHP_OS_FAMILY === 'Windows') {
+                $connector = preg_match('/^(LPT\d|COM\d)$|^smb:\/\//i', $printerName)
+                    ? new WindowsPrintConnector($printerName)
+                    : new WindowsSpoolerConnector($printerName);
                 $printer = new Printer($connector);
                 return [
                     'success' => true,
@@ -462,28 +466,24 @@ class PrinterManagerService
                 $printer->cut();
             }
 
+            $printer->close();
+
             return [
                 'success' => true,
-                'message' => __('Printed successfully to :target', ['target' => $connection['target']]),
+                'message' => __('Receipt sent to :target', ['target' => $connection['target']]),
             ];
         } catch (\Throwable $e) {
             return [
                 'success' => false,
                 'message' => __('Printing failed: :err', ['err' => $e->getMessage()]),
             ];
-        } finally {
-            try {
-                $printer->close();
-            } catch (\Throwable $e) {
-                // Ignore close exceptions
-            }
         }
     }
 
     /**
      * Send an A4 PDF document directly to the configured A4 office printer.
      */
-    public function printA4Document(string $pdfFilePath, ?string $printerName = null): array
+    public function printA4Document(string $pdfFilePath, ?string $printerName = null, ?string $html = null): array
     {
         if (!file_exists($pdfFilePath)) {
             return [
@@ -496,35 +496,44 @@ class PrinterManagerService
         $targetPrinter = $printerName ?: trim($settings['printer_name'] ?? '');
 
         try {
-            if (PHP_OS_FAMILY === 'Windows') {
-                if (!empty($targetPrinter)) {
-                    // Windows PrintTo sends directly to the specified printer
-                    $cmd = sprintf(
-                        'powershell -NoProfile -Command "Start-Process -FilePath \'%s\' -Verb PrintTo -ArgumentList \'\"%s\"\' -WindowStyle Hidden"',
-                        addslashes($pdfFilePath),
-                        addslashes($targetPrinter)
-                    );
-                } else {
-                    // Windows default printer
-                    $cmd = sprintf(
-                        'powershell -NoProfile -Command "Start-Process -FilePath \'%s\' -Verb Print -WindowStyle Hidden"',
-                        addslashes($pdfFilePath)
-                    );
+            if ($html !== null && config('nativephp-internal.api_url')) {
+                $response = app(\Native\Desktop\Client\Client::class)->post('system/print', [
+                    'html' => rawurlencode($html),
+                    'printer' => $targetPrinter,
+                    'settings' => ['silent' => true, 'pageSize' => 'A4', 'printBackground' => true],
+                ]);
+                if (!$response->successful()) {
+                    throw new \RuntimeException(__('The desktop print service rejected the job. Check the selected printer and its queue.'));
                 }
-                @exec($cmd);
             } else {
-                // macOS / Linux CUPS
-                if (!empty($targetPrinter)) {
-                    $cmd = sprintf('lpr -P %s %s', escapeshellarg($targetPrinter), escapeshellarg($pdfFilePath));
+                if (PHP_OS_FAMILY === 'Windows') {
+                    // The PDF fallback requires a PDF reader with a Print/PrintTo action.
+                    $path = str_replace("'", "''", $pdfFilePath);
+                    $target = str_replace("'", "''", $targetPrinter);
+                    $script = "\$ErrorActionPreference = 'Stop'; try { ";
+                    $script .= "Start-Process -FilePath '$path' -Verb ";
+                    $script .= $targetPrinter !== '' ? "PrintTo -ArgumentList '\"$target\"'" : 'Print';
+                    $script .= " -WindowStyle Hidden -ErrorAction Stop; exit 0 } catch { [Console]::Error.WriteLine(\$_.Exception.Message); exit 1 }";
+                    $process = new Process(['powershell.exe', '-NoProfile', '-NonInteractive', '-EncodedCommand',
+                        base64_encode(mb_convert_encoding($script, 'UTF-16LE', 'UTF-8'))]);
                 } else {
-                    $cmd = sprintf('lpr %s', escapeshellarg($pdfFilePath));
+                    $command = ['lpr'];
+                    if ($targetPrinter !== '') {
+                        array_push($command, '-P', $targetPrinter);
+                    }
+                    $command[] = $pdfFilePath;
+                    $process = new Process($command);
                 }
-                @exec($cmd);
+                $process->setTimeout(30);
+                $process->run();
+                if (!$process->isSuccessful()) {
+                    throw new \RuntimeException(trim($process->getErrorOutput() ?: $process->getOutput()) ?: __('The print command failed.'));
+                }
             }
 
             return [
                 'success' => true,
-                'message' => __('A4 Document sent to printer [:target]', ['target' => $targetPrinter ?: __('Default Printer')]),
+                'message' => __('A4 print submitted to [:target]. Check the printer queue for output.', ['target' => $targetPrinter ?: __('Default Printer')]),
             ];
         } catch (\Throwable $e) {
             return [
@@ -587,28 +596,24 @@ class PrinterManagerService
             $printer->setJustification(Printer::JUSTIFY_CENTER);
             $printer->text($divider);
             $printer->setEmphasis(true);
-            $printer->text("SUCCESS!\nPOS PRINTER IS WORKING PROPERLY.\n");
+            $printer->text("Print test\nIf you can read this, receipt output is working.\n");
             $printer->setEmphasis(false);
 
             if (!empty($settings['cut_paper'])) {
                 $printer->cut();
             }
 
+            $printer->close();
+
             return [
                 'success' => true,
-                'message' => __('Test print sent successfully to :target!', ['target' => $connection['target']]),
+                'message' => __('Test receipt sent to :target. Check the printer for output.', ['target' => $connection['target']]),
             ];
         } catch (\Throwable $e) {
             return [
                 'success' => false,
                 'message' => __('Test print failed: :err', ['err' => $e->getMessage()]),
             ];
-        } finally {
-            try {
-                $printer->close();
-            } catch (\Throwable $e) {
-                // Ignore close error
-            }
         }
     }
 
@@ -652,7 +657,7 @@ class PrinterManagerService
                     <tr><th>Paper Size</th><td>A4 (210 x 297 mm)</td></tr>
                     <tr><th>Test Timestamp</th><td>{$data['timestamp']}</td></tr>
                 </table>
-                <p class="success">&#10004; A4 Printer connection is configured and functioning correctly.</p>
+                <p class="success">If this page printed, A4 output is working.</p>
             </div>
         </body>
         </html>
@@ -668,7 +673,7 @@ HTML;
         $pdf->save($testPath);
 
         // Send to printer
-        $result = $this->printA4Document($testPath, $settings['printer_name']);
+        $result = $this->printA4Document($testPath, $settings['printer_name'], $html);
         $result['pdf_url'] = asset('sales/a4_test_print.pdf');
 
         return $result;
