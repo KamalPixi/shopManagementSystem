@@ -29,8 +29,9 @@ class Login extends Component
             'remember' => 'nullable|boolean',
         ]);
 
-        if (Auth::attempt($validated, $remember['remember'])) {
+        if (Auth::attempt($validated, (bool) ($remember['remember'] ?? false))) {
             session()->regenerate();
+            session()->put('auth.remember', (bool) ($remember['remember'] ?? false));
             return redirect()->intended('dashboard');
         }
 

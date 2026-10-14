@@ -380,14 +380,14 @@ class PrinterManagerService
                 $write($shop->address . ', ' . ($shop->city ?? '') . "\n");
             }
             if ($shop?->contact_no) {
-                $write('Tel: ' . $shop->contact_no . "\n");
+                $write($translate('Tel:') . ' ' . $shop->contact_no . "\n");
             }
             if ($shop?->email) {
                 $write($shop->email . "\n");
             }
 
             $printer->setEmphasis(true);
-            $write("\n" . mb_strtoupper($translate('Sales Receipt')) . "\n");
+            $write("\n" . mb_strtoupper($translate('Thermal Sales Receipt')) . "\n");
             $printer->setEmphasis(false);
             $write($divider);
 
@@ -401,10 +401,10 @@ class PrinterManagerService
                 'other' => $translate('Other'),
                 default => ucfirst(str_replace('_', ' ', $sale->payment_method)),
             };
-            $write($translate('Receipt No.') . ': ' . $sale->receipt_no . "\n");
+            $write($translate('Thermal Receipt Number') . ': ' . $sale->receipt_no . "\n");
             $write($translate('Date') . ' : ' . $sale->created_at->timezone($shopTimezone)->locale($locale)->translatedFormat('d/m/Y H:i') . "\n");
             $write($translate('Cashier') . ' : ' . ($sale->createdBy?->name ?? ($sale->createdBy?->username ?? '-')) . "\n");
-            $write($translate('Payment') . ' : ' . $paymentMethod . "\n");
+            $write($translate('Thermal Payment Method') . ' : ' . $paymentMethod . "\n");
             if ($sale->payment_reference) {
                 $write($translate('Reference') . ' : ' . $sale->payment_reference . "\n");
             }
@@ -416,10 +416,10 @@ class PrinterManagerService
             // ── COLUMN HEADER ─────────────────────────────────────────────
             $printer->setEmphasis(true);
             $write(
-                str_pad('Qty', $col1, ' ', STR_PAD_RIGHT) .
-                str_pad($translate('Unit Price'), $col2, ' ', STR_PAD_LEFT) .
+                str_pad($translate('Qty'), $col1, ' ', STR_PAD_RIGHT) .
+                str_pad($translate('Thermal Unit Price'), $col2, ' ', STR_PAD_LEFT) .
                 str_pad($translate('Disc'), $col3, ' ', STR_PAD_LEFT) .
-                str_pad('Total', $col4, ' ', STR_PAD_LEFT) . "\n"
+                str_pad($translate('Total'), $col4, ' ', STR_PAD_LEFT) . "\n"
             );
             $printer->setEmphasis(false);
             $write($divider);
@@ -435,7 +435,7 @@ class PrinterManagerService
 
                 $sn = $item->productVariation?->serial_no ?: $item->product?->serial_no;
                 if ($sn && $item->show_serial_on_receipt) {
-                    $write('  SN: ' . $sn . "\n");
+                    $write('  ' . $translate('Serial No.') . ': ' . $sn . "\n");
                 }
 
                 $unit     = $item->quantity . ' x';
@@ -452,7 +452,7 @@ class PrinterManagerService
 
                 $warrantyText = $item->warranty_description ?: ($item->warranty?->description ?: $item->warranty?->name);
                 if ($warrantyText && $item->show_warranty_on_receipt) {
-                    $wText = mb_strimwidth('  * Warranty: ' . $warrantyText, 0, $printWidth - 1, '...');
+                    $wText = mb_strimwidth('  * ' . $translate('Warranty') . ': ' . $warrantyText, 0, $printWidth - 1, '...');
                     $write($wText . "\n");
                 }
             }

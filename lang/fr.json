@@ -390,5 +390,11 @@
     "French receipt": "Reçu en français",
     "Sale Completed!": "Vente terminée !",
     "Total Charged": "Total payé",
-    "Printing…": "Impression en cours…"
+    "Printing…": "Impression en cours…",
+    "Tel:": "Tél :",
+    "Serial No.": "N° de série",
+    "Thermal Sales Receipt": "Ticket de caisse",
+    "Thermal Receipt Number": "N° de ticket",
+    "Thermal Payment Method": "Mode de paiement",
+    "Thermal Unit Price": "Prix unit."
 }

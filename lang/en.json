@@ -379,5 +379,11 @@
     "French receipt": "French receipt",
     "Sale Completed!": "Sale Completed!",
     "Total Charged": "Total Charged",
-    "Printing…": "Printing…"
+    "Printing…": "Printing…",
+    "Tel:": "Tel:",
+    "Serial No.": "Serial No.",
+    "Thermal Sales Receipt": "Sales Receipt",
+    "Thermal Receipt Number": "Receipt No.",
+    "Thermal Payment Method": "Payment",
+    "Thermal Unit Price": "Unit Price"
 }
