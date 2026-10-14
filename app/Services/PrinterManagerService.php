@@ -351,14 +351,19 @@ class PrinterManagerService
             $gstPercent = (float) ($shop?->gst_percent ?? 0);
             $hasVatItems = $sale->saleItems->contains(fn ($item) => (bool) $item->is_vatable && $gstPercent > 0);
             $hasNonVatItems = $sale->saleItems->contains(fn ($item) => !(bool) $item->is_vatable);
+            $itemsTotal = $sale->saleItems->sum(fn ($item) => (float) $item->total);
+            $usesInclusivePrices = (float) $sale->gst > 0 && abs((float) $sale->total_price - $itemsTotal) < 0.02;
             $currencyCode = $shop?->currency['code'] ?? 'EUR';
             $shopTimezone = $shop?->timezone ?? 'Europe/Paris';
 
+            $receiptRows = SaleReceiptAmounts::forSale($sale);
+
             // Column widths within the inset print area
-            $col1 = $is80mm ? 6 : 5;   // Qty
-            $col2 = $is80mm ? 14 : 9;  // Unit Price
-            $col3 = $is80mm ? 10 : 8;  // Discount
-            $col4 = $is80mm ? 16 : 8; // Total
+            $col1 = $is80mm ? 4 : 3;   // Qty
+            $col2 = $is80mm ? 12 : 9;  // Unit Price
+            $col3 = $is80mm ? 8 : 6;  // Discount
+            $colVat = $hasVatItems ? ($is80mm ? 8 : 6) : 0;
+            $col4 = $printWidth - $col1 - $col2 - $col3 - $colVat; // Total
 
             // Open cash drawer kick if configured
             if (!empty($settings['open_drawer'])) {
@@ -417,15 +422,16 @@ class PrinterManagerService
             $printer->setEmphasis(true);
             $write(
                 str_pad($translate('Qty'), $col1, ' ', STR_PAD_RIGHT) .
-                str_pad($translate('Thermal Unit Price'), $col2, ' ', STR_PAD_LEFT) .
+                str_pad($translate('Thermal Unit Price excl. tax'), $col2, ' ', STR_PAD_LEFT) .
                 str_pad($translate('Disc'), $col3, ' ', STR_PAD_LEFT) .
+                ($hasVatItems ? str_pad($translate('VAT'), $colVat, ' ', STR_PAD_LEFT) : '') .
                 str_pad($translate('Total'), $col4, ' ', STR_PAD_LEFT) . "\n"
             );
             $printer->setEmphasis(false);
             $write($divider);
 
             // ── LINE ITEMS ────────────────────────────────────────────────
-            foreach ($sale->saleItems as $item) {
+            foreach ($sale->saleItems->values() as $index => $item) {
                 $name = $item->name ?? ($item->item_name ?? 'Item');
                 if (!empty($item->productVariation?->variation_name)) {
                     $name .= ' (' . $item->productVariation->variation_name . ')';
@@ -439,14 +445,16 @@ class PrinterManagerService
                 }
 
                 $unit     = $item->quantity . ' x';
-                $price    = number_format($item->price, 2);
+                $price    = number_format($receiptRows[$index]['unit_net'], 2);
                 $discount = number_format(($item->discount ?? 0), 2);
-                $amount   = number_format($item->total, 2);
+                $amount   = number_format($receiptRows[$index]['total'], 2);
+                $vat      = number_format($receiptRows[$index]['vat'], 2);
 
                 $write(
                     str_pad($unit, $col1, ' ', STR_PAD_RIGHT) .
                     str_pad($price, $col2, ' ', STR_PAD_LEFT) .
                     str_pad($discount, $col3, ' ', STR_PAD_LEFT) .
+                    ($hasVatItems ? str_pad($vat, $colVat, ' ', STR_PAD_LEFT) : '') .
                     str_pad($amount, $col4, ' ', STR_PAD_LEFT) . "\n"
                 );
 
@@ -460,8 +468,11 @@ class PrinterManagerService
             $write($divider);
 
             // ── TOTALS ────────────────────────────────────────────────────
-            $subtotal    = number_format($sale->saleItems->sum(fn ($item) => (float) $item->price * (int) $item->quantity), 2);
-            $taxLabel    = ($shop?->tax_label ?: ($locale === 'fr' ? 'TVA' : 'GST')) . ':';
+            $subtotal    = number_format($sale->saleItems->sum(fn ($item) => (float) $item->price * (int) $item->quantity) - ($usesInclusivePrices ? (float) $sale->gst : 0), 2);
+            $configuredTaxLabel = $shop?->tax_label ?: ($locale === 'fr' ? 'TVA' : 'VAT');
+            $taxLabel = $usesInclusivePrices && in_array(strtoupper(trim($configuredTaxLabel)), ['VAT', 'TVA'], true)
+                ? $translate('Included VAT')
+                : $configuredTaxLabel;
             $gstAmount   = number_format($sale->gst, 2);
             $discountAmt = number_format($sale->discount, 2);
             $total       = number_format($sale->total_price, 2);
@@ -469,7 +480,8 @@ class PrinterManagerService
             $labelWidth = $is80mm ? 28 : 18;
             $valWidth   = $is80mm ? 18 : 12;
 
-            $write(str_pad($translate('Subtotal excl. tax') . ':', $labelWidth) . str_pad($subtotal, $valWidth, ' ', STR_PAD_LEFT) . "\n");
+            $subtotalLabel = 'Subtotal excl. tax';
+            $write(str_pad($translate($subtotalLabel) . ':', $labelWidth) . str_pad($subtotal, $valWidth, ' ', STR_PAD_LEFT) . "\n");
             if ($sale->discount > 0) {
                 $write(str_pad($translate('Discount') . ':', $labelWidth) . str_pad('-' . $discountAmt, $valWidth, ' ', STR_PAD_LEFT) . "\n");
             }
@@ -503,7 +515,8 @@ class PrinterManagerService
                 $write($translate('For any inquiry, please call us') . "\n");
                 $write($shop->contact_no . "\n");
             }
-            $write(now()->timezone($shopTimezone)->locale($locale)->translatedFormat('F j, Y g:i A') . "\n");
+            $footerDateFormat = $locale === 'fr' ? 'd/m/Y H:i' : 'F j, Y g:i A';
+            $write(now()->timezone($shopTimezone)->locale($locale)->translatedFormat($footerDateFormat) . "\n");
             $printer->feed(3);
 
             // Paper Cut

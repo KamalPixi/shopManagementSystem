@@ -180,12 +180,14 @@ final class PrintService
             $printer->text($divider);
 
             // Totals
-            $subtotal = number_format($sale->total_price - $sale->gst + $sale->discount, 2);
+            $usesInclusivePrices = (float) $sale->gst > 0 && abs((float) $sale->total_price - $sale->saleItems->sum(fn ($item) => (float) $item->total)) < 0.02;
+            $subtotal = number_format($sale->saleItems->sum(fn ($item) => (float) $item->price * (int) $item->quantity) - ($usesInclusivePrices ? (float) $sale->gst : 0), 2);
             $gst = number_format($sale->gst, 2);
             $total = number_format($sale->total_price, 2);
 
             $taxLabel = ($shop->tax_label ?? 'GST') . ':';
-            $printer->text(str_pad("Sub Total:", 25) . str_pad($subtotal, 20, ' ', STR_PAD_LEFT) . "\n");
+            $subtotalLabel = 'Sub Total excl. tax:';
+            $printer->text(str_pad($subtotalLabel, 25) . str_pad($subtotal, 20, ' ', STR_PAD_LEFT) . "\n");
             $printer->text(str_pad($taxLabel, 25) . str_pad($gst, 20, ' ', STR_PAD_LEFT) . "\n");
             $printer->setEmphasis(true);
             $printer->text(str_pad("Total:", 25) . str_pad($total, 20, ' ', STR_PAD_LEFT) . "\n");
@@ -323,12 +325,14 @@ final class PrintService
             $printer->text($divider);
 
             // Totals
-            $subtotal = number_format(($sale->total_price - $sale->gst), 2);
+            $usesInclusivePrices = (float) $sale->gst > 0 && abs((float) $sale->total_price - $sale->saleItems->sum(fn ($item) => (float) $item->total)) < 0.02;
+            $subtotal = number_format($sale->saleItems->sum(fn ($item) => (float) $item->price * (int) $item->quantity) - ($usesInclusivePrices ? (float) $sale->gst : 0), 2);
             $gst = number_format($sale->gst, 2);
             $total = number_format($sale->total_price, 2);
 
             $taxLabel = ($shop->tax_label ?? 'GST') . ':';
-            $printer->text(str_pad("Sub Total:", 25) . str_pad($subtotal, 20, ' ', STR_PAD_LEFT) . "\n");
+            $subtotalLabel = 'Sub Total excl. tax:';
+            $printer->text(str_pad($subtotalLabel, 25) . str_pad($subtotal, 20, ' ', STR_PAD_LEFT) . "\n");
             $printer->text(str_pad($taxLabel, 25) . str_pad($gst, 20, ' ', STR_PAD_LEFT) . "\n");
             $printer->setEmphasis(true);
             $printer->text(str_pad("Total:", 25) . str_pad($total, 20, ' ', STR_PAD_LEFT) . "\n");

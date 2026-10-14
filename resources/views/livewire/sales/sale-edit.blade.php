@@ -351,20 +351,20 @@
                     <div class="card border border-light-subtle bg-light p-3 rounded h-100 d-flex flex-column justify-content-between">
                         <table class="w-100 mb-3">
                             <tr>
-                                <td class="text-end fw-bold py-1" style="width: 70%;">{{ __('Subtotal') }}:</td>
+                                <td class="text-end fw-bold py-1" style="width: 70%;">{{ __('Subtotal excl. tax') }}:</td>
                                 <td class="py-1">
                                     <input wire:model="subtotal" readonly type="number" class="fw-bold text-end form-control form-control-sm bg-white" placeholder="0">
                                 </td>
                             </tr>
                             <tr>
-                                <td class="text-end fw-bold py-1">{{ __('Discount') }}:</td>
+                                <td class="text-end fw-bold py-1">{{ __('Discount applied') }}:</td>
                                 <td class="py-1">
                                     <input wire:model.live="discount" readonly type="number" class="fw-bold text-end form-control form-control-sm bg-white" placeholder="0">
                                 </td>
                             </tr>
                             <tr>
                                 <td class="text-end fw-bold py-1">
-                                    {{ $shop?->tax_label ?? 'GST' }} <span class="small text-muted">({{ $shop?->gst_percent }}% on VAT items)</span>:
+                                    {{ $shop?->tax_label ?? 'GST' }} <span class="small text-muted">({{ $shop?->gst_percent }}% {{ __('included in price') }})</span>:
                                 </td>
                                 <td class="py-1">
                                     <input wire:model.live="gst" readonly type="number" class="fw-bold text-end form-control form-control-sm bg-white" placeholder="0">

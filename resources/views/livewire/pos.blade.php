@@ -699,16 +699,16 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                             <table class="table table-sm table-borderless w-100 mb-3">
                                 <tbody>
                                     <tr>
-                                        <td class="text-start text-muted py-1">{{ __('Subtotal') }}</td>
+                                        <td class="text-start text-muted py-1">{{ __('Subtotal excl. tax') }}</td>
                                         <td class="text-end fw-bold py-1">{{ $currencySymbol }}{{ number_format((float)$subtotal, 2) }}</td>
                                     </tr>
                                     <tr>
-                                        <td class="text-start text-muted py-1">{{ __('Discount') }}</td>
+                                        <td class="text-start text-muted py-1">{{ __('Discount applied') }}</td>
                                         <td class="text-end fw-bold text-danger py-1">- {{ $currencySymbol }}{{ number_format((float)$discount, 2) }}</td>
                                     </tr>
                                     <tr>
                                         <td class="text-start text-muted py-1">
-                                            {{ $shop?->tax_label ?? 'TVA' }} <span class="small text-muted">({{ $shop?->gst_percent }}% on VAT items)</span>
+                                            {{ $shop?->tax_label ?? 'TVA' }} <span class="small text-muted">({{ $shop?->gst_percent }}% {{ __('included in price') }})</span>
                                         </td>
                                         <td class="text-end fw-bold py-1">{{ $currencySymbol }}{{ number_format((float)$gst, 2) }}</td>
                                     </tr>

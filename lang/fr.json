@@ -277,6 +277,9 @@
     "Bank transfer": "Virement bancaire",
     "Reference": "Référence",
     "Subtotal excl. tax": "Sous-total HT",
+    "Subtotal (incl. tax)": "Sous-total TTC",
+    "included in price": "incluse dans le prix",
+    "Discount applied": "Remise appliquée",
     "Total excl. tax": "Total HT",
     "Thank you for your trust!": "Merci pour votre confiance !",
     "The team at :shop": "L’équipe :shop",
@@ -396,5 +399,12 @@
     "Thermal Sales Receipt": "Ticket de caisse",
     "Thermal Receipt Number": "N° de ticket",
     "Thermal Payment Method": "Mode de paiement",
-    "Thermal Unit Price": "Prix unit."
+    "Thermal Unit Price": "Prix unit.",
+    "Thank you for your purchase!": "Merci pour votre achat !",
+    "For any inquiry, please call us": "Pour toute question, contactez-nous au",
+    "Mobile payment": "Paiement mobile",
+    "Walk In": "Client au comptoir",
+    "Thermal Unit Price excl. tax": "Prix HT",
+    "Included VAT": "TVA incluse",
+    "VAT": "TVA"
 }

@@ -277,6 +277,9 @@
     "Bank transfer": "Bank transfer",
     "Reference": "Reference",
     "Subtotal excl. tax": "Subtotal excl. tax",
+    "Subtotal (incl. tax)": "Subtotal (incl. tax)",
+    "included in price": "included in price",
+    "Discount applied": "Discount applied",
     "Total excl. tax": "Total excl. tax",
     "Thank you for your trust!": "Thank you for your trust!",
     "The team at :shop": "The team at :shop",
@@ -385,5 +388,12 @@
     "Thermal Sales Receipt": "Sales Receipt",
     "Thermal Receipt Number": "Receipt No.",
     "Thermal Payment Method": "Payment",
-    "Thermal Unit Price": "Unit Price"
+    "Thermal Unit Price": "Unit Price",
+    "Thank you for your purchase!": "Thank you for your purchase!",
+    "For any inquiry, please call us": "For any inquiry, please call us",
+    "Mobile payment": "Mobile payment",
+    "Walk In": "Walk-in customer",
+    "Thermal Unit Price excl. tax": "Unit excl.",
+    "Included VAT": "Included VAT",
+    "VAT": "VAT"
 }

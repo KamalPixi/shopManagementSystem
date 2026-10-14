@@ -443,12 +443,15 @@
     @php
         $gstPercent = (float) ($shop?->gst_percent ?? 0);
 
-        // POS prices are tax exclusive. Sale item totals include item discounts.
         $totalTtc = (float) ($sale->total_price ?? 0);
         $totalGst = (float) ($sale->gst ?? 0);
         $discount = (float) ($sale->discount ?? 0);
-        $subtotalHt = $sale->saleItems->sum(fn ($item) => (float) $item->price * (int) $item->quantity);
-        $totalHt = $sale->saleItems->sum(fn ($item) => (float) $item->total);
+        $itemsTotal = $sale->saleItems->sum(fn ($item) => (float) $item->total);
+        $usesInclusivePrices = $totalGst > 0 && abs($totalTtc - $itemsTotal) < 0.02;
+        $taxableItemsTotal = $sale->saleItems->filter(fn ($item) => (bool) $item->is_vatable)->sum(fn ($item) => (float) $item->total);
+        // Use the recorded tax share so existing receipts retain their saved calculation.
+        $recordedTaxShare = $usesInclusivePrices && $taxableItemsTotal > 0 ? $totalGst / $taxableItemsTotal : 0;
+        $subtotalReceipt = $sale->saleItems->sum(fn ($item) => (float) $item->price * (int) $item->quantity) - ($usesInclusivePrices ? $totalGst : 0);
         $hasVatItems = $sale->saleItems->contains(fn ($item) => (bool) $item->is_vatable && $gstPercent > 0);
         $hasNonVatItems = $sale->saleItems->contains(fn ($item) => !(bool) $item->is_vatable);
         $paymentMethod = strtolower($sale->payment_method ?? 'cash');
@@ -558,9 +561,14 @@
                 @php
                     $isVat = $item->is_vatable;
                     $itemVatRate = $isVat ? $gstPercent : 0;
-                    $unitHt = (float) $item->price;
-                    $unitTtc = $unitHt * (1 + $itemVatRate / 100);
-                    $totalLineTtc = (float) $item->total * (1 + $itemVatRate / 100);
+                    $unitGross = (float) $item->price;
+                    $unitHt = $usesInclusivePrices && $itemVatRate > 0
+                        ? $unitGross * (1 - $recordedTaxShare)
+                        : $unitGross;
+                    $unitTtc = $usesInclusivePrices ? $unitGross : $unitHt * (1 + $itemVatRate / 100);
+                    $totalLineTtc = $usesInclusivePrices
+                        ? (float) $item->total
+                        : (float) $item->total * (1 + $itemVatRate / 100);
                     $warrantyText = $item->warranty_description ?: ($item->warranty?->description ?: $item->warranty?->name);
                     $sn = $item->productVariation?->serial_no ?: $item->product?->serial_no;
                 @endphp
@@ -644,7 +652,7 @@
                 <table class="totals-card">
                     <tr>
                         <td class="totals-label">{{ __('Subtotal excl. tax') }}:</td>
-                        <td class="totals-value">{{ number_format($subtotalHt, 2) }}</td>
+                        <td class="totals-value">{{ number_format($subtotalReceipt, 2) }}</td>
                     </tr>
                     @if($discount > 0)
                     <tr>

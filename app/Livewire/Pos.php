@@ -707,7 +707,10 @@ class Pos extends Component
 
             // Calculate profit for item
             $profit_per_unit = $item['price'] - $purchase_price;
-            $profit_total_for_item = ($profit_per_unit * $item['quantity']) - $item['discount'];
+            $itemVat = !empty($item['is_vatable']) && $this->gst_percent > 0
+                ? round((float) $item['total'] * ($this->gst_percent / 100), 2)
+                : 0;
+            $profit_total_for_item = ($profit_per_unit * $item['quantity']) - $item['discount'] - $itemVat;
             $profit_total += $profit_total_for_item;
 
             // Create the sale item entry
@@ -792,16 +795,18 @@ class Pos extends Component
 
     protected function calculate() {
         $this->subtotal = 0;
-        $taxableSubtotal = 0;
+        $vatTotal = 0;
 
-        $this->sale_items = collect($this->sale_items)->map(function ($item) use (&$taxableSubtotal) {
+        $this->sale_items = collect($this->sale_items)->map(function ($item) use (&$vatTotal) {
             try {
                 $item['total'] = number_format($item['price'] * $item['quantity'], '2', '.', '');
                 $item['total'] -= $item['discount'];
-                $this->subtotal += (float) $item['total'];
+                $this->subtotal += (float) $item['price'] * (int) $item['quantity'];
 
                 if (!empty($item['is_vatable'])) {
-                    $taxableSubtotal += (float) $item['total'];
+                    $vatTotal += $this->gst_percent > 0
+                        ? round((float) $item['total'] * ((float) $this->gst_percent / 100), 2)
+                        : 0;
                 }
             } catch (\Throwable $th) {
                 return $item;
@@ -814,9 +819,12 @@ class Pos extends Component
             $this->discount = (float) collect($this->sale_items)->sum('discount');
             $this->gst_percent = (float) $this->gst_percent;
 
-            // Only calculate GST on items flagged as VATable!
-            $this->gst = $taxableSubtotal * ($this->gst_percent / 100);
-            $this->grand_total = ($this->subtotal) + $this->gst;
+            // Deduct the configured percentage directly from VATable sale prices.
+            $this->gst = $this->gst_percent > 0
+                ? round($vatTotal, 2)
+                : 0;
+            $this->grand_total = $this->subtotal - $this->discount;
+            $this->subtotal -= $this->gst;
         } catch (\Throwable $th) {
             return;
         }
