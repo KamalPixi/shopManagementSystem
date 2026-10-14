@@ -840,10 +840,11 @@ class Pos extends Component
         $this->dispatch('print-pdf', ['url' => $url]);
     }
 
-    public function printSaleReceiptPos($sale_id) {
+    public function printSaleReceiptPos($sale_id, string $locale = 'en') {
+        abort_unless(in_array($locale, ['en', 'fr'], true), 422);
         $sale = Sale::findOrFail($sale_id);
         $printerManager = app(\App\Services\PrinterManagerService::class);
-        $result = $printerManager->printPosReceipt($sale);
+        $result = $printerManager->printPosReceipt($sale, $locale);
         session()->flash($result['success'] ? 'message' : 'failed', $result['message']);
     }
 

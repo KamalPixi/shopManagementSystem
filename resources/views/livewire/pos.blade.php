@@ -34,22 +34,25 @@
                 </div>
 
                 <div class="d-grid gap-2">
-                    {{-- 80mm Print Receipt --}}
-                    <button
-                        type="button"
-                        class="btn btn-dark btn-lg fw-bold"
-                        wire:click="printSaleReceiptPos({{ $lastSaleId }})"
-                        wire:loading.attr="disabled"
-                        wire:target="printSaleReceiptPos"
-                    >
-                        <span wire:loading.remove wire:target="printSaleReceiptPos">
-                            <i class="fa-solid fa-print me-2"></i>{{ __('Print Receipt (80mm)') }}
-                        </span>
-                        <span wire:loading wire:target="printSaleReceiptPos">
-                            <span class="spinner-border spinner-border-sm me-2"></span>{{ __('Printing…') }}
-                        </span>
-                    </button>
-
+                    {{-- English / French thermal receipt choices --}}
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button type="button" class="btn btn-dark w-100 fw-bold py-3"
+                                wire:click="printSaleReceiptPos({{ $lastSaleId }}, 'en')"
+                                wire:loading.attr="disabled" wire:target="printSaleReceiptPos">
+                                <span wire:loading.remove wire:target="printSaleReceiptPos"><i class="fa-solid fa-print me-1"></i>{{ __('English receipt') }}</span>
+                                <span wire:loading wire:target="printSaleReceiptPos"><span class="spinner-border spinner-border-sm me-1"></span>{{ __('Printing…') }}</span>
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-outline-dark w-100 fw-bold py-3"
+                                wire:click="printSaleReceiptPos({{ $lastSaleId }}, 'fr')"
+                                wire:loading.attr="disabled" wire:target="printSaleReceiptPos">
+                                <span wire:loading.remove wire:target="printSaleReceiptPos"><i class="fa-solid fa-print me-1"></i>{{ __('French receipt') }}</span>
+                                <span wire:loading wire:target="printSaleReceiptPos"><span class="spinner-border spinner-border-sm me-1"></span>{{ __('Printing…') }}</span>
+                            </button>
+                        </div>
+                    </div>
                     {{-- Close --}}
                     <button
                         type="button"

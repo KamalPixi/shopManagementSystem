@@ -8,6 +8,7 @@ use Symfony\Component\Process\Process;
 use App\Models\Shop;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Lang;
 use Mike42\Escpos\PrintConnectors\CupsPrintConnector;
 use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
 use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
@@ -308,7 +309,7 @@ class PrinterManagerService
     /**
      * Print a sale receipt using the configured POS thermal printer.
      */
-    public function printPosReceipt(Sale $sale): array
+    public function printPosReceipt(Sale $sale, ?string $receiptLocale = null): array
     {
         $connection = $this->getPosPrinterConnector();
         if (!$connection['success']) {
@@ -327,6 +328,14 @@ class PrinterManagerService
             $printer->setPrintLeftMargin(24);
             $printer->setPrintWidth($printWidth * 12);
             $divider = str_repeat('-', $printWidth) . "\n";
+            $systemLocale = ($shop?->settings['language'] ?? app()->getLocale()) === 'fr' ? 'fr' : 'en';
+            $locale = in_array($receiptLocale, ['en', 'fr'], true) ? $receiptLocale : $systemLocale;
+            $translate = static fn (string $key): string => Lang::get($key, [], $locale);
+            $gstPercent = (float) ($shop?->gst_percent ?? 0);
+            $hasVatItems = $sale->saleItems->contains(fn ($item) => (bool) $item->is_vatable && $gstPercent > 0);
+            $hasNonVatItems = $sale->saleItems->contains(fn ($item) => !(bool) $item->is_vatable);
+            $currencyCode = $shop?->currency['code'] ?? 'EUR';
+            $shopTimezone = $shop?->timezone ?? 'Europe/Paris';
 
             // Column widths within the inset print area
             $col1 = $is80mm ? 6 : 5;   // Qty
@@ -361,24 +370,29 @@ class PrinterManagerService
             }
 
             $printer->setEmphasis(true);
-            $printer->text("\nSALES RECEIPT\n");
+            $printer->text("\n" . mb_strtoupper($translate('Sales Receipt')) . "\n");
             $printer->setEmphasis(false);
             $printer->text($divider);
 
             // ── RECEIPT METADATA ──────────────────────────────────────────
             $printer->setJustification(Printer::JUSTIFY_LEFT);
-            $currencyCode = $shop?->currency['code'] ?? 'EUR';
-            $shopTimezone = $shop?->timezone ?? 'Europe/Paris';
-
-            $printer->text('Receipt No.: ' . $sale->receipt_no . "\n");
-            $printer->text('Date       : ' . $sale->created_at->timezone($shopTimezone)->format('d/m/Y H:i') . "\n");
-            $printer->text('Cashier    : ' . ($sale->createdBy?->name ?? ($sale->createdBy?->username ?? '-')) . "\n");
-            $printer->text('Payment    : ' . ucfirst(str_replace('_', ' ', $sale->payment_method ?: 'Cash')) . "\n");
+            $paymentMethod = match (strtolower($sale->payment_method ?: 'cash')) {
+                'cash' => $translate('Cash'),
+                'card' => $translate('Card'),
+                'bank_transfer' => $translate('Bank transfer'),
+                'mobile_payment' => $translate('Mobile payment'),
+                'other' => $translate('Other'),
+                default => ucfirst(str_replace('_', ' ', $sale->payment_method)),
+            };
+            $printer->text($translate('Receipt No.') . ': ' . $sale->receipt_no . "\n");
+            $printer->text($translate('Date') . ' : ' . $sale->created_at->timezone($shopTimezone)->locale($locale)->translatedFormat('d/m/Y H:i') . "\n");
+            $printer->text($translate('Cashier') . ' : ' . ($sale->createdBy?->name ?? ($sale->createdBy?->username ?? '-')) . "\n");
+            $printer->text($translate('Payment') . ' : ' . $paymentMethod . "\n");
             if ($sale->payment_reference) {
-                $printer->text('Ref        : ' . $sale->payment_reference . "\n");
+                $printer->text($translate('Reference') . ' : ' . $sale->payment_reference . "\n");
             }
             if ($sale->customer) {
-                $printer->text('Customer   : ' . ($sale->customer->name ?: 'Walk In') . "\n");
+                $printer->text($translate('Customer') . ' : ' . ($sale->customer->name ?: $translate('Walk In')) . "\n");
             }
             $printer->text($divider);
 
@@ -386,8 +400,8 @@ class PrinterManagerService
             $printer->setEmphasis(true);
             $printer->text(
                 str_pad('Qty', $col1, ' ', STR_PAD_RIGHT) .
-                str_pad('Unit Price', $col2, ' ', STR_PAD_LEFT) .
-                str_pad('Disc', $col3, ' ', STR_PAD_LEFT) .
+                str_pad($translate('Unit Price'), $col2, ' ', STR_PAD_LEFT) .
+                str_pad($translate('Disc'), $col3, ' ', STR_PAD_LEFT) .
                 str_pad('Total', $col4, ' ', STR_PAD_LEFT) . "\n"
             );
             $printer->setEmphasis(false);
@@ -429,8 +443,8 @@ class PrinterManagerService
             $printer->text($divider);
 
             // ── TOTALS ────────────────────────────────────────────────────
-            $subtotal    = number_format($sale->total_price - $sale->gst + $sale->discount, 2);
-            $taxLabel    = ($shop?->tax_label ?? 'TVA') . ':';
+            $subtotal    = number_format($sale->saleItems->sum(fn ($item) => (float) $item->price * (int) $item->quantity), 2);
+            $taxLabel    = ($shop?->tax_label ?: ($locale === 'fr' ? 'TVA' : 'GST')) . ':';
             $gstAmount   = number_format($sale->gst, 2);
             $discountAmt = number_format($sale->discount, 2);
             $total       = number_format($sale->total_price, 2);
@@ -438,16 +452,27 @@ class PrinterManagerService
             $labelWidth = $is80mm ? 28 : 18;
             $valWidth   = $is80mm ? 18 : 12;
 
-            $printer->text(str_pad('Sub Total:', $labelWidth) . str_pad($subtotal, $valWidth, ' ', STR_PAD_LEFT) . "\n");
+            $printer->text(str_pad($translate('Subtotal excl. tax') . ':', $labelWidth) . str_pad($subtotal, $valWidth, ' ', STR_PAD_LEFT) . "\n");
             if ($sale->discount > 0) {
-                $printer->text(str_pad('Discount:', $labelWidth) . str_pad('-' . $discountAmt, $valWidth, ' ', STR_PAD_LEFT) . "\n");
+                $printer->text(str_pad($translate('Discount') . ':', $labelWidth) . str_pad('-' . $discountAmt, $valWidth, ' ', STR_PAD_LEFT) . "\n");
             }
-            $printer->text(str_pad($taxLabel, $labelWidth) . str_pad($gstAmount, $valWidth, ' ', STR_PAD_LEFT) . "\n");
+            if ($hasVatItems) {
+                $printer->text(str_pad($taxLabel . ' (' . rtrim(rtrim(number_format($gstPercent, 2, '.', ''), '0'), '.') . '%)', $labelWidth) . str_pad($gstAmount, $valWidth, ' ', STR_PAD_LEFT) . "\n");
+            }
             $printer->text($divider);
             $printer->setEmphasis(true);
-            $printer->text(str_pad("Total ($currencyCode):", $labelWidth) . str_pad($total, $valWidth, ' ', STR_PAD_LEFT) . "\n");
+            $printer->text(str_pad($translate('Total incl. tax') . " ($currencyCode):", $labelWidth) . str_pad($total, $valWidth, ' ', STR_PAD_LEFT) . "\n");
             $printer->setEmphasis(false);
             $printer->text($divider);
+            if ($hasNonVatItems) {
+                $schemeLines = [$translate('Special scheme - Second-hand goods')];
+                foreach ($schemeLines as $schemeLine) {
+                    foreach (explode("\n", wordwrap($schemeLine, $printWidth, "\n", true)) as $line) {
+                        $printer->text($line . "\n");
+                    }
+                }
+                $printer->text($divider);
+            }
 
             // ── FOOTER ────────────────────────────────────────────────────
             // FONT_A throughout — avoids the blur caused by FONT_B on Xprinter drivers.
@@ -455,13 +480,13 @@ class PrinterManagerService
             $printer->setJustification(Printer::JUSTIFY_CENTER);
             $printer->setTextSize(1, 1);
             $printer->setEmphasis(true);
-            $printer->text("\nThank you for your purchase!\n");
+            $printer->text("\n" . $translate('Thank you for your purchase!') . "\n");
             $printer->setEmphasis(false);
             if ($shop?->contact_no) {
-                $printer->text("For any inquiry, please call us\n");
+                $printer->text($translate('For any inquiry, please call us') . "\n");
                 $printer->text($shop->contact_no . "\n");
             }
-            $printer->text(now()->timezone($shopTimezone)->format('F j, Y g:i A') . "\n");
+            $printer->text(now()->timezone($shopTimezone)->locale($locale)->translatedFormat('F j, Y g:i A') . "\n");
             $printer->feed(3);
 
             // Paper Cut
