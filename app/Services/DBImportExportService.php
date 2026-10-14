@@ -51,9 +51,20 @@ final class DBImportExportService
         $databasePath = $this->databasePath();
         $this->createSnapshot($databasePath, storage_path('app/private/backups/pre-restore-' . now()->format('Ymd-His') . '.sqlite'));
         DB::disconnect();
-        if (!@rename($incomingPath, $databasePath)) {
+        $pdo = null;
+        gc_collect_cycles();
+
+        if (file_exists($databasePath)) {
+            if (!@unlink($databasePath)) {
+                throw new RuntimeException(__('Could not remove the active database file. Please close any other applications using it.'));
+            }
+        }
+
+        if (!@copy($incomingPath, $databasePath)) {
+            @unlink($incomingPath);
             throw new RuntimeException(__('Could not replace the active database file.'));
         }
+        @unlink($incomingPath);
         DB::purge();
         DB::reconnect();
         Artisan::call('migrate', ['--force' => true]);
