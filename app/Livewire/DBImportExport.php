@@ -23,7 +23,13 @@ class DBImportExport extends Component
             'file' => 'required|file|max:512000',
         ]);
 
-        app(DBImportExportService::class)->restoreDatabase($this->file);
+        try {
+            app(DBImportExportService::class)->restoreDatabase($this->file);
+        } catch (\RuntimeException $exception) {
+            report($exception);
+            session()->flash('failed', $exception->getMessage());
+            return;
+        }
 
         session()->flash('success', __('Database restored successfully.'));
         $this->reset('file');

@@ -45,30 +45,50 @@ final class DBImportExportService
         if (!in_array(strtolower($file->getClientOriginalExtension()), ['sqlite', 'db', 'sqlite3'], true)) {
             throw new RuntimeException(__('Please select a SQLite database backup file.'));
         }
-        $incoming = $file->storeAs('private/restore', 'incoming-' . uniqid('', true) . '.sqlite');
-        $incomingPath = Storage::path($incoming);
-        $this->assertIntegrity($incomingPath);
-        $databasePath = $this->databasePath();
-        $this->createSnapshot($databasePath, storage_path('app/private/backups/pre-restore-' . now()->format('Ymd-His') . '.sqlite'));
-        DB::disconnect();
-        $pdo = null;
-        gc_collect_cycles();
+        if (!class_exists(\SQLite3::class)) {
+            throw new RuntimeException(__('Database restore requires the SQLite3 PHP extension.'));
+        }
 
-        if (file_exists($databasePath)) {
-            if (!@unlink($databasePath)) {
-                throw new RuntimeException(__('Could not remove the active database file. Please close any other applications using it.'));
+        $incoming = $file->storeAs('private/restore', 'incoming-' . uniqid('', true) . '.sqlite', 'local');
+        if (!$incoming) {
+            throw new RuntimeException(__('Could not store the database backup.'));
+        }
+        $incomingPath = Storage::disk('local')->path($incoming);
+
+        try {
+            $this->assertIntegrity($incomingPath);
+            $databasePath = $this->databasePath();
+            $this->createSnapshot($databasePath, storage_path('app/private/backups/pre-restore-' . now()->format('Ymd-His-u') . '.sqlite'));
+            DB::purge();
+
+            // NativePHP workers may still have the file open on Windows. Restore
+            // through SQLite so its locking and journal handling remain intact.
+            $this->restoreSnapshot($incomingPath, $databasePath);
+            DB::reconnect();
+            if (Artisan::call('migrate', ['--force' => true]) !== 0) {
+                throw new RuntimeException(__('The database was restored, but its migrations failed.'));
             }
-        }
-
-        if (!@copy($incomingPath, $databasePath)) {
+            $this->assertIntegrity($databasePath);
+        } finally {
             @unlink($incomingPath);
-            throw new RuntimeException(__('Could not replace the active database file.'));
         }
-        @unlink($incomingPath);
-        DB::purge();
-        DB::reconnect();
-        Artisan::call('migrate', ['--force' => true]);
-        $this->assertIntegrity($databasePath);
+    }
+
+    private function restoreSnapshot(string $source, string $destination): void
+    {
+        $incoming = new \SQLite3($source, SQLITE3_OPEN_READONLY);
+        $active = null;
+
+        try {
+            $active = new \SQLite3($destination, SQLITE3_OPEN_READWRITE);
+            $active->busyTimeout(5000);
+            if (!@$incoming->backup($active)) {
+                throw new RuntimeException(__('Could not restore the database. It may be busy; please wait for other operations to finish and try again.'));
+            }
+        } finally {
+            $active?->close();
+            $incoming->close();
+        }
     }
 
     private function createSnapshot(string $source, string $destination): void
