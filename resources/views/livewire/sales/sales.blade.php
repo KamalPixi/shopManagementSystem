@@ -227,16 +227,98 @@
                                     <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="fas fa-ellipsis-h"></i>
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow">
-                                        <li><a class="dropdown-item text-dark" href="{{ route('sales.show', $sale->id) }}"><i class="fa-solid fa-eye pe-2"></i>{{ __('View Details') }}</a></li>
-                                        <li><a class="dropdown-item text-primary" href="{{ route('sales.edit', $sale->id) }}"><i class="fa-solid fa-pen-to-square pe-2"></i>{{ __('Edit Sale') }}</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="#" wire:click="printSaleReceiptPos('{{$sale->id}}')"><i class="fa-solid fa-print pe-2"></i>{{ __('Receipt (POS)') }}</a></li>
-                                        <li><a class="dropdown-item" href="#" wire:click="printSaleReceipt('{{$sale->id}}')"><i class="fa-solid fa-file-pdf pe-2 text-danger"></i>{{ __('Receipt (PDF)') }}</a></li>
-                                        <li><a class="dropdown-item" href="#" wire:click="printSaleReceiptA4('{{$sale->id}}')"><i class="fa-solid fa-file-lines pe-2 text-info"></i>{{ __('Receipt A4 (PDF)') }}</a></li>
-                                        {{-- <li><a class="dropdown-item" href="{{ route('sales.a4Preview', $sale->id) }}" target="_blank"><i class="fa-solid fa-eye pe-2 text-info"></i>{{ __('A4 Preview') }}</a></li> --}}
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item text-danger" href="#" wire:confirm="{{ __('Are you sure you want to delete this sale? Stock will be restored.') }}" wire:click="deleteSale('{{$sale->id}}')"><i class="fa-solid fa-trash pe-2"></i>{{ __('Delete') }}</a></li>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow py-2" style="min-width: 17.5rem;">
+                                        <li>
+                                            <a class="dropdown-item text-dark py-2" href="{{ route('sales.show', $sale->id) }}">
+                                                <i class="fa-solid fa-eye pe-2 text-muted"></i>{{ __('View Details') }}
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item text-primary py-2" href="{{ route('sales.edit', $sale->id) }}">
+                                                <i class="fa-solid fa-pen-to-square pe-2"></i>{{ __('Edit Sale') }}
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider my-2"></li>
+
+                                        <li class="dropdown-header text-uppercase text-muted fw-bold px-3 py-1" style="font-size: 0.65rem; letter-spacing: 0.5px;">
+                                            <i class="fa-solid fa-print me-1"></i>{{ __('Print / Download') }}
+                                        </li>
+
+                                        {{-- Receipt (POS Print 80mm) --}}
+                                        <li class="px-3 py-1">
+                                            <div class="d-flex align-items-center justify-content-between gap-2">
+                                                <span class="small fw-semibold text-secondary text-nowrap">
+                                                    <i class="fa-solid fa-print me-2 text-dark"></i>{{ __('POS (80mm)') }}
+                                                </span>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <button type="button" class="btn btn-outline-dark fw-bold px-2 py-0" style="font-size: 0.72rem; min-height: 24px;"
+                                                        wire:click="printSaleReceiptPos('{{$sale->id}}', 'en')"
+                                                        wire:loading.attr="disabled"
+                                                        title="{{ __('English POS receipt') }}">
+                                                        EN
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-dark fw-bold px-2 py-0" style="font-size: 0.72rem; min-height: 24px;"
+                                                        wire:click="printSaleReceiptPos('{{$sale->id}}', 'fr')"
+                                                        wire:loading.attr="disabled"
+                                                        title="{{ __('French POS receipt') }}">
+                                                        FR
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </li>
+
+                                        {{-- Receipt (PDF 80mm) --}}
+                                        <li class="px-3 py-1">
+                                            <div class="d-flex align-items-center justify-content-between gap-2">
+                                                <span class="small fw-semibold text-secondary text-nowrap">
+                                                    <i class="fa-solid fa-file-pdf me-2 text-danger"></i>{{ __('Receipt (PDF)') }}
+                                                </span>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <button type="button" class="btn btn-outline-danger fw-bold px-2 py-0" style="font-size: 0.72rem; min-height: 24px;"
+                                                        wire:click="printSaleReceipt('{{$sale->id}}', 'en')"
+                                                        wire:loading.attr="disabled"
+                                                        title="{{ __('English 80mm PDF') }}">
+                                                        EN
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-danger fw-bold px-2 py-0" style="font-size: 0.72rem; min-height: 24px;"
+                                                        wire:click="printSaleReceipt('{{$sale->id}}', 'fr')"
+                                                        wire:loading.attr="disabled"
+                                                        title="{{ __('French 80mm PDF') }}">
+                                                        FR
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </li>
+
+                                        {{-- Receipt A4 (PDF Invoice) --}}
+                                        <li class="px-3 py-1">
+                                            <div class="d-flex align-items-center justify-content-between gap-2">
+                                                <span class="small fw-semibold text-secondary text-nowrap">
+                                                    <i class="fa-solid fa-file-lines me-2 text-info"></i>{{ __('Invoice (A4)') }}
+                                                </span>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <button type="button" class="btn btn-outline-info fw-bold px-2 py-0" style="font-size: 0.72rem; min-height: 24px;"
+                                                        wire:click="printSaleReceiptA4('{{$sale->id}}', 'en')"
+                                                        wire:loading.attr="disabled"
+                                                        title="{{ __('English A4 PDF') }}">
+                                                        EN
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-info fw-bold px-2 py-0" style="font-size: 0.72rem; min-height: 24px;"
+                                                        wire:click="printSaleReceiptA4('{{$sale->id}}', 'fr')"
+                                                        wire:loading.attr="disabled"
+                                                        title="{{ __('French A4 PDF') }}">
+                                                        FR
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </li>
+
+                                        <li><hr class="dropdown-divider my-2"></li>
+                                        <li>
+                                            <a class="dropdown-item text-danger py-2" href="#" wire:confirm="{{ __('Are you sure you want to delete this sale? Stock will be restored.') }}" wire:click="deleteSale('{{$sale->id}}')">
+                                                <i class="fa-solid fa-trash pe-2"></i>{{ __('Delete') }}
+                                            </a>
+                                        </li>
                                     </ul>
                                 </div>
                             </td>

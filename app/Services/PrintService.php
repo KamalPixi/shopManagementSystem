@@ -76,11 +76,11 @@ final class PrintService
     }
 
 
-    public function printReceipt(Sale $sale): string
+    public function printReceipt(Sale $sale, ?string $receiptLocale = null): string
     {
         try {
             $manager = app(PrinterManagerService::class);
-            $result = $manager->printPosReceipt($sale);
+            $result = $manager->printPosReceipt($sale, $receiptLocale);
             return $result['message'];
         } catch (\Throwable $e) {
             return 'Printer error: ' . $e->getMessage();

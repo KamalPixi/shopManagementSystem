@@ -395,5 +395,14 @@
     "Walk In": "Walk-in customer",
     "Thermal Unit Price excl. tax": "Unit excl.",
     "Included VAT": "Included VAT",
-    "VAT": "VAT"
+    "VAT": "VAT",
+    "Print / Download": "Print / Download",
+    "POS (80mm)": "POS (80mm)",
+    "Invoice (A4)": "Invoice (A4)",
+    "English POS receipt": "English POS receipt",
+    "French POS receipt": "French POS receipt",
+    "English 80mm PDF": "English 80mm PDF",
+    "French 80mm PDF": "French 80mm PDF",
+    "English A4 PDF": "English A4 PDF",
+    "French A4 PDF": "French A4 PDF"
 }

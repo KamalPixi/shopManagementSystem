@@ -71,37 +71,50 @@ class Sales extends Component
         $this->dispatch('print-pdf', ['url' => $url]);
     }
 
-    public function printSaleReceipt($id) {
+    public function printSaleReceipt($id, ?string $locale = null) {
         $s = new SaleService();
-        $url = $s->generateSaleReceipt($id);
+        $url = $s->generateSaleReceipt($id, $locale);
         
         $this->dispatch('print-pdf', ['url' => $url]);
     }
 
-    public function printSaleReceiptPos($id) {
+    public function printSaleReceiptPos($id, ?string $locale = null) {
         $sale = Sale::findOrFail($id);
-        $printService = new PrintService();
-        $msg = $printService->printReceipt($sale);
+        $printerManager = app(\App\Services\PrinterManagerService::class);
+        $result = $printerManager->printPosReceipt($sale, $locale);
 
         try {
             $s = new SaleService();
-            $url = $s->generateSaleReceipt($id);
+            $url = $s->generateSaleReceipt($id, $locale);
             $this->dispatch('print-pdf', ['url' => $url]);
         } catch (\Throwable $e) {
             // Ignore preview error
         }
 
-        session()->flash('message', $msg);
+        session()->flash($result['success'] ? 'message' : 'failed', $result['message']);
     }
 
-    public function printSaleReceiptA4($id) {
+    public function printSaleReceiptA4($id, ?string $locale = null) {
         $s = new SaleService();
-        $url = $s->generateSaleReceiptA4($id);
+        $url = $s->generateSaleReceiptA4($id, $locale);
 
         $printerManager = app(\App\Services\PrinterManagerService::class);
         $a4Settings = $printerManager->getSettings()['a4'];
         if (!empty($a4Settings['auto_print'])) {
-            $printerManager->printA4Document(public_path('sales/sale_receipt_a4.pdf'));
+            $sale = Sale::with(['saleItems.product', 'saleItems.productVariation', 'saleItems.warranty', 'customer', 'createdBy'])->findOrFail($id);
+            $targetLocale = in_array($locale, ['en', 'fr'], true) ? $locale : app()->getLocale();
+            $previousLocale = app()->getLocale();
+            app()->setLocale($targetLocale);
+            try {
+                $html = view('prints.sale-receipt-a4', ['sale' => $sale, 'shop' => Shop::first()])->render();
+            } finally {
+                app()->setLocale($previousLocale);
+            }
+            $result = $printerManager->printA4Document(public_path('sales/sale_receipt_a4.pdf'), null, $html);
+            session()->flash($result['success'] ? 'message' : 'failed', $result['message']);
+            if ($result['success']) {
+                return;
+            }
         }
         
         $this->dispatch('print-pdf', ['url' => $url]);

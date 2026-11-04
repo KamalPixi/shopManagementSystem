@@ -39,18 +39,49 @@
                     <a href="{{ route('sales.edit', $sale->id) }}" class="btn btn-sm btn-primary shadow-sm px-3">
                         {{ __('Edit Sale') }}
                     </a>
-                    <button type="button" wire:click="printSaleReceiptPos" wire:loading.attr="disabled" wire:target="printSaleReceiptPos" class="btn btn-sm btn-outline-dark shadow-sm px-3">
-                        <span wire:loading.remove wire:target="printSaleReceiptPos">{{ __('Print POS') }}</span>
-                        <span wire:loading wire:target="printSaleReceiptPos"><i class="fa-solid fa-spinner fa-spin me-1"></i>{{ __('Processing') }}</span>
-                    </button>
-                    <button type="button" wire:click="printSaleReceipt" wire:loading.attr="disabled" wire:target="printSaleReceipt" class="btn btn-sm btn-outline-secondary shadow-sm px-3">
-                        <span wire:loading.remove wire:target="printSaleReceipt">{{ __('PDF Receipt') }}</span>
-                        <span wire:loading wire:target="printSaleReceipt"><i class="fa-solid fa-spinner fa-spin me-1"></i>{{ __('Processing') }}</span>
-                    </button>
-                    <button type="button" wire:click="printSaleReceiptA4" wire:loading.attr="disabled" wire:target="printSaleReceiptA4" class="btn btn-sm btn-outline-secondary shadow-sm px-3">
-                        <span wire:loading.remove wire:target="printSaleReceiptA4">{{ __('PDF A4') }}</span>
-                        <span wire:loading wire:target="printSaleReceiptA4"><i class="fa-solid fa-spinner fa-spin me-1"></i>{{ __('Processing') }}</span>
-                    </button>
+
+                    {{-- Print POS (80mm) with EN / FR options --}}
+                    <div class="btn-group btn-group-sm shadow-sm" role="group">
+                        <button type="button" class="btn btn-outline-dark" wire:click="printSaleReceiptPos" wire:loading.attr="disabled" wire:target="printSaleReceiptPos">
+                            <i class="fa-solid fa-print me-1"></i><span wire:loading.remove wire:target="printSaleReceiptPos">{{ __('Print POS') }}</span><span wire:loading wire:target="printSaleReceiptPos">{{ __('Processing') }}...</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-dark dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow py-1">
+                            <li><a class="dropdown-item small" href="#" wire:click="printSaleReceiptPos('en')"><span class="badge bg-dark me-2">EN</span>{{ __('English receipt') }}</a></li>
+                            <li><a class="dropdown-item small" href="#" wire:click="printSaleReceiptPos('fr')"><span class="badge bg-dark me-2">FR</span>{{ __('French receipt') }}</a></li>
+                        </ul>
+                    </div>
+
+                    {{-- PDF Receipt (80mm) with EN / FR options --}}
+                    <div class="btn-group btn-group-sm shadow-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary" wire:click="printSaleReceipt" wire:loading.attr="disabled" wire:target="printSaleReceipt">
+                            <i class="fa-solid fa-file-pdf me-1 text-danger"></i><span wire:loading.remove wire:target="printSaleReceipt">{{ __('PDF Receipt') }}</span><span wire:loading wire:target="printSaleReceipt">{{ __('Processing') }}...</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow py-1">
+                            <li><a class="dropdown-item small" href="#" wire:click="printSaleReceipt('en')"><span class="badge bg-danger me-2">EN</span>{{ __('English 80mm PDF') }}</a></li>
+                            <li><a class="dropdown-item small" href="#" wire:click="printSaleReceipt('fr')"><span class="badge bg-danger me-2">FR</span>{{ __('French 80mm PDF') }}</a></li>
+                        </ul>
+                    </div>
+
+                    {{-- PDF A4 with EN / FR options --}}
+                    <div class="btn-group btn-group-sm shadow-sm" role="group">
+                        <button type="button" class="btn btn-outline-secondary" wire:click="printSaleReceiptA4" wire:loading.attr="disabled" wire:target="printSaleReceiptA4">
+                            <i class="fa-solid fa-file-lines me-1 text-info"></i><span wire:loading.remove wire:target="printSaleReceiptA4">{{ __('PDF A4') }}</span><span wire:loading wire:target="printSaleReceiptA4">{{ __('Processing') }}...</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="visually-hidden">Toggle Dropdown</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow py-1">
+                            <li><a class="dropdown-item small" href="#" wire:click="printSaleReceiptA4('en')"><span class="badge bg-info me-2">EN</span>{{ __('English A4 PDF') }}</a></li>
+                            <li><a class="dropdown-item small" href="#" wire:click="printSaleReceiptA4('fr')"><span class="badge bg-info me-2">FR</span>{{ __('French A4 PDF') }}</a></li>
+                        </ul>
+                    </div>
+
                     {{-- <a href="{{ route('sales.a4Preview', $sale->id) }}" target="_blank" class="btn btn-sm btn-outline-info shadow-sm px-3">
                         {{ __('A4 Preview') }}
                     </a> --}}

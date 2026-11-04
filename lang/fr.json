@@ -406,5 +406,14 @@
     "Walk In": "Client au comptoir",
     "Thermal Unit Price excl. tax": "Prix HT",
     "Included VAT": "TVA incluse",
-    "VAT": "TVA"
+    "VAT": "TVA",
+    "Print / Download": "Imprimer / Télécharger",
+    "POS (80mm)": "POS (80mm)",
+    "Invoice (A4)": "Facture (A4)",
+    "English POS receipt": "Ticket POS en anglais",
+    "French POS receipt": "Ticket POS en français",
+    "English 80mm PDF": "PDF 80mm en anglais",
+    "French 80mm PDF": "PDF 80mm en français",
+    "English A4 PDF": "Facture A4 en anglais",
+    "French A4 PDF": "Facture A4 en français"
 }
