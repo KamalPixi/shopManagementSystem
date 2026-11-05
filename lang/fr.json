@@ -415,5 +415,10 @@
     "English 80mm PDF": "PDF 80mm en anglais",
     "French 80mm PDF": "PDF 80mm en français",
     "English A4 PDF": "Facture A4 en anglais",
-    "French A4 PDF": "Facture A4 en français"
+    "French A4 PDF": "Facture A4 en français",
+    "Cost Price": "Prix d'achat",
+    "Sell Price": "Prix de vente",
+    "Editable Cost": "Coût modifiable",
+    "Estimated Profit": "Bénéfice estimé",
+    "Custom item cost price (buying price)": "Prix d'achat pour cet article personnalisé"
 }

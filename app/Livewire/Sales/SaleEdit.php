@@ -36,6 +36,7 @@ class SaleEdit extends Component
     public $discount = 0;
     public $gst = 0;
     public $grand_total = 0;
+    public $estimated_profit = 0;
 
     public $customer_name = '';
     public $customer_phone_no = '';
@@ -464,6 +465,19 @@ class SaleEdit extends Component
         $this->subtotal = number_format($this->subtotal, 2, '.', '');
         $this->gst = number_format($this->gst, 2, '.', '');
         $this->grand_total = number_format($this->grand_total, 2, '.', '');
+
+        $profitTotal = 0;
+        foreach ($this->sale_items as $itm) {
+            $cost = max(0, (float) ($itm['purchase_price'] ?? 0));
+            $price = (float) ($itm['price'] ?? 0);
+            $qty = (int) ($itm['quantity'] ?? 1);
+            $disc = (float) ($itm['discount'] ?? 0);
+            $vat = !empty($itm['is_vatable']) && $this->gst_percent > 0
+                ? round((float) ($itm['total'] ?? 0) * ($this->gst_percent / 100), 2)
+                : 0;
+            $profitTotal += (($price - $cost) * $qty) - $disc - $vat;
+        }
+        $this->estimated_profit = number_format($profitTotal, 2, '.', '');
     }
 
     public function updateSale()
@@ -488,6 +502,7 @@ class SaleEdit extends Component
             'sale_items.*.item_name' => 'required|string|max:255',
             'sale_items.*.quantity' => 'required|integer|min:1',
             'sale_items.*.price' => 'required|numeric|min:0',
+            'sale_items.*.purchase_price' => 'nullable|numeric|min:0',
             'sale_items.*.discount' => 'required|numeric|min:0',
             'sale_items.*.total' => 'required|numeric',
         ]);
@@ -580,7 +595,7 @@ class SaleEdit extends Component
                     $product = Product::find($item['product_id']);
                     $purchase_price = $product ? (float) $product->purchase_price : (float) ($item['purchase_price'] ?? 0);
                 } else {
-                    $purchase_price = (float) ($item['purchase_price'] ?? 0);
+                    $purchase_price = max(0, (float) ($item['purchase_price'] ?? 0));
                 }
 
                 $profit_per_unit = $item['price'] - $purchase_price;

@@ -404,5 +404,10 @@
     "English 80mm PDF": "English 80mm PDF",
     "French 80mm PDF": "French 80mm PDF",
     "English A4 PDF": "English A4 PDF",
-    "French A4 PDF": "French A4 PDF"
+    "French A4 PDF": "French A4 PDF",
+    "Cost Price": "Cost Price",
+    "Sell Price": "Sell Price",
+    "Editable Cost": "Editable Cost",
+    "Estimated Profit": "Estimated Profit",
+    "Custom item cost price (buying price)": "Custom item cost price (buying price)"
 }

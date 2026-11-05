@@ -192,11 +192,11 @@
                     <thead class="thead-light">
                         <tr>
                             <th class="border-0 rounded-start">#</th>
-                            <th class="border-0 text-start" style="width: 28%;">{{ __('Product / Item') }}</th>
-                            <th class="border-0 text-center" style="width: 8%;">{{ __('VAT?') }}</th>
+                            <th class="border-0 text-start" style="width: 27%;">{{ __('Product / Item') }}</th>
+                            <th class="border-0 text-center" style="width: 7%;">{{ __('VAT?') }}</th>
                             <th class="border-0 text-center" style="width: 10%;">{{ __('Attributes') }}</th>
-                            <th class="border-0 text-center" style="width: 16%;">{{ __('Warranty & Print Options') }}</th>
-                            <th class="border-0 text-center" style="width: 10%;">{{ __('Sale Price') }}</th>
+                            <th class="border-0 text-center" style="width: 15%;">{{ __('Warranty & Print Options') }}</th>
+                            <th class="border-0 text-center" style="width: 13%;">{{ __('Sale Price') }}</th>
                             <th class="border-0 text-center" style="width: 9%;">{{ __('Discount') }}</th>
                             <th class="border-0 text-center" style="width: 7%;">{{ __('Qty') }}</th>
                             <th class="border-0 text-center" style="width: 9%;">{{ __('Total') }}</th>
@@ -214,6 +214,9 @@
                                 {{ $item['item_name'] ?? ($prod?->name ?? 'Item') }}
                                 @if (!empty($item['is_custom']))
                                     <span class="badge bg-info text-white ms-1" style="font-size: 0.65rem;">{{ __('Custom') }}</span>
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1" style="font-size: 0.62rem;" title="{{ __('You can update the cost price for this custom service in the Price column') }}">
+                                        <i class="fa-solid fa-pen me-1"></i>{{ __('Editable Cost') }}
+                                    </span>
                                 @endif
 
                                 @if (!empty($item['serial_no']))
@@ -269,7 +272,24 @@
                             </td>
 
                             <td>
-                                <input wire:model.live="sale_items.{{$itemKey}}.price" type="number" step="0.01" class="form-control form-control-sm text-end" placeholder="0">
+                                <div class="mb-1">
+                                    <label class="small text-muted mb-0 d-block text-start" style="font-size: 0.65rem;">{{ __('Sell Price') }}</label>
+                                    <input wire:model.live="sale_items.{{$itemKey}}.price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end fw-bold" placeholder="0.00">
+                                </div>
+                                @if (!empty($item['is_custom']))
+                                    <div class="mt-1">
+                                        <label class="small text-danger fw-bold mb-0 d-block text-start" style="font-size: 0.65rem;" title="{{ __('Custom item cost price (buying price)') }}">
+                                            <i class="fa-solid fa-tag me-1"></i>{{ __('Cost Price') }}
+                                        </label>
+                                        <input wire:model.live="sale_items.{{$itemKey}}.purchase_price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end border-danger font-monospace" placeholder="0.00" title="{{ __('Cost price (buying price) for this custom item') }}">
+                                    </div>
+                                @else
+                                    <div class="mt-1 text-end">
+                                        <small class="text-muted" style="font-size: 0.68rem;" title="{{ __('Cost price from stock') }}">
+                                            {{ __('Cost') }}: {{ $currencySymbol }}{{ number_format((float) ($item['purchase_price'] ?? 0), 2) }}
+                                        </small>
+                                    </div>
+                                @endif
                             </td>
 
                             <td>
@@ -374,6 +394,14 @@
                                 <td class="text-end fw-bold fs-5 py-2 text-dark">{{ __('Grand Total') }}:</td>
                                 <td class="py-2">
                                     <input wire:model.live="grand_total" readonly type="number" class="fs-5 fw-bold text-end form-control form-control-sm bg-white text-primary border-primary" placeholder="0">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-end small text-muted py-1">{{ __('Estimated Profit') }}:</td>
+                                <td class="py-1 text-end">
+                                    <span class="font-monospace fw-bold {{ (float) $estimated_profit >= 0 ? 'text-success' : 'text-danger' }}" style="font-size: 0.88rem;">
+                                        {{ $currencySymbol }}{{ $estimated_profit }}
+                                    </span>
                                 </td>
                             </tr>
                         </table>
