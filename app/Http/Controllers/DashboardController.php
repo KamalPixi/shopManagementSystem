@@ -40,6 +40,10 @@ class DashboardController extends Controller
         return view('pos');
     }
 
+    public function deposits() {
+        return view('deposits');
+    }
+
     public function brands() {
         return view('brands');
     }

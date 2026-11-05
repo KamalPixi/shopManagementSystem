@@ -147,6 +147,11 @@ class DatabaseSeeder extends Seeder
             'payment-methods:read',
             'payment-methods:create',
             'payment-methods:update',
+
+            'deposits:read',
+            'deposits:create',
+            'deposits:update',
+            'deposits:delete',
         ];
         foreach ($permissions as $p) {
             Permission::firstOrCreate(['name' => $p]);

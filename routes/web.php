@@ -23,6 +23,8 @@ Route::middleware(['auth'])->group(function () {
     Route::controller(DashboardController::class)->group(function () {
         Route::get('/dashboard', 'dashboard')->name('dashboard');
         Route::get('/pos', 'pos')->name('pos');
+        Route::get('/deposits', 'deposits')->name('deposits.index');
+        Route::get('/deposits/index', 'deposits');
         Route::get('/sales/index', 'sales')->name('sales.index');
         Route::get('/sales/edit/{sale_id}', 'saleEdit')->name('sales.edit');
         Route::get('/sales/show/{sale_id}', 'saleShow')->name('sales.show');

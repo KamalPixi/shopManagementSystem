@@ -539,6 +539,147 @@ class PrinterManagerService
     }
 
     /**
+     * Print a customer deposit / advance payment receipt using the POS thermal printer.
+     */
+    public function printPosDepositReceipt(\App\Models\Deposit $deposit, ?string $receiptLocale = null): array
+    {
+        $connection = $this->getPosPrinterConnector();
+        if (!$connection['success']) {
+            return $connection;
+        }
+
+        /** @var Printer $printer */
+        $printer = $connection['printer'];
+        $settings = $connection['settings'];
+        $shop = Shop::first();
+
+        try {
+            $is80mm = ($settings['paper_width'] ?? '80mm') === '80mm';
+            $printWidth = $is80mm ? 46 : 30;
+            $printer->setPrintLeftMargin(24);
+            $printer->setPrintWidth($printWidth * 12);
+            $divider = str_repeat('-', $printWidth) . "\n";
+            $systemLocale = ($shop?->settings['language'] ?? app()->getLocale()) === 'fr' ? 'fr' : 'en';
+            $locale = in_array($receiptLocale, ['en', 'fr'], true) ? $receiptLocale : $systemLocale;
+            $translate = static fn (string $key): string => Lang::get($key, [], $locale);
+            $write = static function (string $text) use ($printer, $locale): void {
+                if (PHP_OS_FAMILY === 'Windows' && $locale === 'fr') {
+                    $text = strtr($text, ['’' => "'", '‘' => "'", '“' => '"', '”' => '"', '–' => '-', '—' => '-', '…' => '...']);
+                    $encoded = iconv('UTF-8', 'CP858//TRANSLIT', $text);
+                    if ($encoded === false) {
+                        throw new \RuntimeException('Could not encode French receipt text for the Windows printer.');
+                    }
+                    $printer->textRaw($encoded);
+                    return;
+                }
+
+                $printer->text($text);
+            };
+            if (PHP_OS_FAMILY === 'Windows' && $locale === 'fr') {
+                $printer->selectCharacterTable(19);
+            }
+
+            $currencyCode = $shop?->currency['code'] ?? 'EUR';
+            $shopTimezone = $shop?->timezone ?? 'Europe/Paris';
+
+            // ── HEADER ─────────────────────────────────────────────────────
+            $printer->setFont(Printer::FONT_A);
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->setEmphasis(true);
+            $printer->setTextSize(2, 2);
+            $write(($shop?->name ?? 'TECH PARISIEN') . "\n");
+            $printer->setTextSize(1, 1);
+            $printer->setEmphasis(false);
+
+            if ($shop?->address) {
+                $write($shop->address . ', ' . ($shop->city ?? '') . "\n");
+            }
+            if ($shop?->contact_no) {
+                $write($translate('Tel:') . ' ' . $shop->contact_no . "\n");
+            }
+
+            $printer->setEmphasis(true);
+            $write("\n" . mb_strtoupper($translate('Deposit Receipt')) . "\n");
+            $printer->setEmphasis(false);
+            $write($divider);
+
+            // ── METADATA ───────────────────────────────────────────────────
+            $printer->setJustification(Printer::JUSTIFY_LEFT);
+            $paymentMethod = match (strtolower($deposit->payment_method ?: 'cash')) {
+                'cash' => $translate('Cash'),
+                'card' => $translate('Card'),
+                'bank_transfer' => $translate('Bank transfer'),
+                default => ucfirst(str_replace('_', ' ', $deposit->payment_method)),
+            };
+
+            $write($translate('Reference') . ' : ' . $deposit->reference_no . "\n");
+            $write($translate('Date') . ' : ' . $deposit->created_at->timezone($shopTimezone)->locale($locale)->translatedFormat('d/m/Y H:i') . "\n");
+            $write($translate('Staff') . ' : ' . ($deposit->createdBy?->name ?? '-') . "\n");
+            $write($translate('Payment Method') . ' : ' . $paymentMethod . "\n");
+            if ($deposit->payment_reference) {
+                $write($translate('Payment Reference') . ' : ' . $deposit->payment_reference . "\n");
+            }
+            $write($divider);
+
+            // ── CUSTOMER & ITEM INFO ───────────────────────────────────────
+            $write($translate('Customer') . ' : ' . $deposit->customer_name . "\n");
+            if ($deposit->customer_phone) {
+                $write($translate('Phone') . ' : ' . $deposit->customer_phone . "\n");
+            }
+            if ($deposit->customer_email) {
+                $write($translate('Email') . ' : ' . $deposit->customer_email . "\n");
+            }
+            $write($divider);
+
+            $write($translate('Product / Problem Description') . ":\n");
+            foreach (explode("\n", wordwrap($deposit->item_description, $printWidth, "\n", true)) as $line) {
+                $write('  ' . $line . "\n");
+            }
+            $write($divider);
+
+            // ── FINANCIAL BREAKDOWN ────────────────────────────────────────
+            $labelWidth = $is80mm ? 26 : 16;
+            $valWidth   = $is80mm ? 20 : 14;
+
+            $write(str_pad($translate('Total Amount') . ':', $labelWidth) . str_pad(number_format((float) $deposit->total_amount, 2) . ' ' . $currencyCode, $valWidth, ' ', STR_PAD_LEFT) . "\n");
+            $printer->setEmphasis(true);
+            $write(str_pad($translate('Deposit Amount') . ':', $labelWidth) . str_pad(number_format((float) $deposit->deposit_amount, 2) . ' ' . $currencyCode, $valWidth, ' ', STR_PAD_LEFT) . "\n");
+            $printer->setEmphasis(false);
+            $write($divider);
+            $printer->setEmphasis(true);
+            $write(str_pad($translate('Remaining Balance') . ':', $labelWidth) . str_pad(number_format((float) $deposit->remaining_balance, 2) . ' ' . $currencyCode, $valWidth, ' ', STR_PAD_LEFT) . "\n");
+            $printer->setEmphasis(false);
+            $write($divider);
+
+            // ── FOOTER ────────────────────────────────────────────────────
+            $printer->setFont(Printer::FONT_A);
+            $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $printer->setTextSize(1, 1);
+            $write("\n" . $translate('Please keep this receipt for collection.') . "\n");
+            if ($shop?->contact_no) {
+                $write($translate('For any inquiry, please call us') . ' ' . $shop->contact_no . "\n");
+            }
+            $printer->feed(3);
+
+            if (!empty($settings['cut_paper'])) {
+                $printer->cut();
+            }
+
+            $printer->close();
+
+            return [
+                'success' => true,
+                'message' => __('Deposit receipt sent to :target', ['target' => $connection['target']]),
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'success' => false,
+                'message' => __('Printing failed: :err', ['err' => $e->getMessage()]),
+            ];
+        }
+    }
+
+    /**
      * Send an A4 PDF document directly to the configured A4 office printer.
      */
     public function printA4Document(string $pdfFilePath, ?string $printerName = null, ?string $html = null): array

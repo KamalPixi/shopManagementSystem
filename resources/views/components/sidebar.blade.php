@@ -129,6 +129,16 @@
                 </div>
             </li>
 
+            {{-- Deposits / Advances --}}
+            <li class="nav-item {{ request()->routeIs('deposits.*') ? 'active' : '' }}">
+                <a href="{{ route('deposits.index') }}" class="nav-link {{ request()->routeIs('deposits.*') ? 'active text-white fw-bold' : '' }} d-flex align-items-center">
+                    <span class="sidebar-icon">
+                        <i class="fa-solid fa-hand-holding-dollar"></i>
+                    </span>
+                    <span class="sidebar-text">{{ __('Deposits / Advances') }}</span>
+                </a>
+            </li>
+
             {{-- Warranty App --}}
             @php $isWarrantyActive = request()->routeIs('warranty*'); @endphp
             <li class="nav-item">
