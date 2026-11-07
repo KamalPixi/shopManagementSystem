@@ -9,7 +9,7 @@ use App\Models\Shop;
 final class SaleService
 {
     public function generateSaleReceipt($sale_id, ?string $locale = null): string {  
-        $sale = Sale::with(['saleItems.product', 'saleItems.productVariation', 'saleItems.warranty', 'customer', 'createdBy'])->findOrFail($sale_id);
+        $sale = Sale::with(['saleItems.product', 'saleItems.productVariation', 'saleItems.warranty', 'customer', 'createdBy', 'payments'])->findOrFail($sale_id);
         $customWidth = 80 / 25.4 * 72; // 80 mm in PDF points
 
         $shop = Shop::first();
@@ -58,7 +58,7 @@ final class SaleService
     }    
 
     public function generateSaleReceiptA4($sale_id, ?string $locale = null): string {   
-        $sale = Sale::with(['saleItems.product', 'saleItems.productVariation', 'saleItems.warranty', 'customer', 'createdBy'])->findOrFail($sale_id); 
+        $sale = Sale::with(['saleItems.product', 'saleItems.productVariation', 'saleItems.warranty', 'customer', 'createdBy', 'payments'])->findOrFail($sale_id); 
         
         $targetLocale = in_array($locale, ['en', 'fr'], true) ? $locale : app()->getLocale();
         $previousLocale = app()->getLocale();

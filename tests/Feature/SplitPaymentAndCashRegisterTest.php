@@ -239,6 +239,8 @@ class SplitPaymentAndCashRegisterTest extends TestCase
 
         $this->assertStringContainsString('30.00', $a4ReceiptHtml);
         $this->assertStringContainsString('70.00', $a4ReceiptHtml);
+        $this->assertStringContainsString('(€ 30.00)', $a4ReceiptHtml);
+        $this->assertStringContainsString('(€ 70.00)', $a4ReceiptHtml);
     }
 
     public function test_cash_register_view_renders_terminal_totals_and_session_details(): void

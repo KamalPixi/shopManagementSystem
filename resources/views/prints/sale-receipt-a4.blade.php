@@ -635,28 +635,32 @@
                         <span class="checkbox-box {{ $hasCash ? 'checked' : '' }}">@if($hasCash && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif</span>
                         {{ __('Cash') }}
                         @if ($isSplit && $paymentsMap->has('cash'))
-                            <strong style="margin-left: 5px; color: #0f2c59;">({{ $currencySymbol }}{{ number_format($paymentsMap['cash']->amount, 2) }})</strong>
+                            <strong style="margin-left: 6px; color: #0f2c59;">({{ $currencySymbol }} {{ number_format($paymentsMap['cash']->amount, 2) }})</strong>
                         @endif
                     </div>
                     <div class="payment-option">
                         <span class="checkbox-box {{ $hasCard ? 'checked' : '' }}">@if($hasCard && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif</span>
                         {{ __('Card') }}
                         @if ($isSplit && $paymentsMap->has('card'))
-                            <strong style="margin-left: 5px; color: #0f2c59;">({{ $currencySymbol }}{{ number_format($paymentsMap['card']->amount, 2) }})</strong>
+                            <strong style="margin-left: 6px; color: #0f2c59;">({{ $currencySymbol }} {{ number_format($paymentsMap['card']->amount, 2) }})</strong>
                         @endif
                     </div>
                     <div class="payment-option">
                         <span class="checkbox-box {{ $hasBank ? 'checked' : '' }}">@if($hasBank && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif</span>
                         {{ __('Bank transfer') }}
                         @if ($isSplit && $paymentsMap->has('bank_transfer'))
-                            <strong style="margin-left: 5px; color: #0f2c59;">({{ $currencySymbol }}{{ number_format($paymentsMap['bank_transfer']->amount, 2) }})</strong>
+                            <strong style="margin-left: 6px; color: #0f2c59;">({{ $currencySymbol }} {{ number_format($paymentsMap['bank_transfer']->amount, 2) }})</strong>
                         @endif
                     </div>
                     <div class="payment-option">
                         <span class="checkbox-box {{ $hasOther ? 'checked' : '' }}">@if($hasOther && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif</span>
-                        {{ __('Other') }} : @if($otherPaymentDetails)<span>{{ $otherPaymentDetails }}</span>@else<span class="payment-other-line"></span>@endif
                         @if ($isSplit && $paymentsMap->has('other'))
-                            <strong style="margin-left: 5px; color: #0f2c59;">({{ $currencySymbol }}{{ number_format($paymentsMap['other']->amount, 2) }})</strong>
+                            {{ __('Other') }}
+                            <strong style="margin-left: 6px; color: #0f2c59;">({{ $currencySymbol }} {{ number_format($paymentsMap['other']->amount, 2) }})</strong>
+                        @elseif ($hasOther && $otherPaymentDetails)
+                            {{ __('Other') }} : <span>{{ $otherPaymentDetails }}</span>
+                        @else
+                            {{ __('Other') }} : <span class="payment-other-line"></span>
                         @endif
                     </div>
                     @if ($isSplit)
