@@ -469,8 +469,41 @@ class PrinterManagerService
 
                 $warrantyText = $item->warranty_description ?: ($item->warranty?->description ?: $item->warranty?->name);
                 if ($warrantyText && $item->show_warranty_on_receipt) {
-                    $wText = mb_strimwidth('  * ' . $translate('Warranty') . ': ' . $warrantyText, 0, $printWidth - 1, '...');
-                    $write($wText . "\n");
+                    $warrantyPrefix = '  * ' . $translate('Warranty') . ': ';
+                    $indent = '    ';
+                    $rawLines = preg_split('/\r?\n/', trim($warrantyText));
+                    $isFirstLine = true;
+
+                    foreach ($rawLines as $rawLine) {
+                        $rawLine = trim($rawLine);
+                        if ($rawLine === '') continue;
+
+                        $words = preg_split('/\s+/', $rawLine);
+                        $currentLine = $isFirstLine ? $warrantyPrefix : $indent;
+
+                        foreach ($words as $word) {
+                            if ($word === '') continue;
+                            $testLine = ($currentLine === $warrantyPrefix || $currentLine === $indent)
+                                ? $currentLine . $word
+                                : $currentLine . ' ' . $word;
+
+                            if (mb_strlen($testLine) <= $printWidth) {
+                                $currentLine = $testLine;
+                            } else {
+                                $write($currentLine . "\n");
+                                $currentLine = $indent . $word;
+                                while (mb_strlen($currentLine) > $printWidth) {
+                                    $write(mb_substr($currentLine, 0, $printWidth) . "\n");
+                                    $currentLine = $indent . mb_substr($currentLine, $printWidth);
+                                }
+                            }
+                        }
+
+                        if (trim($currentLine) !== '') {
+                            $write($currentLine . "\n");
+                        }
+                        $isFirstLine = false;
+                    }
                 }
             }
 

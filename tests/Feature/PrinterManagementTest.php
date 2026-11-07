@@ -255,4 +255,67 @@ class PrinterManagementTest extends TestCase
             'total_price' => 50.00,
         ]);
     }
+
+    public function test_thermal_receipt_prints_full_warranty_text_without_trimming(): void
+    {
+        $shop = Shop::first();
+
+        $sale = Sale::create([
+            'receipt_no' => 'TP-WARRANTY-01',
+            'total_price' => 200.00,
+            'gst' => 0.00,
+            'discount' => 0.00,
+            'profit' => 50.00,
+            'created_by' => $this->user->id,
+            'payment_method' => 'cash',
+        ]);
+
+        $fullWarrantyDescription = 'Garantie 6 mois pieces et main d oeuvre hors casse et oxydation ecran non couvert';
+
+        \App\Models\SaleItem::create([
+            'sale_id' => $sale->id,
+            'product_id' => null,
+            'item_name' => 'iPhone 12 Refurbished',
+            'price' => 200.00,
+            'purchase_price' => 150.00,
+            'quantity' => 1,
+            'discount' => 0.00,
+            'total' => 200.00,
+            'profit' => 50.00,
+            'warranty_description' => $fullWarrantyDescription,
+            'show_warranty_on_receipt' => true,
+            'show_serial_on_receipt' => false,
+        ]);
+
+        $sale->load(['saleItems', 'payments', 'customer', 'createdBy']);
+
+        $capturedOutput = '';
+        $connector = new \App\Printing\WindowsSpoolerConnector('Thermal Test Printer', function ($name, $bytes) use (&$capturedOutput) {
+            $capturedOutput = $bytes;
+        });
+        $escposPrinter = new \Mike42\Escpos\Printer($connector);
+
+        $service = \Mockery::mock(PrinterManagerService::class)->makePartial();
+        $service->shouldReceive('getPosPrinterConnector')->once()->andReturn([
+            'success' => true,
+            'printer' => $escposPrinter,
+            'target' => 'Thermal Test Printer',
+            'settings' => $service->getDefaultSettings()['pos'],
+        ]);
+
+        $result = $service->printPosReceipt($sale, 'fr');
+        $this->assertTrue($result['success']);
+
+        $output = $capturedOutput;
+
+        // Must NOT contain ellipsis from truncation
+        $this->assertStringNotContainsString('Garantie 6 mois...', $output);
+        $this->assertStringNotContainsString('main d oeuvre...', $output);
+
+        // Must contain all key parts of the warranty text across wrapped lines
+        $this->assertStringContainsString('Garantie 6 mois pieces et main', $output);
+        $this->assertStringContainsString('hors casse et oxydation', $output);
+        $this->assertStringContainsString('ecran non', $output);
+        $this->assertStringContainsString('couvert', $output);
+    }
 }
