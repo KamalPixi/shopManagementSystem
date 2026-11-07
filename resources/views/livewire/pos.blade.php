@@ -669,7 +669,7 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                             <div class="col-6">
                                 <label class="small fw-bold mb-1">{{ __('Customer Name') }} <small class="text-muted">({{ __('Optional') }})</small></label>
                                 <div class="position-relative">
-                                    <input wire:model.live="customer_name" type="text" class="form-control form-control-sm" placeholder="{{ __('Walk In') }}">
+                                    <input wire:model.live.debounce.250ms="customer_name" type="text" class="form-control form-control-sm" placeholder="{{ __('Walk In') }}">
                                     @if (collect($customers)->count())
                                     <div wire:key="customer_div" class="position-absolute rounded w-100 shadow mt-1 border overflow-scroll" style="background-color: rgb(243, 243, 243); max-height: 8rem; z-index: 1000;">
                                         <ul class="list-unstyled m-0 py-2 w-100">

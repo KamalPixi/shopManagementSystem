@@ -60,7 +60,7 @@
 
             {{-- Search --}}
             <div class="mb-3">
-                <input type="text" wire:model.live="search" class="form-control form-control-sm" placeholder="{{ __('Search customers by name, phone, or email...') }}">
+                <input type="text" wire:model.live.debounce.300ms="search" class="form-control form-control-sm" placeholder="{{ __('Search customers by name, phone, or email...') }}">
             </div>
 
             <table class="table table-centered table-nowrap mb-0 rounded">

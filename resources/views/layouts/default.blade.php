@@ -144,6 +144,77 @@
           }
         }
       });
+
+      // Desktop Application UI Keep-Alive & Unfreeze Watchdog
+      (function() {
+        // 1. Recover from stuck backdrops, rogue modal overlays, and stuck loading spinners
+        function cleanupStuckOverlays() {
+          // Remove orphaned modal backdrops when no modal is open
+          if (!document.querySelector('.modal.show')) {
+            document.querySelectorAll('.modal-backdrop').forEach(function(el) {
+              el.remove();
+            });
+            if (document.body.classList.contains('modal-open')) {
+              document.body.classList.remove('modal-open');
+              document.body.style.removeProperty('overflow');
+              document.body.style.removeProperty('padding-right');
+            }
+          }
+
+          // If Livewire is not currently processing, dismiss any stuck full-screen spinners
+          if (window.Livewire && typeof window.Livewire.isProcessing === 'function' && !window.Livewire.isProcessing()) {
+            document.querySelectorAll('.spinner-border').forEach(function(spinner) {
+              var parentLoading = spinner.closest('[wire\\:loading], [wire\\:loading\\.flex]');
+              if (parentLoading && window.getComputedStyle(parentLoading).display !== 'none') {
+                parentLoading.style.setProperty('display', 'none', 'important');
+              }
+            });
+          }
+        }
+
+        // Run watchdog every 500ms
+        setInterval(cleanupStuckOverlays, 500);
+
+        // 2. Force compositor repaint on window focus and visibility change
+        function refreshCompositor() {
+          cleanupStuckOverlays();
+          // Subtle reflow triggers Chromium compositor to re-evaluate hit-testing & repaint
+          if (document.body) {
+            document.body.style.transform = 'translateZ(0)';
+            requestAnimationFrame(function() {
+              document.body.style.transform = '';
+            });
+          }
+        }
+
+        window.addEventListener('focus', refreshCompositor);
+        document.addEventListener('visibilitychange', function() {
+          if (document.visibilityState === 'visible') {
+            refreshCompositor();
+          }
+        });
+
+        // 3. Livewire 3 hook to unlock UI on request finish or failure
+        document.addEventListener('livewire:initialized', function() {
+          if (window.Livewire && typeof window.Livewire.hook === 'function') {
+            window.Livewire.hook('request', function(opts) {
+              var fail = opts.fail;
+              var respond = opts.respond;
+              if (typeof respond === 'function') {
+                respond(function() {
+                  setTimeout(cleanupStuckOverlays, 50);
+                });
+              }
+              if (typeof fail === 'function') {
+                fail(function() {
+                  console.warn('Livewire request failed or aborted. Running UI recovery.');
+                  setTimeout(cleanupStuckOverlays, 50);
+                });
+              }
+            });
+          }
+        });
+      })();
     </script>
   </body>
 </html>

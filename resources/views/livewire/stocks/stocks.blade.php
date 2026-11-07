@@ -1,7 +1,7 @@
 <div>
     @include('includes.breadcrumb', ['data' => ['Stock List' => route('stocks.index')]])
 
-    <div wire:loading.flex>
+    <div wire:loading.flex wire:target="pdfStocks,printBarcode,pdfBarcodeOneColumn,pdfBarcodeTwoColumn,delete,selectedAll">
         @include('includes.spinner')
     </div>
 
@@ -25,17 +25,17 @@
                     <div class="row g-2">
                         <div class="col-12 col-md-6 col-lg-3">
                             <label class="form-label mb-1 text-muted" style="font-size: 0.8rem;">{{ __('Product Name') }}</label>
-                            <input wire:model.live="name" type="text" class="form-control form-control-sm" placeholder="{{ __('Search name...') }}">
+                            <input wire:model.live.debounce.300ms="name" type="text" class="form-control form-control-sm" placeholder="{{ __('Search name...') }}">
                         </div>
 
                         <div class="col-12 col-md-6 col-lg-3">
                             <label class="form-label mb-1 text-muted" style="font-size: 0.8rem;">{{ __('SKU / Barcode / Serial') }}</label>
-                            <input wire:model.live="sku" type="text" class="form-control form-control-sm" placeholder="{{ __('SKU, barcode, or serial...') }}">
+                            <input wire:model.live.debounce.300ms="sku" type="text" class="form-control form-control-sm" placeholder="{{ __('SKU, barcode, or serial...') }}">
                         </div>
 
                         <div class="col-12 col-md-6 col-lg-3">
                             <label class="form-label mb-1 text-muted" style="font-size: 0.8rem;">{{ __('Model No') }}</label>
-                            <input wire:model.live="model_no" type="text" class="form-control form-control-sm" placeholder="{{ __('Model number...') }}">
+                            <input wire:model.live.debounce.300ms="model_no" type="text" class="form-control form-control-sm" placeholder="{{ __('Model number...') }}">
                         </div>
 
                         <div class="col-12 col-md-6 col-lg-3">

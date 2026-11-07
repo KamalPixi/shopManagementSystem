@@ -23,10 +23,15 @@ class NativeAppServiceProvider implements ProvidesPhpIni
         );
 
         Window::open()
-        ->title('TECH PARISIEN')
-        ->width(1024)
-        ->height(768)
-        ->showDevTools(false);
+            ->title('TECH PARISIEN')
+            ->width(1024)
+            ->height(768)
+            ->rememberState()
+            ->showDevTools(false)
+            ->webPreferences([
+                'backgroundThrottling' => false,
+                'spellcheck' => false,
+            ]);
 
         // Auto-start Cloudflare tunnel if enabled in Shop Settings
         try {

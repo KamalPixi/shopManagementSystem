@@ -114,13 +114,13 @@
                 <div class="col-12 col-md-6">
                     <div class="mb-4">
                         <label>{{ __('Reference No') }}</label>
-                        <input wire:model.live="search_reference_no" type="text" class="form-control form-control-sm" placeholder="{{ __('Search by reference no.') }}">
+                        <input wire:model.live.debounce.300ms="search_reference_no" type="text" class="form-control form-control-sm" placeholder="{{ __('Search by reference no.') }}">
                     </div>
                 </div>
                 <div class="col-12 col-md-6">
                     <div class="mb-4">
                         <label>{{ __('Customer name') }}</label>
-                        <input wire:model.live="search_customer_name" type="text" class="form-control form-control-sm" placeholder="{{ __('Search by customer name.') }}">
+                        <input wire:model.live.debounce.300ms="search_customer_name" type="text" class="form-control form-control-sm" placeholder="{{ __('Search by customer name.') }}">
                     </div>
                 </div>
             </div>
