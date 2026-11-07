@@ -358,7 +358,7 @@
                                 <div class="row g-2">
                                     <div class="col-md-5 col-12 position-relative">
                                         <label class="small fw-semibold mb-1">{{ __('Customer Name') }} <span class="text-danger">*</span></label>
-                                        <input wire:model.live="customer_name" type="text" class="form-control form-control-sm @error('customer_name') is-invalid @enderror" placeholder="{{ __('e.g. John Doe') }}" autocomplete="off">
+                                        <input wire:model.live="customer_name" type="text" class="form-control form-control-sm @error('customer_name') is-invalid @enderror" autocomplete="off">
                                         @error('customer_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
 
                                         {{-- Autocomplete Suggestions --}}
@@ -378,12 +378,12 @@
 
                                     <div class="col-md-4 col-6">
                                         <label class="small fw-semibold mb-1">{{ __('Phone Number') }}</label>
-                                        <input wire:model="customer_phone" type="text" class="form-control form-control-sm" placeholder="{{ __('e.g. 06 12 34 56 78') }}">
+                                        <input wire:model="customer_phone" type="text" class="form-control form-control-sm">
                                     </div>
 
                                     <div class="col-md-3 col-6">
                                         <label class="small fw-semibold mb-1">{{ __('Email') }}</label>
-                                        <input wire:model="customer_email" type="email" class="form-control form-control-sm" placeholder="{{ __('Optional') }}">
+                                        <input wire:model="customer_email" type="email" class="form-control form-control-sm">
                                     </div>
                                 </div>
                             </div>
@@ -393,7 +393,7 @@
                                 <label class="small fw-semibold mb-1">
                                     {{ __('Product / Problem Description') }} <span class="text-danger">*</span>
                                 </label>
-                                <textarea wire:model="item_description" class="form-control form-control-sm @error('item_description') is-invalid @enderror" rows="3" placeholder="{{ __('e.g. iPhone 13 Pro Max - Screen replacement & battery check, or Advance payment for Laptop order...') }}"></textarea>
+                                <textarea wire:model="item_description" class="form-control form-control-sm @error('item_description') is-invalid @enderror" rows="3"></textarea>
                                 @error('item_description') <div class="invalid-feedback">{{ $message }}</div> @enderror
                             </div>
 
@@ -445,7 +445,7 @@
 
                                 <div class="col-md-4 col-6">
                                     <label class="small fw-semibold mb-1">{{ __('Payment Reference') }} <small class="text-muted">({{ __('Optional') }})</small></label>
-                                    <input wire:model="payment_reference" type="text" class="form-control form-control-sm" placeholder="{{ __('e.g. Card TXN / Check #') }}">
+                                    <input wire:model="payment_reference" type="text" class="form-control form-control-sm">
                                 </div>
 
                                 <div class="col-md-4 col-12">
@@ -460,12 +460,7 @@
 
                             <div class="mb-1">
                                 <label class="small fw-semibold mb-1">{{ __('Internal Notes') }} <small class="text-muted">({{ __('Optional') }})</small></label>
-                                <input wire:model="notes" type="text" class="form-control form-control-sm" placeholder="{{ __('e.g. Customer promised to collect on Friday afternoon') }}">
-                            </div>
-
-                            <div class="alert alert-info py-2 px-3 mt-3 mb-0" style="font-size: 0.75rem;">
-                                <i class="fa-solid fa-circle-info me-1"></i>
-                                {{ __('Note: This deposit record will NOT affect your daily Sales, Cash Drawer, or Cash Balance. It is tracked as an advance commitment.') }}
+                                <input wire:model="notes" type="text" class="form-control form-control-sm">
                             </div>
                         </div>
 
