@@ -181,6 +181,12 @@
                                         @if ($item->is_vatable)
                                             <span class="badge bg-success text-white ms-1" style="font-size: 0.62rem;">VAT</span>
                                         @endif
+                                        @php
+                                            $itemCatName = $item->category_name;
+                                        @endphp
+                                        @if ($itemCatName && $itemCatName !== 'Uncategorized')
+                                            <span class="badge bg-secondary-subtle text-secondary border ms-1" style="font-size: 0.62rem;">{{ $itemCatName }}</span>
+                                        @endif
 
                                         @if ($item->productVariation)
                                             <span class="badge bg-primary text-white ms-1" style="font-size: 0.65rem;">

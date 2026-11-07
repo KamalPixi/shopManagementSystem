@@ -36,6 +36,20 @@ class SaleItem extends Model
         return $this->belongsTo(Warranty::class, 'warranty_id');
     }
 
+    public function category() {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    public function getEffectiveCategoryAttribute(): ?Category
+    {
+        return $this->category ?: $this->product?->category;
+    }
+
+    public function getCategoryNameAttribute(): string
+    {
+        return $this->category?->name ?? ($this->product?->category?->name ?? 'Uncategorized');
+    }
+
     public function getNameAttribute()
     {
         return $this->item_name ?: ($this->product?->name ?? 'Item');

@@ -34,6 +34,22 @@
             font-size: 8px;
             padding: 0;
         }
+        .category-breakdown-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 3px;
+            font-size: 8px;
+        }
+        .category-breakdown-table th, .category-breakdown-table td {
+            border: 1px solid #dee2e6;
+            padding: 2px 4px;
+            line-height: 1.15;
+        }
+        .category-breakdown-table th {
+            background-color: #f1f3f5;
+            font-size: 8px;
+            font-weight: bold;
+        }
     </style>
 
 </head>
@@ -53,6 +69,9 @@
             @endif
             @if(!empty($receipt_filter))
                 | <strong>Receipt Filter:</strong> <small>{{ $receipt_filter }}</small>
+            @endif
+            @if(!empty($category_filter_name))
+                | <strong>Category:</strong> <small style="color: #0d6efd; font-weight: bold;">{{ $category_filter_name }}</small>
             @endif
         </p>
     </div>
@@ -86,7 +105,7 @@
                     <table class="table-product w-100" border="0" cellpadding="1" cellspacing="0">
                         @foreach ($sale->saleItems as $item)
                         <tr>
-                            <td style="width: 45%;line-height: 1;"> 
+                            <td style="width: 34%;line-height: 1;"> 
                                 <small>{{ $item->name }}</small>
                                 @if ($item->productVariation?->variation_name)<br><small>Variant: {{ $item->productVariation->variation_name }}</small>@endif
                                 @if (empty($item->product_id))
@@ -104,7 +123,7 @@
                                     <small class="text-muted">@if($itemSku)SKU: {{ $itemSku }}@endif @if($item->product?->model_no) | Model: {{ $item->product->model_no }}@endif</small>
                                 @endif
                             </td>
-                            <td style="width: 18%;"> 
+                            <td style="width: 14%;"> 
                                 <table class="w-100">
                                     @foreach ($item->attributes_and_values ?? [] as $att => $value)
                                     @php
@@ -120,13 +139,14 @@ $attributeValue = is_array($value) ? ($value['value'] ?? '') : $value
                                     @endforeach
                                 </table>
                             </td>
-                            <td class="text-center"><small>Warranty</small><br><b>{{ $item?->warranty?->name ?? '-' }}</b></td>
-                            <td class="text-center"><small>Qty</small><br><b>{{ $item?->quantity }}</b></td>
-                            <td class="text-end" style="padding-right:1px;"><small>Unit Purchase Price</small><br><b>{{ number_format((float) $item->purchase_price, 2) }}</b></td>
-                            <td class="text-end" style="padding-right:1px;"><small>Unit Sale Price</small><br><b>{{ number_format((float) $item->price, 2) }}</b></td>
-                            <td class="text-end" style="padding-right:1px;"><small>Discount</small><br><b>{{ number_format((float) $item->discount, 2) }}</b></td>
-                            <td class="text-end" style="padding-right:1px;"><small>Subtotal</small><br><b>{{ number_format((float) $item->total, 2) }}</b></td>
-                            <td class="text-end" style="padding-right:1px;"><small>Profit</small><br><b>{{ number_format((float) $item->profit, 2) }}</b></td>
+                            <td class="text-center" style="width: 10%; line-height: 1.1;"><small style="font-size: 6.5px; color: #6c757d;">Category</small><br><span style="font-size: 7px; color: #495057;">{{ $item->category_name }}</span></td>
+                            <td class="text-center" style="width: 10%;"><small>Warranty</small><br><b>{{ $item?->warranty?->name ?? '-' }}</b></td>
+                            <td class="text-center" style="width: 4%;"><small>Qty</small><br><b>{{ $item?->quantity }}</b></td>
+                            <td class="text-end" style="width: 7%; padding-right:1px;"><small>Unit Purchase Price</small><br><b>{{ number_format((float) $item->purchase_price, 2) }}</b></td>
+                            <td class="text-end" style="width: 7%; padding-right:1px;"><small>Unit Sale Price</small><br><b>{{ number_format((float) $item->price, 2) }}</b></td>
+                            <td class="text-end" style="width: 4%; padding-right:1px;"><small>Discount</small><br><b>{{ number_format((float) $item->discount, 2) }}</b></td>
+                            <td class="text-end" style="width: 5%; padding-right:1px;"><small>Subtotal</small><br><b>{{ number_format((float) $item->total, 2) }}</b></td>
+                            <td class="text-end" style="width: 5%; padding-right:1px;"><small>Profit</small><br><b>{{ number_format((float) $item->profit, 2) }}</b></td>
                         </tr>
                         @endforeach
                     </table>
@@ -154,6 +174,56 @@ $attributeValue = is_array($value) ? ($value['value'] ?? '') : $value
             </tr>
         </thead>
     </table>
+
+    @if (!empty($category_breakdown['rows']))
+    <div style="margin-top: 10px;">
+        <div style="font-size: 8.5px; font-weight: bold; text-transform: uppercase; color: #343a40; margin-bottom: 3px;">
+            {{ __('Category Financial Performance Breakdown') }}
+        </div>
+        <table class="category-breakdown-table">
+            <thead>
+                <tr>
+                    <th class="text-start" style="width: 35%;">{{ __('Category') }}</th>
+                    <th class="text-center" style="width: 13%;">{{ __('Items Sold') }}</th>
+                    <th class="text-end" style="width: 13%;">{{ __('Total Sales') }}</th>
+                    <th class="text-end" style="width: 13%;">{{ __('Total Cost') }}</th>
+                    <th class="text-end" style="width: 13%;">{{ __('Net Profit') }}</th>
+                    <th class="text-end" style="width: 13%;">{{ __('Margin') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($category_breakdown['rows'] as $row)
+                @php
+                    $hasSales = $row['items_count'] > 0;
+                @endphp
+                <tr @if(!empty($row['is_selected'])) style="background-color: #e7f1ff; font-weight: bold;" @elseif(!$hasSales) style="color: #6c757d;" @endif>
+                    <td>
+                        {{ $row['name'] }}
+                        @if(!empty($row['is_selected']))
+                            <small style="color: #0d6efd; font-size: 7px;">({{ __('Filtered') }})</small>
+                        @endif
+                    </td>
+                    <td class="text-center">{{ $row['items_count'] }}</td>
+                    <td class="text-end">{{ number_format($row['total_sales'], 2) }}</td>
+                    <td class="text-end">{{ number_format($row['total_cost'], 2) }}</td>
+                    <td class="text-end @if($hasSales) fw-bold @endif">{{ number_format($row['net_profit'], 2) }}</td>
+                    <td class="text-end">{{ $row['margin'] }}%</td>
+                </tr>
+                @endforeach
+            </tbody>
+            <tfoot>
+                <tr style="background-color: #f8f9fa; font-weight: bold; border-top: 1.5px solid #adb5bd;">
+                    <td>{{ __('Total / Overall') }}</td>
+                    <td class="text-center">{{ $category_breakdown['totals']['items_count'] }}</td>
+                    <td class="text-end">{{ number_format($category_breakdown['totals']['total_sales'], 2) }}</td>
+                    <td class="text-end">{{ number_format($category_breakdown['totals']['total_cost'], 2) }}</td>
+                    <td class="text-end">{{ number_format($category_breakdown['totals']['net_profit'], 2) }}</td>
+                    <td class="text-end">{{ $category_breakdown['totals']['margin'] }}%</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    @endif
 
 </body>
 </html>

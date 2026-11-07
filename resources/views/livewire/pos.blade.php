@@ -231,6 +231,9 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                                                     </span>
                                                     <div>
                                                         <span class="fw-bold text-dark d-block">{{ $suggestion['name'] }}</span>
+                                                        @if (!empty($suggestion['category']))
+                                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.65rem;">{{ $suggestion['category']['name'] }}</span>
+                                                        @endif
                                                         @if (!empty($suggestion['warranty_description']))
                                                             <small class="text-muted d-block" style="font-size: 0.72rem;">{{ \Illuminate\Support\Str::limit($suggestion['warranty_description'], 40) }}</small>
                                                         @endif
@@ -248,6 +251,32 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                                     </ul>
                                 </div>
                             @endif
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6 col-12">
+                                <label class="form-label fw-bold small text-dark mb-1">
+                                    <i class="fa-solid fa-tags text-primary me-1"></i>{{ __('Category') }}
+                                </label>
+                                <select wire:model="custom_category_id" class="form-select">
+                                    <option value="">{{ __('-- Select Category (Optional) --') }}</option>
+                                    @foreach ($categories as $category)
+                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('custom_category_id') <span class="text-danger small">{{ $message }}</span> @enderror
+                            </div>
+
+                            <div class="col-md-6 col-12">
+                                <label class="form-label fw-bold small text-dark mb-1">{{ __('Warranty Plan') }} <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
+                                <select wire:model.live="custom_warranty_id" class="form-select">
+                                    <option value="">{{ __('No Warranty / Standard') }}</option>
+                                    @foreach ($warranties as $warranty)
+                                        <option value="{{ $warranty->id }}">{{ $warranty->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('custom_warranty_id') <span class="text-danger small">{{ $message }}</span> @enderror
+                            </div>
                         </div>
 
                         <div class="row g-3 mb-3">
@@ -272,20 +301,9 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                             </div>
 
                             <div class="col-md-8 col-12">
-                                <label class="form-label fw-bold small text-dark mb-1">{{ __('Warranty Plan') }} <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
-                                <select wire:model.live="custom_warranty_id" class="form-select">
-                                    <option value="">{{ __('No Warranty / Standard') }}</option>
-                                    @foreach ($warranties as $warranty)
-                                        <option value="{{ $warranty->id }}">{{ $warranty->name }}</option>
-                                    @endforeach
-                                </select>
-                                @error('custom_warranty_id') <span class="text-danger small">{{ $message }}</span> @enderror
+                                <label class="form-label fw-bold small text-dark mb-1">{{ __('Warranty Terms / Description on Receipt') }} <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
+                                <input wire:model="custom_warranty_description" type="text" class="form-control">
                             </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-dark mb-1">{{ __('Warranty Terms / Description on Receipt') }} <small class="text-muted fw-normal">({{ __('Optional') }})</small></label>
-                            <input wire:model="custom_warranty_description" type="text" class="form-control">
                         </div>
 
                         <div class="row g-2 p-3 bg-light rounded border">

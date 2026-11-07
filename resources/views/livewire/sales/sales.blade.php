@@ -19,7 +19,7 @@
                     <h5 class="h6 mb-3 fw-bold">{{ __('Filter & Search Sales') }}</h5>
                     <div class="row g-2 mb-3">
                         {{-- Find Sale by Unique Receipt Number (TP-000000) --}}
-                        <div class="col-md-3 col-12">
+                        <div class="col-md-2 col-12">
                             <label class="small text-muted mb-1">{{ __('Receipt Number') }}</label>
                             <div class="input-group input-group-sm">
                                 <span class="input-group-text"><i class="fa-solid fa-receipt"></i></span>
@@ -28,7 +28,7 @@
                         </div>
 
                         {{-- Filter by Staff --}}
-                        <div class="col-md-3 col-6">
+                        <div class="col-md-2 col-6">
                             <label class="small text-muted mb-1">{{ __('Sold By (Staff)') }}</label>
                             <select wire:model.live="staff_id" class="form-select form-select-sm">
                                 <option value="">{{ __('All Staff') }}</option>
@@ -49,6 +49,17 @@
                             </select>
                         </div>
 
+                        {{-- Category Filter --}}
+                        <div class="col-md-2 col-6">
+                            <label class="small text-muted mb-1"><i class="fa-solid fa-tags me-1 text-primary"></i>{{ __('Category') }}</label>
+                            <select wire:model.live="category_filter" class="form-select form-select-sm">
+                                <option value="">{{ __('All Categories') }}</option>
+                                @foreach ($categories as $cat)
+                                    <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         {{-- Date Filter Type --}}
                         <div class="col-md-2 col-6">
                             <label class="small text-muted mb-1">{{ __('Date Filter Type') }}</label>
@@ -62,13 +73,13 @@
 
                         {{-- Date Pickers --}}
                         @if ($filter_by === 'RANGE')
-                            <div class="col-md-2 col-6">
-                                <label class="small text-muted mb-1">{{ __('From Date') }}</label>
-                                <input wire:model.live="start_date" type="date" class="form-control form-control-sm">
+                            <div class="col-md-1 col-6">
+                                <label class="small text-muted mb-1">{{ __('From') }}</label>
+                                <input wire:model.live="start_date" type="date" class="form-control form-control-sm px-1">
                             </div>
-                            <div class="col-md-2 col-6">
-                                <label class="small text-muted mb-1">{{ __('To Date') }}</label>
-                                <input wire:model.live="end_date" type="date" class="form-control form-control-sm">
+                            <div class="col-md-1 col-6">
+                                <label class="small text-muted mb-1">{{ __('To') }}</label>
+                                <input wire:model.live="end_date" type="date" class="form-control form-control-sm px-1">
                             </div>
                         @else
                             <div class="col-md-2 col-6">
@@ -85,6 +96,183 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    {{-- Category Performance Breakdown Section --}}
+    @php
+        $selectedCat = $categoryBreakdown['selected'] ?? null;
+    @endphp
+
+    @if ($selectedCat)
+        {{-- Highlighted Category Summary KPI Cards --}}
+        <div class="row g-3 mb-4">
+            <div class="col-12">
+                <div class="alert alert-primary border-primary shadow-sm d-flex flex-wrap justify-content-between align-items-center py-2 px-3 mb-0">
+                    <div>
+                        <i class="fa-solid fa-filter me-2 fs-6"></i>
+                        <span class="fw-bold">{{ __('Filtered by Category:') }}</span>
+                        <span class="badge bg-primary fs-6 ms-1">{{ $selectedCat['name'] }}</span>
+                        <span class="small text-muted ms-2">({{ $selectedCat['items_count'] }} {{ __('items sold') }})</span>
+                    </div>
+                    <button wire:click="$set('category_filter', '')" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.78rem;">
+                        <i class="fa-solid fa-xmark me-1"></i>{{ __('Clear Category Filter') }}
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm bg-white">
+                    <div class="card-body p-3">
+                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">{{ $selectedCat['name'] }} {{ __('Sales') }}</small>
+                        <h4 class="fw-bold text-primary mb-0 mt-1">{{ $currencySymbol }}{{ number_format($selectedCat['total_sales'], 2) }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm bg-white">
+                    <div class="card-body p-3">
+                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">{{ $selectedCat['name'] }} {{ __('Cost') }}</small>
+                        <h4 class="fw-bold text-danger mb-0 mt-1">{{ $currencySymbol }}{{ number_format($selectedCat['total_cost'], 2) }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm bg-white">
+                    <div class="card-body p-3">
+                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">{{ $selectedCat['name'] }} {{ __('Net Profit') }}</small>
+                        <h4 class="fw-bold text-success mb-0 mt-1">{{ $currencySymbol }}{{ number_format($selectedCat['net_profit'], 2) }}</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="card border-0 shadow-sm bg-white">
+                    <div class="card-body p-3">
+                        <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">{{ $selectedCat['name'] }} {{ __('Margin') }}</small>
+                        <h4 class="fw-bold text-info mb-0 mt-1">{{ $selectedCat['margin'] }}%</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Category Performance Breakdown Table Card (Collapsible, default collapsed) --}}
+    <div class="card border-0 shadow mb-4">
+        <div class="card-body py-3">
+            <div class="d-flex justify-content-between align-items-center"
+                 wire:click="$toggle('show_category_breakdown')"
+                 style="cursor: pointer; user-select: none;">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary-subtle text-primary rounded-circle p-2 me-2 d-inline-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                        <i class="fa-solid fa-chart-pie" style="font-size: 0.85rem;"></i>
+                    </div>
+                    <div>
+                        <h5 class="h6 mb-0 fw-bold d-flex align-items-center gap-2">
+                            <span>{{ __('Category Sales & Profit Breakdown') }}</span>
+                            @if (!$show_category_breakdown)
+                                <span class="badge bg-secondary-subtle text-muted fw-normal" style="font-size: 0.68rem;">
+                                    <i class="fa-solid fa-chevron-down me-1"></i>{{ __('Click to expand') }}
+                                </span>
+                            @endif
+                        </h5>
+                        <small class="text-muted" style="font-size: 0.75rem;">{{ __('Sales amount, cost and net profit categorized for this period') }}</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2" onclick="event.stopPropagation()">
+                    @if (!empty($category_filter))
+                        <button type="button" wire:click="$set('category_filter', '')" class="btn btn-xs btn-outline-secondary" style="font-size: 0.75rem;">
+                            <i class="fa-solid fa-list me-1"></i>{{ __('Show All Categories') }}
+                        </button>
+                    @endif
+                    <button type="button"
+                            wire:click="$toggle('show_category_breakdown')"
+                            class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1 py-1 px-2.5"
+                            style="font-size: 0.78rem;">
+                        @if ($show_category_breakdown)
+                            <i class="fa-solid fa-chevron-up"></i>
+                            <span>{{ __('Collapse') }}</span>
+                        @else
+                            <i class="fa-solid fa-chevron-down"></i>
+                            <span>{{ __('Expand') }}</span>
+                        @endif
+                    </button>
+                </div>
+            </div>
+
+            @if ($show_category_breakdown)
+                <div class="table-responsive mt-2 pt-2 border-top">
+                    <table class="table table-sm table-hover table-centered mb-0 align-middle" style="font-size: 0.8rem;">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="border-0 px-2 py-1">{{ __('Category') }}</th>
+                                <th class="border-0 text-center py-1">{{ __('Items Sold') }}</th>
+                                <th class="border-0 text-end py-1">{{ __('Sales Amount') }}</th>
+                                <th class="border-0 text-end py-1">{{ __('Cost Price') }}</th>
+                                <th class="border-0 text-end py-1">{{ __('Net Profit') }}</th>
+                                <th class="border-0 text-end py-1 px-2">{{ __('Margin') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($categoryBreakdown['rows'] as $row)
+                                @php
+                                    $isRowSelected = !empty($row['is_selected']);
+                                @endphp
+                                <tr class="{{ $isRowSelected ? 'table-primary fw-bold' : '' }}" style="cursor: pointer;"
+                                    wire:click="$set('category_filter', '{{ $row['id'] ? $row['id'] : '' }}')"
+                                    title="{{ __('Click to filter sales by :category', ['category' => $row['name']]) }}">
+                                    <td class="px-2 py-1">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fa-solid fa-tag me-1.5 text-muted" style="font-size: 0.7rem;"></i>
+                                            <span class="{{ $isRowSelected ? 'text-primary fw-bold' : 'text-dark' }}">{{ $row['name'] }}</span>
+                                            @if ($isRowSelected)
+                                                <span class="badge bg-primary ms-1" style="font-size: 0.62rem;">{{ __('Active Filter') }}</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="text-center py-1">
+                                        <span class="badge bg-secondary-subtle text-dark" style="font-size: 0.72rem;">{{ $row['items_count'] }}</span>
+                                    </td>
+                                    <td class="text-end py-1 font-monospace fw-semibold">
+                                        {{ $currencySymbol }}{{ number_format($row['total_sales'], 2) }}
+                                    </td>
+                                    <td class="text-end py-1 font-monospace text-muted">
+                                        {{ $currencySymbol }}{{ number_format($row['total_cost'], 2) }}
+                                    </td>
+                                    <td class="text-end py-1 font-monospace fw-bold {{ $row['net_profit'] >= 0 ? 'text-success' : 'text-danger' }}">
+                                        {{ $currencySymbol }}{{ number_format($row['net_profit'], 2) }}
+                                    </td>
+                                    <td class="text-end py-1 px-2 font-monospace">
+                                        <span class="badge {{ $row['margin'] >= 20 ? 'bg-success-subtle text-success' : ($row['margin'] > 0 ? 'bg-warning-subtle text-warning' : 'bg-secondary-subtle text-secondary') }} border" style="font-size: 0.72rem;">
+                                            {{ $row['margin'] }}%
+                                        </span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                        <tfoot class="table-light border-top border-2">
+                            <tr class="fw-bold">
+                                <td class="px-2 py-1 text-uppercase" style="font-size: 0.72rem;">{{ __('Total / Overall') }}</td>
+                                <td class="text-center py-1">
+                                    <span class="badge bg-dark" style="font-size: 0.72rem;">{{ $categoryBreakdown['totals']['items_count'] }}</span>
+                                </td>
+                                <td class="text-end py-1 font-monospace text-primary">
+                                    {{ $currencySymbol }}{{ number_format($categoryBreakdown['totals']['total_sales'], 2) }}
+                                </td>
+                                <td class="text-end py-1 font-monospace text-muted">
+                                    {{ $currencySymbol }}{{ number_format($categoryBreakdown['totals']['total_cost'], 2) }}
+                                </td>
+                                <td class="text-end py-1 font-monospace text-success">
+                                    {{ $currencySymbol }}{{ number_format($categoryBreakdown['totals']['net_profit'], 2) }}
+                                </td>
+                                <td class="text-end py-1 px-2 font-monospace">
+                                    <span class="badge bg-primary text-white" style="font-size: 0.72rem;">
+                                        {{ $categoryBreakdown['totals']['margin'] }}%
+                                    </span>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -148,6 +336,12 @@
                                                 @if ($item->is_vatable)
                                                     <span class="badge bg-success ms-1" style="font-size: 0.55rem;">VAT</span>
                                                 @endif
+                                                @php
+                                                    $itemCatName = $item->category_name;
+                                                @endphp
+                                                @if ($itemCatName && $itemCatName !== 'Uncategorized')
+                                                    <span class="badge bg-secondary-subtle text-secondary border ms-1" style="font-size: 0.6rem;">{{ $itemCatName }}</span>
+                                                @endif
                                                 @if ($item->productVariation)
                                                     <br><small class="text-primary">{{ $item->productVariation->variation_name }}</small>
                                                 @endif
@@ -158,8 +352,12 @@
                                                     <br><small class="text-muted font-monospace">SN: {{ $item->productVariation?->serial_no ?: $item->product?->serial_no }}</small>
                                                 @endif
                                             </td>
-                                            <td class="px-1 py-1 align-middle text-center" style="width: 15%;"> 
-                                                <small class="text-muted lh-1">Warranty: <br> <b class="text-primary">{{$item?->warranty?->name ?? '-' }}</b></small>
+                                            <td class="px-1 py-1 align-middle text-center" style="width: 10%;"> 
+                                                <small class="text-muted lh-1" style="font-size: 0.62rem;">{{ __('Category') }}:</small><br>
+                                                <span class="text-secondary" style="font-size: 0.68rem; line-height: 1;">{{ $item->category_name }}</span>
+                                            </td>
+                                            <td class="px-1 py-1 align-middle text-center" style="width: 14%;"> 
+                                                <small class="text-muted lh-1">{{ __('Warranty') }}: <br> <b class="text-primary">{{$item?->warranty?->name ?? '-' }}</b></small>
                                                 @if (!$item->show_warranty_on_receipt && ($item->warranty_id || $item->warranty_description))
                                                     <br><small class="text-muted" style="font-size: 0.6rem;">({{ __('Hidden on receipt') }})</small>
                                                 @endif

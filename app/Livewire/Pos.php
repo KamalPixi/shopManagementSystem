@@ -13,6 +13,7 @@ use App\Models\Customer;
 use App\Models\CashRegisterSession;
 use App\Models\PaymentMethod;
 use App\Models\CustomItem;
+use App\Models\Category;
 use App\Services\SaleService;
 use App\Services\AuditLogger;
 use Illuminate\Support\Str;
@@ -49,6 +50,7 @@ class Pos extends Component
 
     // Custom Item Modal
     public $custom_item_name = '';
+    public $custom_category_id = '';
     public $custom_price = '';
     public $custom_purchase_price = '';
     public $custom_quantity = 1;
@@ -203,6 +205,7 @@ class Pos extends Component
                     'key' => $itemKey,
                     'product_id' => $product->id,
                     'product_variation_id' => $matchedVariation->id,
+                    'category_id' => $product->category_id,
                     'variation_name' => $matchedVariation->variation_name,
                     'item_name' => $product->name . ' (' . $matchedVariation->variation_name . ')',
                     'serial_no' => $matchedVariation->serial_no ?: $product->serial_no,
@@ -244,6 +247,7 @@ class Pos extends Component
                     'key' => $itemKey,
                     'product_id' => $product->id,
                     'product_variation_id' => null,
+                    'category_id' => $product->category_id,
                     'variation_name' => null,
                     'item_name' => $product->name,
                     'serial_no' => $product->serial_no,
@@ -288,6 +292,7 @@ class Pos extends Component
     public function openCustomModal() {
         $this->reset([
             'custom_item_name',
+            'custom_category_id',
             'custom_price',
             'custom_purchase_price',
             'custom_quantity',
@@ -298,6 +303,7 @@ class Pos extends Component
             'custom_item_suggestions',
             'show_custom_suggestions',
         ]);
+        $this->custom_category_id = '';
         $this->custom_quantity = 1;
         $this->custom_purchase_price = '';
         $this->custom_is_vatable = 1;
@@ -334,6 +340,9 @@ class Pos extends Component
             if ($item->purchase_price > 0) {
                 $this->custom_purchase_price = (float) $item->purchase_price;
             }
+            if ($item->category_id) {
+                $this->custom_category_id = $item->category_id;
+            }
             if ($item->warranty_id) {
                 $this->custom_warranty_id = $item->warranty_id;
             }
@@ -362,6 +371,7 @@ class Pos extends Component
     public function addCustomItem() {
         $this->validate([
             'custom_item_name' => 'required|string|max:255',
+            'custom_category_id' => 'nullable|exists:categories,id',
             'custom_price' => 'required|numeric|min:0',
             'custom_purchase_price' => 'nullable|numeric|min:0',
             'custom_quantity' => 'required|integer|min:1',
@@ -379,7 +389,8 @@ class Pos extends Component
                 (float) ($this->custom_purchase_price ?: 0),
                 !empty($this->custom_warranty_id) ? (int) $this->custom_warranty_id : null,
                 !empty($this->custom_warranty_description) ? trim($this->custom_warranty_description) : null,
-                (bool) $this->custom_is_vatable
+                (bool) $this->custom_is_vatable,
+                !empty($this->custom_category_id) ? (int) $this->custom_category_id : null
             );
         } catch (\Throwable $e) {
             // Ignore if recording fails to not disrupt checkout
@@ -391,6 +402,7 @@ class Pos extends Component
             'key' => $itemKey,
             'product_id' => null,
             'product_variation_id' => null,
+            'category_id' => !empty($this->custom_category_id) ? (int) $this->custom_category_id : null,
             'variation_name' => null,
             'item_name' => $cleanName,
             'serial_no' => null,
@@ -713,10 +725,15 @@ class Pos extends Component
             $profit_total_for_item = ($profit_per_unit * $item['quantity']) - $item['discount'] - $itemVat;
             $profit_total += $profit_total_for_item;
 
+            $catId = !empty($item['category_id'])
+                ? (int) $item['category_id']
+                : ($item['product_id'] ? Product::find($item['product_id'])?->category_id : null);
+
             // Create the sale item entry
             $sale->saleItems()->create([
                 'product_id' => $item['product_id'] ?? null,
                 'product_variation_id' => $item['product_variation_id'] ?? null,
+                'category_id' => $catId,
                 'item_name' => $item['item_name'] ?? null,
                 'warranty_id' => empty($item['warranty_id']) ? null : $item['warranty_id'],
                 'warranty_description' => !empty($item['warranty_description']) ? $item['warranty_description'] : null,
@@ -960,6 +977,7 @@ class Pos extends Component
 
         return view('livewire.pos', [
             'warranties' => Warranty::all(),
+            'categories' => Category::orderBy('name')->get(),
             'shop' => Shop::first(),
             'currentSession' => $currentSession,
             'todaySession' => $todaySession,

@@ -21,6 +21,11 @@ class CustomItem extends Model
         return $this->belongsTo(Warranty::class);
     }
 
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
     /**
      * Search custom items matching keyword, ordered by usage count and recency.
      */
@@ -29,6 +34,7 @@ class CustomItem extends Model
         $keyword = trim($keyword);
         if ($keyword === '') {
             return static::query()
+                ->with('category')
                 ->orderByDesc('usage_count')
                 ->orderByDesc('last_used_at')
                 ->limit($limit)
@@ -36,6 +42,7 @@ class CustomItem extends Model
         }
 
         return static::query()
+            ->with('category')
             ->where('name', 'like', '%' . $keyword . '%')
             ->orderByRaw("CASE WHEN LOWER(name) LIKE ? THEN 1 WHEN LOWER(name) LIKE ? THEN 2 ELSE 3 END", [
                 strtolower($keyword) . '%',
@@ -55,7 +62,8 @@ class CustomItem extends Model
         float $purchasePrice = 0,
         ?int $warrantyId = null,
         ?string $warrantyDescription = null,
-        bool $isVatable = true
+        bool $isVatable = true,
+        ?int $categoryId = null
     ): static {
         $name = trim($name);
         $item = static::firstOrNew(['name' => $name]);
@@ -65,6 +73,9 @@ class CustomItem extends Model
         $item->warranty_id = $warrantyId;
         $item->warranty_description = $warrantyDescription;
         $item->is_vatable = $isVatable;
+        if (!empty($categoryId)) {
+            $item->category_id = $categoryId;
+        }
         $item->usage_count = ($item->usage_count ?? 0) + 1;
         $item->last_used_at = now();
         $item->save();

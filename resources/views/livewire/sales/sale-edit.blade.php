@@ -98,6 +98,9 @@
                                                     <i class="fa-solid fa-arrow-turn-up text-primary small fa-rotate-90"></i>
                                                     <div class="text-truncate">
                                                         <span class="fw-semibold text-dark">{{ $suggestion['name'] }}</span>
+                                                        @if (!empty($suggestion['category']))
+                                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1" style="font-size: 0.65rem;">{{ $suggestion['category']['name'] }}</span>
+                                                        @endif
                                                         @if (!empty($suggestion['warranty_description']))
                                                             <small class="text-muted d-block" style="font-size: 0.72rem;">{{ \Illuminate\Support\Str::limit($suggestion['warranty_description'], 40) }}</small>
                                                         @endif
@@ -119,6 +122,28 @@
 
                         <div class="row g-3 mb-3">
                             <div class="col-md-6 col-12">
+                                <label class="form-label fw-bold small mb-1"><i class="fa-solid fa-tags me-1 text-primary"></i>{{ __('Category') }}</label>
+                                <select wire:model="custom_category_id" class="form-select">
+                                    <option value="">{{ __('-- Select Category (Optional) --') }}</option>
+                                    @foreach ($categories as $cat)
+                                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('custom_category_id') <span class="text-danger small">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-md-6 col-12">
+                                <label class="form-label fw-bold small mb-1">{{ __('Warranty Plan') }}</label>
+                                <select wire:model.live="custom_warranty_id" class="form-select">
+                                    <option value="">{{ __('No Warranty') }}</option>
+                                    @foreach ($warranties as $warranty)
+                                        <option value="{{ $warranty->id }}">{{ $warranty->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6 col-12">
                                 <label class="form-label fw-bold small mb-1">{{ __('Sale Price') }} <span class="text-danger">*</span></label>
                                 <input wire:model="custom_price" type="number" step="any" min="0" class="form-control text-end" placeholder="0" required onfocus="this.select()">
                             </div>
@@ -132,15 +157,6 @@
                             <div class="col-md-6 col-12">
                                 <label class="form-label fw-bold small mb-1">{{ __('Quantity') }} <span class="text-danger">*</span></label>
                                 <input wire:model="custom_quantity" type="number" min="1" class="form-control text-center fw-bold" required placeholder="0">
-                            </div>
-                            <div class="col-md-6 col-12">
-                                <label class="form-label fw-bold small mb-1">{{ __('Warranty') }}</label>
-                                <select wire:model.live="custom_warranty_id" class="form-select">
-                                    <option value="">{{ __('No Warranty') }}</option>
-                                    @foreach ($warranties as $warranty)
-                                        <option value="{{ $warranty->id }}">{{ $warranty->name }}</option>
-                                    @endforeach
-                                </select>
                             </div>
                         </div>
 
@@ -217,6 +233,28 @@
                                     <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1" style="font-size: 0.62rem;" title="{{ __('You can update the cost price for this custom service in the Price column') }}">
                                         <i class="fa-solid fa-pen me-1"></i>{{ __('Editable Cost') }}
                                     </span>
+                                    <div class="mt-1 d-flex align-items-center gap-1">
+                                        <label class="small text-muted mb-0" style="font-size: 0.68rem;"><i class="fa-solid fa-tags me-1 text-primary"></i>{{ __('Category') }}:</label>
+                                        <select wire:model.live="sale_items.{{ $itemKey }}.category_id" class="form-select form-select-sm py-0 px-1" style="font-size: 0.72rem; width: auto; max-width: 170px;">
+                                            <option value="">{{ __('-- None / Other --') }}</option>
+                                            @foreach ($categories as $cat)
+                                                <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @else
+                                    @php
+                                        $catName = null;
+                                        if (!empty($item['category_id'])) {
+                                            $catName = collect($categories)->firstWhere('id', $item['category_id'])?->name;
+                                        }
+                                        $catName = $catName ?? ($prod?->category?->name ?? null);
+                                    @endphp
+                                    @if ($catName)
+                                        <small class="text-muted d-block mt-1" style="font-size: 0.72rem;">
+                                            <i class="fa-solid fa-tag me-1 text-secondary"></i>{{ $catName }}
+                                        </small>
+                                    @endif
                                 @endif
 
                                 @if (!empty($item['serial_no']))
