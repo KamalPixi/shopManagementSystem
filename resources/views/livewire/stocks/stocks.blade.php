@@ -198,15 +198,21 @@
                                 @if ($product->has_variations && $product->variations->count() > 0)
                                     @php
                                         $variantsTotalPrice = $product->variations->sum('price');
+                                        $variantsTotalCost = $product->variations->sum('purchase_price');
                                     @endphp
                                     <div class="fw-bold text-dark font-monospace" title="{{ __('Sum of all variation prices') }}">
                                         €{{ number_format((float) $variantsTotalPrice, 2) }}
                                     </div>
-                                    <small class="text-muted d-block" style="font-size: 0.68rem;">{{ __('total variants sum') }}</small>
+                                    <small class="text-muted d-block" style="font-size: 0.68rem;" title="{{ __('Total variation cost') }}">
+                                        {{ __('Cost') }}: €{{ number_format((float) $variantsTotalCost, 2) }}
+                                    </small>
                                 @else
                                     <div class="fw-bold text-dark font-monospace">
                                         €{{ number_format((float) $product->price, 2) }}
                                     </div>
+                                    <small class="text-muted d-block" style="font-size: 0.68rem;">
+                                        {{ __('Cost') }}: €{{ number_format((float) $product->purchase_price, 2) }}
+                                    </small>
                                 @endif
                             </td>
                             <td class="text-center">

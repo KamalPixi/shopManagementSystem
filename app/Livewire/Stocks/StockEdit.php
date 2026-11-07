@@ -123,6 +123,10 @@ class StockEdit extends Component
         $this->payment_status = $latestPurchase?->payment_status ?: 'unpaid';
         $this->paid_amount = $latestPurchase?->paid_amount ?: 0;
 
+        if ((is_null($this->purchase_price) || $this->purchase_price === '' || (float) $this->purchase_price === 0.0) && $latestPurchase && (float) $latestPurchase->purchase_price > 0) {
+            $this->purchase_price = $latestPurchase->purchase_price;
+        }
+
         // Load variations
         $this->variations = $this->product->variations->map(fn($v) => [
             'id' => $v->id,
@@ -136,6 +140,10 @@ class StockEdit extends Component
             'quantity' => $v->quantity,
             'low_stock_threshold' => $v->low_stock_threshold,
         ])->toArray();
+
+        if ($this->has_variations && (is_null($this->purchase_price) || $this->purchase_price === '' || (float) $this->purchase_price === 0.0) && count($this->variations) > 0) {
+            $this->purchase_price = $this->variations[0]['purchase_price'] ?? 0;
+        }
     }
 
     public function addVariationField()
@@ -234,7 +242,14 @@ class StockEdit extends Component
         })->filter(fn($a) => !empty($a['name']))->values()->toArray();
         
         if ($this->has_variations && count($this->variations) > 0) {
-            $validated['quantity'] = collect($this->variations)->sum('quantity');
+            $validated['quantity'] = (int) collect($this->variations)->sum('quantity');
+            $firstVar = collect($this->variations)->first();
+            $validated['price'] = !empty($this->price) ? (float) $this->price : (float) ($firstVar['price'] ?? 0);
+            $validated['purchase_price'] = !empty($this->purchase_price) ? (float) $this->purchase_price : (float) ($firstVar['purchase_price'] ?? 0);
+        } else {
+            $validated['price'] = (float) ($validated['price'] ?? 0);
+            $validated['purchase_price'] = (float) ($validated['purchase_price'] ?? 0);
+            $validated['quantity'] = (int) ($validated['quantity'] ?? 0);
         }
 
         $validated['attributes_and_values'] = $attributeArray;
@@ -299,19 +314,39 @@ class StockEdit extends Component
                 'payment_status' => $validated['payment_status'] ?? 'unpaid',
                 'paid_amount' => $validated['paid_amount'] ?? 0,
             ]);
+        } elseif (!empty($validated['purchase_price']) || !empty($validated['supplier_id'])) {
+            $this->product->productPurchases()->create([
+                'supplier_id' => !empty($validated['supplier_id']) ? $validated['supplier_id'] : null,
+                'purchase_date' => !empty($validated['purchase_date']) ? $validated['purchase_date'] : now(),
+                'purchase_price' => !empty($validated['purchase_price']) ? $validated['purchase_price'] : 0,
+                'sale_price' => $validated['price'],
+                'quantity' => $validated['quantity'],
+                'attributes_and_values' => $attributeArray,
+                'payment_method_id' => $validated['payment_method_id'] ?? null,
+                'payment_reference' => $validated['payment_reference'] ?? null,
+                'payment_status' => $validated['payment_status'] ?? 'unpaid',
+                'paid_amount' => $validated['paid_amount'] ?? 0,
+                'created_by' => auth()->id(),
+            ]);
         }
 
         AuditLogger::log(
             'updated_product',
-            __(':user updated product [:name] (SKU: :sku, Qty: :qty, VAT: :vat)', [
+            __(':user updated product [:name] (SKU: :sku, Qty: :qty, Cost Price: :cost, Price: :price, VAT: :vat)', [
                 'user' => auth()->user()->name,
                 'name' => $this->product->name,
                 'sku' => $this->product->sku,
                 'qty' => $this->product->quantity,
+                'cost' => '€' . number_format((float) $this->product->purchase_price, 2),
+                'price' => '€' . number_format((float) $this->product->price, 2),
                 'vat' => $this->product->is_vatable ? 'Yes' : 'No'
             ]),
             $this->product,
-            ['price' => $this->product->price, 'quantity' => $this->product->quantity]
+            [
+                'price' => $this->product->price,
+                'purchase_price' => $this->product->purchase_price,
+                'quantity' => $this->product->quantity
+            ]
         );
 
         session()->flash('success', __('Product updated successfully.'));

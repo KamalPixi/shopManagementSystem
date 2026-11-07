@@ -74,8 +74,8 @@
                     <div class="row">
                         <div class="col-12 col-md-3">
                             <div class="mb-3">
-                                <label>{{ $has_variations ? __('Purchase Price') : __('Purchase Price*') }} @if($has_variations)<small class="text-muted">({{ __('set per variation below') }})</small>@endif</label>
-                                <input wire:model="purchase_price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end" @disabled($has_variations) placeholder="0">
+                                <label>{{ __('Cost / Purchase Price') }}* @if($has_variations)<small class="text-muted">({{ __('base or per variant below') }})</small>@endif</label>
+                                <input wire:model="purchase_price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0.00">
                                 @error('purchase_price') <span class="text-danger small">{{ $message }}</span> @enderror
                             </div>
                         </div>
@@ -250,7 +250,8 @@
                                                 <input wire:model="variations.{{ $idx }}.price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end fw-semibold" placeholder="0" required>
                                             </td>
                                             <td>
-                                                <input wire:model="variations.{{ $idx }}.purchase_price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0" @disabled($has_variations)>
+                                                <input wire:model="variations.{{ $idx }}.purchase_price" type="number" step="0.01" min="0" class="form-control form-control-sm text-end" placeholder="0.00">
+                                                @error('variations.' . $idx . '.purchase_price') <span class="text-danger small">{{ $message }}</span> @enderror
                                             </td>
                                             <td>
                                                 <input wire:model="variations.{{ $idx }}.quantity" type="number" min="0" class="form-control form-control-sm text-center fw-bold" required placeholder="0">
