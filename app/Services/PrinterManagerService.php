@@ -398,20 +398,29 @@ class PrinterManagerService
 
             // ── RECEIPT METADATA ──────────────────────────────────────────
             $printer->setJustification(Printer::JUSTIFY_LEFT);
-            $paymentMethod = match (strtolower($sale->payment_method ?: 'cash')) {
-                'cash' => $translate('Cash'),
-                'card' => $translate('Card'),
-                'bank_transfer' => $translate('Bank transfer'),
-                'mobile_payment' => $translate('Mobile payment'),
-                'other' => $translate('Other'),
-                default => ucfirst(str_replace('_', ' ', $sale->payment_method)),
-            };
             $write($translate('Thermal Receipt Number') . ': ' . $sale->receipt_no . "\n");
             $write($translate('Date') . ' : ' . $sale->created_at->timezone($shopTimezone)->locale($locale)->translatedFormat('d/m/Y H:i') . "\n");
             $write($translate('Cashier') . ' : ' . ($sale->createdBy?->name ?? ($sale->createdBy?->username ?? '-')) . "\n");
-            $write($translate('Thermal Payment Method') . ' : ' . $paymentMethod . "\n");
-            if ($sale->payment_reference) {
-                $write($translate('Reference') . ' : ' . $sale->payment_reference . "\n");
+
+            $isSplit = $sale->isSplitPayment() || $sale->payments->count() > 1;
+            if ($isSplit) {
+                $write($translate('Thermal Payment Method') . ' : ' . $translate('Split Payment') . "\n");
+                foreach ($sale->payments as $sp) {
+                    $write("  - " . $sp->method_label . " : " . number_format($sp->amount, 2) . ($sp->reference ? " ({$sp->reference})" : "") . "\n");
+                }
+            } else {
+                $paymentMethod = match (strtolower($sale->payment_method ?: 'cash')) {
+                    'cash' => $translate('Cash'),
+                    'card' => $translate('Card'),
+                    'bank_transfer' => $translate('Bank transfer'),
+                    'mobile_payment' => $translate('Mobile payment'),
+                    'other' => $translate('Other'),
+                    default => ucfirst(str_replace('_', ' ', $sale->payment_method)),
+                };
+                $write($translate('Thermal Payment Method') . ' : ' . $paymentMethod . "\n");
+                if ($sale->payment_reference) {
+                    $write($translate('Reference') . ' : ' . $sale->payment_reference . "\n");
+                }
             }
             if ($sale->customer) {
                 $write($translate('Customer') . ' : ' . ($sale->customer->name ?: $translate('Walk In')) . "\n");

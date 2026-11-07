@@ -373,14 +373,29 @@
                             {{-- Payment Method & Reference --}}
                             <td class="align-middle text-center">
                                 @php
+                                    $isSplit = $sale->isSplitPayment() || $sale->payments->count() > 1;
                                     $pMethod = $sale->payment_method ?: 'cash';
                                     $pBadge = 'bg-success';
-                                    if ($pMethod === 'card') $pBadge = 'bg-info text-white';
+                                    if ($isSplit) $pBadge = 'bg-primary text-white';
+                                    elseif ($pMethod === 'card') $pBadge = 'bg-info text-white';
                                     elseif ($pMethod === 'bank_transfer') $pBadge = 'bg-warning text-dark';
                                 @endphp
-                                <span class="badge {{ $pBadge }} text-uppercase" style="font-size: 0.7rem;">
-                                    {{ str_replace('_', ' ', $pMethod) }}
-                                </span>
+                                @if ($isSplit)
+                                    <span class="badge {{ $pBadge }} text-uppercase" style="font-size: 0.7rem;" title="{{ $sale->payment_summary }}">
+                                        <i class="fa-solid fa-layer-group me-1"></i>{{ __('Split') }}
+                                    </span>
+                                    <div class="mt-1" style="line-height: 1.1;">
+                                        @foreach ($sale->payments as $sp)
+                                            <span class="badge bg-secondary-subtle text-secondary border me-1" style="font-size: 0.6rem;">
+                                                {{ $sp->payment_method }}: {{ $currencySymbol }}{{ number_format($sp->amount, 0) }}
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span class="badge {{ $pBadge }} text-uppercase" style="font-size: 0.7rem;">
+                                        {{ str_replace('_', ' ', $pMethod) }}
+                                    </span>
+                                @endif
                                 @if ($sale->payment_reference)
                                     <small class="text-muted d-block mt-1 font-monospace" style="font-size: 0.7rem;" title="{{ $sale->payment_reference }}">
                                         Ref: {{ \Illuminate\Support\Str::limit($sale->payment_reference, 12) }}

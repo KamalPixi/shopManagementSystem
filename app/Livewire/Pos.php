@@ -47,6 +47,8 @@ class Pos extends Component
     public $payment_method = 'cash'; // cash, card, bank_transfer, other
     public $payment_reference = '';
     public $payment_attachment;
+    public $is_split_payment = false;
+    public $split_payments = [];
 
     // Custom Item Modal
     public $custom_item_name = '';
@@ -163,6 +165,67 @@ class Pos extends Component
         if ($shop) {
             $this->gst_percent = $shop->gst_percent;
         }
+        $this->initSplitPayments();
+    }
+
+    public function initSplitPayments()
+    {
+        $methods = PaymentMethod::where('is_active', true)->orderBy('sort_order')->get();
+        $this->split_payments = [];
+        foreach ($methods as $m) {
+            $this->split_payments[$m->code] = [
+                'name' => $m->name,
+                'amount' => '',
+                'reference' => '',
+            ];
+        }
+    }
+
+    public function toggleSplitPayment()
+    {
+        $this->is_split_payment = !$this->is_split_payment;
+        if ($this->is_split_payment) {
+            if (empty($this->split_payments)) {
+                $this->initSplitPayments();
+            }
+            $total = (float) $this->grand_total;
+            $currentAllocated = $this->getSplitPaidTotal();
+            if ($currentAllocated == 0 && $total > 0) {
+                $method = isset($this->split_payments[$this->payment_method]) ? $this->payment_method : 'cash';
+                if (isset($this->split_payments[$method])) {
+                    $this->split_payments[$method]['amount'] = number_format($total, 2, '.', '');
+                }
+            }
+        }
+    }
+
+    public function fillRemainder($methodCode)
+    {
+        $grandTotal = (float) $this->grand_total;
+        $otherAllocated = 0.0;
+        foreach ($this->split_payments as $code => $data) {
+            if ($code !== $methodCode) {
+                $otherAllocated += (float) ($data['amount'] ?? 0);
+            }
+        }
+        $remainder = max(0, round($grandTotal - $otherAllocated, 2));
+        if (isset($this->split_payments[$methodCode])) {
+            $this->split_payments[$methodCode]['amount'] = $remainder > 0 ? number_format($remainder, 2, '.', '') : '0.00';
+        }
+    }
+
+    public function getSplitPaidTotal(): float
+    {
+        $total = 0.0;
+        foreach ($this->split_payments as $data) {
+            $total += (float) ($data['amount'] ?? 0);
+        }
+        return round($total, 2);
+    }
+
+    public function getSplitRemainingAmount(): float
+    {
+        return round((float) $this->grand_total - $this->getSplitPaidTotal(), 2);
     }
 
     public function add() {
@@ -610,10 +673,30 @@ class Pos extends Component
             return;
         }
 
+        if ($this->is_split_payment) {
+            $paidTotal = $this->getSplitPaidTotal();
+            $grandTotal = (float) $this->grand_total;
+            if (abs($paidTotal - $grandTotal) > 0.01) {
+                session()->flash('failed', __('Total payments (:paid) must equal the sale grand total (:total). Remaining: :rem', [
+                    'paid' => number_format($paidTotal, 2),
+                    'total' => number_format($grandTotal, 2),
+                    'rem' => number_format($this->getSplitRemainingAmount(), 2),
+                ]));
+                return;
+            }
+            if ($paidTotal <= 0) {
+                session()->flash('failed', __('Please enter payment amounts.'));
+                return;
+            }
+        } else {
+            $this->validate([
+                'payment_method' => 'required|exists:payment_methods,code',
+                'payment_reference' => $this->payment_method === 'other' ? 'required|string|max:255' : 'nullable|string|max:255',
+            ]);
+        }
+
         // Validate sale items
         $this->validate([
-            'payment_method' => 'required|exists:payment_methods,code',
-            'payment_reference' => $this->payment_method === 'other' ? 'required|string|max:255' : 'nullable|string|max:255',
             'payment_attachment' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:3072',
             'sale_items' => 'required|array',
             'sale_items.*' => 'required|array',
@@ -679,16 +762,41 @@ class Pos extends Component
 
         $currentSession = CashRegisterSession::currentOpenSession();
 
+        $primaryMethod = $this->payment_method;
+        if ($this->is_split_payment) {
+            $activePayments = collect($this->split_payments)->filter(fn($p) => (float)($p['amount'] ?? 0) > 0);
+            $primaryMethod = $activePayments->count() > 1 ? 'split' : ($activePayments->keys()->first() ?: 'cash');
+        }
+
         $sale = Sale::create([
             'total_price' => $this->grand_total,
             'gst' => $this->gst,
             'discount' => $this->discount,
             'created_by' => auth()->user()->id,
-            'payment_method' => $this->payment_method,
+            'payment_method' => $primaryMethod,
             'payment_reference' => !empty(trim($this->payment_reference)) ? trim($this->payment_reference) : null,
             'payment_attachment' => $attachmentPath,
             'cash_register_session_id' => $currentSession?->id,
         ]);
+
+        if ($this->is_split_payment) {
+            foreach ($this->split_payments as $methodCode => $pData) {
+                $pAmt = (float) ($pData['amount'] ?? 0);
+                if ($pAmt > 0) {
+                    $sale->payments()->create([
+                        'payment_method' => $methodCode,
+                        'amount' => $pAmt,
+                        'reference' => !empty(trim($pData['reference'] ?? '')) ? trim($pData['reference']) : null,
+                    ]);
+                }
+            }
+        } else {
+            $sale->payments()->create([
+                'payment_method' => $this->payment_method,
+                'amount' => (float) $this->grand_total,
+                'reference' => !empty(trim($this->payment_reference)) ? trim($this->payment_reference) : null,
+            ]);
+        }
 
         $profit_total = 0;
         $shop = Shop::first();
@@ -968,6 +1076,8 @@ class Pos extends Component
             'showCustomModal',
         ]);
         $this->payment_method = 'cash';
+        $this->is_split_payment = false;
+        $this->initSplitPayments();
     }
 
     public function render()

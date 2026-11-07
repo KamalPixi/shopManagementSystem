@@ -47,6 +47,44 @@ class Sale extends Model
         return $this->belongsTo(CashRegisterSession::class, 'cash_register_session_id');
     }
 
+    public function payments() {
+        return $this->hasMany(SalePayment::class);
+    }
+
+    public function isSplitPayment(): bool
+    {
+        if (strtolower($this->payment_method ?? '') === 'split') {
+            return true;
+        }
+        return $this->relationLoaded('payments')
+            ? $this->payments->count() > 1
+            : $this->payments()->count() > 1;
+    }
+
+    public function getPaymentSummaryAttribute(): string
+    {
+        $payments = $this->relationLoaded('payments') ? $this->payments : $this->payments()->get();
+        if ($payments->count() > 1) {
+            $currencySymbol = Shop::first()?->currency['symbol'] ?? '€';
+            return $payments->map(function ($p) use ($currencySymbol) {
+                return $p->method_label . ': ' . $currencySymbol . number_format($p->amount, 2);
+            })->implode(' | ');
+        }
+
+        $first = $payments->first();
+        if ($first) {
+            return $first->method_label;
+        }
+
+        return match (strtolower($this->payment_method ?: 'cash')) {
+            'cash' => __('Cash'),
+            'card' => __('Card'),
+            'bank_transfer' => __('Bank transfer'),
+            'other' => __('Other'),
+            default => ucfirst(str_replace('_', ' ', $this->payment_method)),
+        };
+    }
+
     public function getCalculatedProfit(?bool $deductVat = null, ?float $gstPercent = null): float
     {
         if ($deductVat === null) {

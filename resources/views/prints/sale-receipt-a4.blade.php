@@ -621,25 +621,53 @@
         <tr>
             <!-- Payment Mode Checklist -->
             <td style="width: 50%; vertical-align: top; padding-right: 15px;">
+                @php
+                    $paymentsMap = $sale->payments->keyBy('payment_method');
+                    $isSplit = $sale->isSplitPayment() || $sale->payments->count() > 1;
+                    $hasCash = $paymentsMap->has('cash') || (!$isSplit && in_array($paymentMethod, ['cash', 'especes', 'espèce', 'espece']));
+                    $hasCard = $paymentsMap->has('card') || (!$isSplit && in_array($paymentMethod, ['card', 'carte', 'cb', 'credit_card', 'carte bancaire']));
+                    $hasBank = $paymentsMap->has('bank_transfer') || (!$isSplit && in_array($paymentMethod, ['bank_transfer', 'virement', 'transfer']));
+                    $hasOther = $paymentsMap->has('other') || (!$isSplit && in_array($paymentMethod, ['cheque', 'check', 'other', 'autre']));
+                @endphp
                 <div class="payment-mode-box">
-                    <div class="payment-mode-title">{{ __('Payment method') }}</div>
+                    <div class="payment-mode-title">{{ __('Payment method') }}@if($isSplit) <small style="font-size: 10px; font-weight: normal; color: #64748b;">({{ __('Split Payment') }})</small>@endif</div>
                     <div class="payment-option">
-                        <span class="checkbox-box {{ in_array($paymentMethod, ['cash', 'especes', 'espèce', 'espece']) ? 'checked' : '' }}">@if(in_array($paymentMethod, ['cash', 'especes', 'espèce', 'espece']) && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif</span>
+                        <span class="checkbox-box {{ $hasCash ? 'checked' : '' }}">@if($hasCash && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif</span>
                         {{ __('Cash') }}
+                        @if ($isSplit && $paymentsMap->has('cash'))
+                            <strong style="margin-left: 5px; color: #0f2c59;">({{ $currencySymbol }}{{ number_format($paymentsMap['cash']->amount, 2) }})</strong>
+                        @endif
                     </div>
                     <div class="payment-option">
-                        <span class="checkbox-box {{ in_array($paymentMethod, ['card', 'carte', 'cb', 'credit_card', 'carte bancaire']) ? 'checked' : '' }}">@if(in_array($paymentMethod, ['card', 'carte', 'cb', 'credit_card', 'carte bancaire']) && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif</span>
+                        <span class="checkbox-box {{ $hasCard ? 'checked' : '' }}">@if($hasCard && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif</span>
                         {{ __('Card') }}
+                        @if ($isSplit && $paymentsMap->has('card'))
+                            <strong style="margin-left: 5px; color: #0f2c59;">({{ $currencySymbol }}{{ number_format($paymentsMap['card']->amount, 2) }})</strong>
+                        @endif
                     </div>
                     <div class="payment-option">
-                        <span class="checkbox-box {{ in_array($paymentMethod, ['bank_transfer', 'virement', 'transfer']) ? 'checked' : '' }}">@if(in_array($paymentMethod, ['bank_transfer', 'virement', 'transfer']) && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif</span>
+                        <span class="checkbox-box {{ $hasBank ? 'checked' : '' }}">@if($hasBank && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif</span>
                         {{ __('Bank transfer') }}
+                        @if ($isSplit && $paymentsMap->has('bank_transfer'))
+                            <strong style="margin-left: 5px; color: #0f2c59;">({{ $currencySymbol }}{{ number_format($paymentsMap['bank_transfer']->amount, 2) }})</strong>
+                        @endif
                     </div>
                     <div class="payment-option">
-                        <span class="checkbox-box {{ in_array($paymentMethod, ['cheque', 'check', 'other', 'autre']) ? 'checked' : '' }}">@if(in_array($paymentMethod, ['cheque', 'check', 'other', 'autre']) && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif</span>
-                            {{ __('Other') }} : @if($otherPaymentDetails)<span>{{ $otherPaymentDetails }}</span>@else<span class="payment-other-line"></span>@endif
+                        <span class="checkbox-box {{ $hasOther ? 'checked' : '' }}">@if($hasOther && $tickIcon)<img src="{{ $tickIcon }}" class="payment-tick-icon">@else&nbsp;@endif</span>
+                        {{ __('Other') }} : @if($otherPaymentDetails)<span>{{ $otherPaymentDetails }}</span>@else<span class="payment-other-line"></span>@endif
+                        @if ($isSplit && $paymentsMap->has('other'))
+                            <strong style="margin-left: 5px; color: #0f2c59;">({{ $currencySymbol }}{{ number_format($paymentsMap['other']->amount, 2) }})</strong>
+                        @endif
                     </div>
-                    @if($sale->payment_reference)
+                    @if ($isSplit)
+                        @foreach ($sale->payments as $sp)
+                            @if ($sp->reference)
+                                <div style="font-size: 8.5px; color: #64748b; margin-top: 2px;">
+                                    <strong>{{ $sp->method_label }}:</strong> {{ $sp->reference }}
+                                </div>
+                            @endif
+                        @endforeach
+                    @elseif($sale->payment_reference)
                         <div style="font-size: 8.5px; color: #64748b; margin-top: 6px;">
                             <strong>{{ __('Reference') }}:</strong> {{ $sale->payment_reference }}
                         </div>

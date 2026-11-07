@@ -54,7 +54,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/cash-register', 'cashRegister')->name('cashRegister');
         Route::get('/cash-register/{session}/details', function (CashRegisterSession $session) {
             abort_unless(auth()->user()->hasPermissionTo('cash-register:read'), 403);
-            $session->load(['user', 'closedBy', 'moneyMovements.user', 'moneyMovements.category', 'sales.createdBy']);
+            $session->load(['user', 'closedBy', 'moneyMovements.user', 'moneyMovements.category', 'sales.createdBy', 'sales.payments']);
             return view('cash-register-session-details', compact('session'));
         })->name('cashRegister.details');
         Route::get('/money-movements', 'moneyMovements')->name('moneyMovements');

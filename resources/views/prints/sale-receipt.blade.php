@@ -112,7 +112,8 @@
             : $configuredTaxLabel;
         $locale = app()->getLocale();
         $shopTimezone = $shop?->timezone ?? 'Europe/Paris';
-        $paymentMethod = match (strtolower($sale->payment_method ?: 'cash')) {
+        $isSplit = $sale->isSplitPayment();
+        $paymentMethod = $isSplit ? __('Split Payment') : match (strtolower($sale->payment_method ?: 'cash')) {
             'cash' => __('Cash'),
             'card' => __('Card'),
             'bank_transfer' => __('Bank transfer'),
@@ -220,6 +221,24 @@ $attributeValue = is_array($value) ? ($value['value'] ?? '') : $value
             <td class="right total-amount">{{ $sale->total_price }}</td>
         </tr>
     </table>
+
+    @if ($sale->isSplitPayment() || $sale->payments->count() > 1)
+        <table class="totals-table" border="0" cellpadding="0" cellspacing="0" style="margin-top: 4px; border-top: 0.5px dashed #666; padding-top: 3px;">
+            <tr>
+                <th colspan="2" class="left" style="font-size: 7.5px; font-weight: bold; text-transform: uppercase;">{{ __('Paid Breakdown') }}:</th>
+            </tr>
+            @foreach ($sale->payments as $payment)
+                <tr>
+                    <td class="left" style="font-size: 7px; color: #444; padding-left: 5px;">
+                        &bull; {{ $payment->method_label }}@if($payment->reference) <small style="color: #777;">({{ $payment->reference }})</small>@endif:
+                    </td>
+                    <td class="right" style="font-size: 7px; font-weight: bold;">
+                        {{ number_format((float)$payment->amount, 2) }}
+                    </td>
+                </tr>
+            @endforeach
+        </table>
+    @endif
 
     @if($hasNonVatItems)
         <div style="margin-top: 8px; padding: 6px; background: #f2f5f8; font-size: 6px; font-weight: normal; line-height: 1.25;">

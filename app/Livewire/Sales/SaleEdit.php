@@ -675,6 +675,14 @@ class SaleEdit extends Component
                 'payment_attachment' => $attachmentPath,
                 'updated_by' => auth()->id(),
             ]);
+
+            // Sync payment record
+            $this->sale->payments()->delete();
+            $this->sale->payments()->create([
+                'payment_method' => $this->payment_method,
+                'amount' => (float) $this->grand_total,
+                'reference' => !empty(trim($this->payment_reference)) ? trim($this->payment_reference) : null,
+            ]);
         });
 
         AuditLogger::log(

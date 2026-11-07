@@ -140,7 +140,7 @@ class Sales extends Component
 
     private function buildBaseSalesQuery()
     {
-        $query = Sale::with(['saleItems.product', 'saleItems.productVariation', 'saleItems.category', 'customer', 'createdBy']);
+        $query = Sale::with(['saleItems.product', 'saleItems.productVariation', 'saleItems.category', 'customer', 'createdBy', 'payments']);
         $query->orderBy('created_at', 'desc');
 
         // Filter by Unique Receipt Number (e.g. TP-000001 or partial numbers)
@@ -160,9 +160,13 @@ class Sales extends Component
             $query->where('created_by', $this->staff_id);
         }
 
-        // Filter by Payment Method
+        // Filter by Payment Method (matches single method or split payments containing this method)
         if (!empty($this->payment_method_filter)) {
-            $query->where('payment_method', $this->payment_method_filter);
+            $method = $this->payment_method_filter;
+            $query->where(function ($q) use ($method) {
+                $q->where('payment_method', $method)
+                  ->orWhereHas('payments', fn ($pq) => $pq->where('payment_method', $method));
+            });
         }
 
         // Filter by Date Range or Quick Date

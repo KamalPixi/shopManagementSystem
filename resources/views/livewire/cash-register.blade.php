@@ -53,16 +53,63 @@
                     <div class="col-md-3 col-sm-6 col-12">
                         <div class="border rounded p-3 bg-light">
                             <small class="text-muted fw-bold d-block">{{ __('CASH SALES TODAY') }}</small>
-                            @php
-                                $cashSalesTotal = $currentSession->sales()->where('payment_method', 'cash')->sum('total_price');
-                            @endphp
-                            <span class="fs-5 fw-bold text-success">+{{ $currencySymbol }}{{ number_format($cashSalesTotal, 2) }}</span>
+                            <span class="fs-5 fw-bold text-success">+{{ $currencySymbol }}{{ number_format($paymentBreakdown['cash'] ?? 0, 2) }}</span>
                         </div>
                     </div>
                     <div class="col-md-3 col-sm-6 col-12">
                         <div class="border rounded p-3 bg-light">
                             <small class="text-muted fw-bold d-block">{{ __('EXPECTED CASH IN DRAWER') }}</small>
                             <span class="fs-4 fw-bold text-dark">{{ $currencySymbol }}{{ number_format($expectedCash, 2) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Shift Payment Methods & Card Terminal Reconciliation --}}
+                <div class="card border border-light-subtle bg-white shadow-none mb-4">
+                    <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
+                        <span class="small fw-bold text-secondary text-uppercase" style="letter-spacing: 0.5px;">
+                            <i class="fa-solid fa-chart-pie me-1 text-primary"></i> {{ __('Shift Revenue & Payment Methods Breakdown') }}
+                        </span>
+                        <span class="small text-muted">{{ __('Total Shift Sales') }}: <strong class="text-dark">{{ $currencySymbol }}{{ number_format($paymentBreakdown['total_sales'] ?? 0, 2) }}</strong></span>
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="row g-2">
+                            <div class="col-md-3 col-6">
+                                <div class="border rounded p-2 bg-light text-center">
+                                    <small class="text-muted fw-semibold d-block" style="font-size: 0.72rem;">
+                                        <i class="fa-solid fa-money-bill-wave text-success me-1"></i> {{ __('Cash Received') }}
+                                    </small>
+                                    <span class="fs-6 fw-bold text-success">{{ $currencySymbol }}{{ number_format($paymentBreakdown['cash'] ?? 0, 2) }}</span>
+                                    <small class="text-muted d-block" style="font-size: 0.65rem;">({{ __('In Drawer') }})</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="border rounded p-2 bg-light text-center">
+                                    <small class="text-muted fw-semibold d-block" style="font-size: 0.72rem;">
+                                        <i class="fa-solid fa-credit-card text-info me-1"></i> {{ __('Card Terminal Total') }}
+                                    </small>
+                                    <span class="fs-6 fw-bold text-info">{{ $currencySymbol }}{{ number_format($paymentBreakdown['card'] ?? 0, 2) }}</span>
+                                    <small class="text-muted d-block" style="font-size: 0.65rem;">({{ __('Terminal Batch') }})</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="border rounded p-2 bg-light text-center">
+                                    <small class="text-muted fw-semibold d-block" style="font-size: 0.72rem;">
+                                        <i class="fa-solid fa-building-columns text-primary me-1"></i> {{ __('Bank Transfer') }}
+                                    </small>
+                                    <span class="fs-6 fw-bold text-primary">{{ $currencySymbol }}{{ number_format($paymentBreakdown['bank_transfer'] ?? 0, 2) }}</span>
+                                    <small class="text-muted d-block" style="font-size: 0.65rem;">({{ __('Online / Wire') }})</small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <div class="border rounded p-2 bg-light text-center">
+                                    <small class="text-muted fw-semibold d-block" style="font-size: 0.72rem;">
+                                        <i class="fa-solid fa-ellipsis text-secondary me-1"></i> {{ __('Other / Cheque') }}
+                                    </small>
+                                    <span class="fs-6 fw-bold text-secondary">{{ $currencySymbol }}{{ number_format($paymentBreakdown['other'] ?? 0, 2) }}</span>
+                                    <small class="text-muted d-block" style="font-size: 0.65rem;">({{ __('Cheque / Custom') }})</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -188,6 +235,27 @@
                                 @endif
                             </div>
                             @error('closing_balance') <span class="text-danger small d-block">{{ $message }}</span> @enderror
+                        </div>
+
+                        {{-- Non-Cash Payment Terminal Reconciliation --}}
+                        <div class="card border border-light-subtle bg-light p-2 mb-3">
+                            <span class="small fw-bold text-secondary mb-1 d-block" style="font-size: 0.72rem;">
+                                <i class="fa-solid fa-calculator me-1 text-primary"></i> {{ __('Non-Cash Terminal Totals (Verify with Slip / Bank)') }}
+                            </span>
+                            <div class="row g-1 text-center">
+                                <div class="col-4">
+                                    <small class="text-muted d-block" style="font-size: 0.68rem;">{{ __('Card Terminal') }}</small>
+                                    <strong class="text-info font-monospace">{{ $currencySymbol }}{{ number_format($paymentBreakdown['card'] ?? 0, 2) }}</strong>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted d-block" style="font-size: 0.68rem;">{{ __('Bank Transfer') }}</small>
+                                    <strong class="text-primary font-monospace">{{ $currencySymbol }}{{ number_format($paymentBreakdown['bank_transfer'] ?? 0, 2) }}</strong>
+                                </div>
+                                <div class="col-4">
+                                    <small class="text-muted d-block" style="font-size: 0.68rem;">{{ __('Other / Cheque') }}</small>
+                                    <strong class="text-secondary font-monospace">{{ $currencySymbol }}{{ number_format($paymentBreakdown['other'] ?? 0, 2) }}</strong>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mb-3">

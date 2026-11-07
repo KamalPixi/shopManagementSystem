@@ -16,7 +16,9 @@
                 <div>
                     <div class="d-flex align-items-center flex-wrap gap-2 mb-2">
                         <h3 class="fw-bold mb-0 text-dark font-monospace">{{ $receiptNumber }}</h3>
-                        @if ($paymentMethod === 'cash')
+                        @if ($sale->isSplitPayment() || $sale->payments->count() > 1)
+                            <span class="badge bg-primary text-white text-uppercase" style="font-size: 0.72rem;">{{ __('Split Payment') }}</span>
+                        @elseif ($paymentMethod === 'cash')
                             <span class="badge bg-success text-white text-uppercase" style="font-size: 0.72rem;">{{ __('Cash') }}</span>
                         @elseif ($paymentMethod === 'card')
                             <span class="badge bg-info text-white text-uppercase" style="font-size: 0.72rem;">{{ __('Card') }}</span>
@@ -287,7 +289,23 @@
                         <tbody>
                             <tr class="border-bottom">
                                 <td class="text-muted py-2" style="width: 35%;">{{ __('Payment Method') }}</td>
-                                <td class="fw-semibold py-2 text-uppercase">{{ str_replace('_', ' ', $paymentMethod) }}</td>
+                                <td class="py-2">
+                                    @if ($sale->isSplitPayment() || $sale->payments->count() > 1)
+                                        <span class="badge bg-primary text-white text-uppercase mb-1">{{ __('Split Payment') }}</span>
+                                        <div class="vstack gap-1 mt-1">
+                                            @foreach ($sale->payments as $payment)
+                                                <div class="d-flex justify-content-between align-items-center bg-light border rounded px-2 py-1 small">
+                                                    <span><strong>{{ $payment->method_label }}:</strong> {{ $currencySymbol }}{{ number_format($payment->amount, 2) }}</span>
+                                                    @if ($payment->reference)
+                                                        <small class="text-muted font-monospace">({{ $payment->reference }})</small>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <span class="fw-semibold text-uppercase">{{ str_replace('_', ' ', $paymentMethod) }}</span>
+                                    @endif
+                                </td>
                             </tr>
                             <tr class="border-bottom">
                                 <td class="text-muted py-2">{{ __('Payment Reference') }}</td>

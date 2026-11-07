@@ -166,6 +166,14 @@ class CashRegister extends Component
 
         $currentSession = CashRegisterSession::currentOpenSession();
         $expectedCash = $currentSession ? $currentSession->calculateExpectedCash() : 0;
+        $paymentBreakdown = $currentSession ? $currentSession->calculatePaymentBreakdown() : [
+            'cash' => 0.0,
+            'card' => 0.0,
+            'bank_transfer' => 0.0,
+            'other' => 0.0,
+            'total_sales' => 0.0,
+            'non_cash_total' => 0.0,
+        ];
 
         $query = CashRegisterSession::with(['user', 'closedBy'])->latest('opened_at');
 
@@ -184,6 +192,7 @@ class CashRegister extends Component
         return view('livewire.cash-register', [
             'currentSession' => $currentSession,
             'expectedCash' => $expectedCash,
+            'paymentBreakdown' => $paymentBreakdown,
             'sessions' => $query->paginate(15),
             'users' => User::all(),
             'shop' => Shop::first(),

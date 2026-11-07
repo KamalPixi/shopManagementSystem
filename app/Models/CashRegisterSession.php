@@ -77,10 +77,19 @@ class CashRegisterSession extends Model
     {
         $opening = (float) $this->opening_balance;
 
-        // Cash sales in this session
-        $cashSales = (float) $this->sales()
-            ->where('payment_method', 'cash')
-            ->sum('total_price');
+        // Cash sales in this session (including cash portion of split payments)
+        $saleIds = $this->sales()->pluck('id');
+        $hasPayments = SalePayment::whereIn('sale_id', $saleIds)->exists();
+
+        if ($hasPayments) {
+            $cashSales = (float) SalePayment::whereIn('sale_id', $saleIds)
+                ->where('payment_method', 'cash')
+                ->sum('amount');
+        } else {
+            $cashSales = (float) $this->sales()
+                ->where('payment_method', 'cash')
+                ->sum('total_price');
+        }
 
         // Cash In movements
         $cashIn = (float) $this->moneyMovements()
@@ -93,5 +102,64 @@ class CashRegisterSession extends Model
             ->sum('amount');
 
         return round($opening + $cashSales + $cashIn - $cashOut, 2);
+    }
+
+    /**
+     * Calculate payment method breakdown for all sales in this session
+     */
+    public function calculatePaymentBreakdown(): array
+    {
+        $saleIds = $this->sales()->pluck('id');
+
+        $breakdown = [
+            'cash' => 0.0,
+            'card' => 0.0,
+            'bank_transfer' => 0.0,
+            'other' => 0.0,
+            'total_sales' => 0.0,
+            'non_cash_total' => 0.0,
+        ];
+
+        if ($saleIds->isEmpty()) {
+            return $breakdown;
+        }
+
+        $payments = SalePayment::whereIn('sale_id', $saleIds)->get();
+
+        if ($payments->isNotEmpty()) {
+            foreach ($payments as $payment) {
+                $method = strtolower($payment->payment_method ?: 'cash');
+                $amt = (float) $payment->amount;
+
+                if (!isset($breakdown[$method])) {
+                    $breakdown[$method] = 0.0;
+                }
+                $breakdown[$method] += $amt;
+                $breakdown['total_sales'] += $amt;
+                if ($method !== 'cash') {
+                    $breakdown['non_cash_total'] += $amt;
+                }
+            }
+        } else {
+            $sales = $this->sales()->get();
+            foreach ($sales as $sale) {
+                $method = strtolower($sale->payment_method ?: 'cash');
+                $amt = (float) $sale->total_price;
+                if (!isset($breakdown[$method])) {
+                    $breakdown[$method] = 0.0;
+                }
+                $breakdown[$method] += $amt;
+                $breakdown['total_sales'] += $amt;
+                if ($method !== 'cash') {
+                    $breakdown['non_cash_total'] += $amt;
+                }
+            }
+        }
+
+        foreach ($breakdown as $key => $val) {
+            $breakdown[$key] = round($val, 2);
+        }
+
+        return $breakdown;
     }
 }

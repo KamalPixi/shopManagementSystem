@@ -655,42 +655,116 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                 {{-- Payment Details Column --}}
                 <div class="col-lg-6 col-12">
                     <div class="card border border-light-subtle bg-light p-3 rounded h-100 shadow-none">
-                        <h6 class="fw-bold mb-3 d-flex align-items-center text-dark">
-                            <i class="fa-solid fa-credit-card me-2 text-primary"></i> {{ __('Payment Information') }}
-                        </h6>
-
-                        <div class="mb-3">
-                            <label class="small fw-bold mb-1">{{ __('Payment Method') }} <span class="text-danger">*</span></label>
-                            <div class="btn-group w-100" role="group">
-                                <input type="radio" wire:model.live="payment_method" class="btn-check" name="btnradio" id="btnradio_cash" value="cash" autocomplete="off">
-                                <label class="btn {{ $payment_method === 'cash' ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_cash">
-                                    <i class="fa-solid fa-money-bill-wave me-1"></i> {{ __('Cash') }}
-                                </label>
-
-                                <input type="radio" wire:model.live="payment_method" class="btn-check" name="btnradio" id="btnradio_card" value="card" autocomplete="off">
-                                <label class="btn {{ $payment_method === 'card' ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_card">
-                                    <i class="fa-solid fa-credit-card me-1"></i> {{ __('Card') }}
-                                </label>
-
-                                <input type="radio" wire:model.live="payment_method" class="btn-check" name="btnradio" id="btnradio_bank" value="bank_transfer" autocomplete="off">
-                                <label class="btn {{ $payment_method === 'bank_transfer' ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_bank">
-                                    <i class="fa-solid fa-building-columns me-1"></i> {{ __('Bank Transfer') }}
-                                </label>
-
-                                <input type="radio" wire:model.live="payment_method" class="btn-check" name="btnradio" id="btnradio_other" value="other" autocomplete="off">
-                                <label class="btn {{ $payment_method === 'other' ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_other">
-                                    <i class="fa-solid fa-ellipsis me-1"></i> {{ __('Other') }}
-                                </label>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0 d-flex align-items-center text-dark">
+                                <i class="fa-solid fa-credit-card me-2 text-primary"></i> {{ __('Payment Information') }}
+                            </h6>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" wire:click="$set('is_split_payment', false)" class="btn {{ !$is_split_payment ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary bg-white' }} py-0 px-2 fw-semibold" style="font-size: 0.75rem;">
+                                    {{ __('Single Method') }}
+                                </button>
+                                <button type="button" wire:click="toggleSplitPayment" class="btn {{ $is_split_payment ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary bg-white' }} py-0 px-2 fw-semibold" style="font-size: 0.75rem;">
+                                    <i class="fa-solid fa-layer-group me-1"></i>{{ __('Split Payment') }}
+                                </button>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="small fw-bold mb-1">
-                                {{ $payment_method === 'other' ? __('Other payment details') : __('Payment Reference / Auth / Slip No.') }}
-                                <small class="text-muted fw-normal">({{ __('Optional') }})</small>
-                            </label>
-                            <input wire:model="payment_reference" type="text" class="form-control form-control-sm" placeholder="">
-                        </div>
+                        @if (!$is_split_payment)
+                            <div class="mb-3">
+                                <label class="small fw-bold mb-1">{{ __('Payment Method') }} <span class="text-danger">*</span></label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" wire:model.live="payment_method" class="btn-check" name="btnradio" id="btnradio_cash" value="cash" autocomplete="off">
+                                    <label class="btn {{ $payment_method === 'cash' ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_cash">
+                                        <i class="fa-solid fa-money-bill-wave me-1"></i> {{ __('Cash') }}
+                                    </label>
+
+                                    <input type="radio" wire:model.live="payment_method" class="btn-check" name="btnradio" id="btnradio_card" value="card" autocomplete="off">
+                                    <label class="btn {{ $payment_method === 'card' ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_card">
+                                        <i class="fa-solid fa-credit-card me-1"></i> {{ __('Card') }}
+                                    </label>
+
+                                    <input type="radio" wire:model.live="payment_method" class="btn-check" name="btnradio" id="btnradio_bank" value="bank_transfer" autocomplete="off">
+                                    <label class="btn {{ $payment_method === 'bank_transfer' ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_bank">
+                                        <i class="fa-solid fa-building-columns me-1"></i> {{ __('Bank Transfer') }}
+                                    </label>
+
+                                    <input type="radio" wire:model.live="payment_method" class="btn-check" name="btnradio" id="btnradio_other" value="other" autocomplete="off">
+                                    <label class="btn {{ $payment_method === 'other' ? 'btn-primary text-white shadow-sm' : 'btn-outline-secondary' }} fw-bold py-2" for="btnradio_other">
+                                        <i class="fa-solid fa-ellipsis me-1"></i> {{ __('Other') }}
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="small fw-bold mb-1">
+                                    {{ $payment_method === 'other' ? __('Other payment details') : __('Payment Reference / Auth / Slip No.') }}
+                                    <small class="text-muted fw-normal">({{ __('Optional') }})</small>
+                                </label>
+                                <input wire:model="payment_reference" type="text" class="form-control form-control-sm" placeholder="">
+                            </div>
+                        @else
+                            {{-- Split Payment Inputs --}}
+                            @php
+                                $paidTotal = $this->getSplitPaidTotal();
+                                $remaining = $this->getSplitRemainingAmount();
+                                $isBalanced = abs($remaining) < 0.01 && $paidTotal > 0;
+                            @endphp
+
+                            {{-- Real-time Split Balance Bar --}}
+                            <div class="alert {{ $isBalanced ? 'alert-success border-success' : ($remaining > 0 ? 'alert-warning border-warning' : 'alert-danger border-danger') }} py-2 px-3 mb-3 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="small fw-bold d-block">{{ __('Sale Total') }}: {{ $currencySymbol }}{{ number_format((float)$grand_total, 2) }}</span>
+                                    <span class="small text-muted">{{ __('Allocated') }}: <strong>{{ $currencySymbol }}{{ number_format($paidTotal, 2) }}</strong></span>
+                                </div>
+                                <div class="text-end">
+                                    @if ($isBalanced)
+                                        <span class="badge bg-success fs-7"><i class="fa-solid fa-check-circle me-1"></i>{{ __('Balanced') }}</span>
+                                    @elseif ($remaining > 0)
+                                        <span class="badge bg-warning text-dark fs-7"><i class="fa-solid fa-triangle-exclamation me-1"></i>{{ __('Remaining') }}: {{ $currencySymbol }}{{ number_format($remaining, 2) }}</span>
+                                    @else
+                                        <span class="badge bg-danger fs-7"><i class="fa-solid fa-circle-xmark me-1"></i>{{ __('Over by') }}: {{ $currencySymbol }}{{ number_format(abs($remaining), 2) }}</span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="small fw-bold mb-1 text-secondary text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">{{ __('Allocate Payments by Method') }} <span class="text-danger">*</span></label>
+                                <div class="vstack gap-2">
+                                    @foreach ($paymentMethods as $pm)
+                                        @php
+                                            $mCode = $pm->code;
+                                            $mIcon = match($mCode) {
+                                                'cash' => 'fa-money-bill-wave text-success',
+                                                'card' => 'fa-credit-card text-info',
+                                                'bank_transfer' => 'fa-building-columns text-primary',
+                                                default => 'fa-ellipsis text-secondary',
+                                            };
+                                        @endphp
+                                        <div class="bg-white border rounded p-2 shadow-none">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="small fw-bold text-dark">
+                                                    <i class="fa-solid {{ $mIcon }} me-1"></i> {{ __($pm->name) }}
+                                                </span>
+                                                <button type="button" wire:click="fillRemainder('{{ $mCode }}')" class="btn btn-xs btn-outline-primary py-0 px-2" style="font-size: 0.68rem;" title="{{ __('Auto-fill remaining balance into this method') }}">
+                                                    {{ __('Fill Remainder') }}
+                                                </button>
+                                            </div>
+                                            <div class="row g-1">
+                                                <div class="col-6">
+                                                    <div class="input-group input-group-sm">
+                                                        <span class="input-group-text py-0 px-2 text-muted">{{ $currencySymbol }}</span>
+                                                        <input type="number" step="0.01" min="0" wire:model.live.debounce.300ms="split_payments.{{ $mCode }}.amount" class="form-control form-control-sm text-end fw-bold" placeholder="0.00">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <input type="text" wire:model="split_payments.{{ $mCode }}.reference" class="form-control form-control-sm" placeholder="{{ __('Ref / Note (opt)') }}" style="font-size: 0.75rem;">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
 
                         <div class="mb-3">
                             <label class="small fw-bold mb-1">
