@@ -458,4 +458,32 @@ class AuditingAndPosImprovementsTest extends TestCase
         $pos->call('sale')
             ->assertHasNoErrors();
     }
+
+    public function test_barcode_entry_fetches_item_and_dispatches_focus_event_without_opening_custom_modal(): void
+    {
+        CashRegisterSession::where('status', 'open')->update(['status' => 'closed']);
+        CashRegisterSession::create([
+            'user_id' => $this->user->id,
+            'opening_balance' => 100.00,
+            'status' => 'open',
+            'opened_at' => now(),
+        ]);
+
+        $barcode = 'SCAN-BARCODE-' . uniqid();
+        Product::create([
+            'name' => 'Barcode Scanned Item',
+            'sku' => $barcode,
+            'purchase_price' => 10.00,
+            'price' => 25.00,
+            'quantity' => 15,
+            'is_active' => true,
+        ]);
+
+        Livewire::test(Pos::class)
+            ->set('identifier', $barcode)
+            ->call('add')
+            ->assertSet('showCustomModal', false)
+            ->assertDispatched('focus-barcode-input')
+            ->assertCount('sale_items', 1);
+    }
 }

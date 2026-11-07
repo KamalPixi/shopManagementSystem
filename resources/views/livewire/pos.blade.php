@@ -112,15 +112,33 @@
                 <div class="card-body">
                     <div class="row align-items-end g-3">
                         <div class="col-lg-9 col-md-8 col-12">
-                            <form wire:submit.prevent="add" class="m-0 p-0">
+                            <form wire:submit.prevent="add" class="m-0 p-0" id="pos_barcode_form">
                                 <div>
-                                    <label class="form-label mb-1 fw-bold">{{ __('Barcode / SKU / SerialNo*') }}</label>
-                                    <input wire:model="identifier" type="text" class="form-control m-0" style="height: 42px; line-height: 42px; box-sizing: border-box;" autofocus placeholder="{{ __('Scan barcode or enter SKU / Serial number') }}">
+                                    <label class="form-label mb-1 fw-bold" for="pos_barcode_input">{{ __('Barcode / SKU / SerialNo*') }}</label>
+                                    <input 
+                                        wire:model="identifier" 
+                                        wire:keydown.enter.prevent="add"
+                                        type="text" 
+                                        id="pos_barcode_input"
+                                        class="form-control m-0" 
+                                        style="height: 42px; line-height: 42px; box-sizing: border-box;" 
+                                        autofocus 
+                                        autocomplete="off"
+                                        tabindex="1"
+                                        placeholder="{{ __('Scan barcode or enter SKU / Serial number') }}"
+                                    >
+                                    <button type="submit" class="d-none" tabindex="-1"></button>
                                 </div>
                             </form>
                         </div>
                         <div class="col-lg-3 col-md-4 col-12">
-                            <button wire:click="openCustomModal" type="button" class="btn btn-info text-white w-100 d-inline-flex align-items-center justify-content-center text-nowrap shadow-sm m-0" style="height: 42px; line-height: 1; box-sizing: border-box; white-space: nowrap;">
+                            <button 
+                                wire:click="openCustomModal" 
+                                type="button" 
+                                tabindex="-1"
+                                class="btn btn-info text-white w-100 d-inline-flex align-items-center justify-content-center text-nowrap shadow-sm m-0" 
+                                style="height: 42px; line-height: 1; box-sizing: border-box; white-space: nowrap;"
+                            >
                                 <i class="fa-solid fa-plus-circle me-2"></i> {{ __('+ Custom Item') }}
                             </button>
                         </div>
@@ -785,4 +803,47 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
             padding-right: 0.5rem !important;
         }
     </style>
+
+    <script>
+        document.addEventListener('livewire:initialized', function () {
+            function focusBarcodeField() {
+                // Do not steal focus if a modal is currently open
+                if (document.querySelector('.modal.show')) return;
+
+                const barcodeInput = document.getElementById('pos_barcode_input');
+                if (barcodeInput && document.activeElement !== barcodeInput) {
+                    barcodeInput.focus();
+                }
+            }
+
+            // Initial focus
+            setTimeout(focusBarcodeField, 150);
+
+            // Listen for server-side dispatch
+            window.addEventListener('focus-barcode-input', function () {
+                setTimeout(function () {
+                    const barcodeInput = document.getElementById('pos_barcode_input');
+                    if (barcodeInput) {
+                        barcodeInput.focus();
+                        barcodeInput.select();
+                    }
+                }, 50);
+            });
+
+            // Maintain focus after Livewire updates unless user is actively typing in another input
+            Livewire.hook('morph.updated', function () {
+                setTimeout(function () {
+                    const active = document.activeElement;
+                    const isOtherInput = active && active.id !== 'pos_barcode_input' && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT');
+                    const modalOpen = document.querySelector('.modal.show');
+                    if (!modalOpen && !isOtherInput) {
+                        const barcodeInput = document.getElementById('pos_barcode_input');
+                        if (barcodeInput) {
+                            barcodeInput.focus();
+                        }
+                    }
+                }, 50);
+            });
+        });
+    </script>
 </div>

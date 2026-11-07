@@ -440,5 +440,7 @@
     "Edit Deposit Receipt": "Modifier le reçu d'acompte",
     "Save & Issue Receipt": "Enregistrer & Émettre le reçu",
     "Please keep this receipt for collection.": "Veuillez conserver ce reçu pour le retrait.",
-    "Thank you for your trust!": "Merci pour votre confiance !"
+    "Thank you for your trust!": "Merci pour votre confiance !",
+    "Deduct :tax from Profit in Sales & Reports": "Déduire la :tax de la marge / bénéfice dans les rapports",
+    "When disabled (default), profit is calculated without deducting :tax (Sale Price - Cost Price). Enable this if you want :tax to be subtracted from sales report profit.": "Si désactivé (par défaut), le bénéfice est calculé sans déduire la :tax (Prix de vente - Prix d'achat). Activez si vous souhaitez que la :tax soit déduite du bénéfice des rapports."
 }

@@ -28,6 +28,7 @@ class Settings extends Component
     public $currency = 'MYR';
     public $timezone = 'Asia/Kuala_Lumpur';
     public $language = 'en';
+    public $deduct_vat_from_profit = false;
     public $settings;
     public $invoice_legal_text = "**SAS au capital de 2 010 €**\n{address}\n**SIREN** : 109 915 405\nTVA intracommunautaire: FR75 109915405";
 
@@ -52,6 +53,7 @@ class Settings extends Component
         'currency' => 'nullable|string|max:3',
         'timezone' => 'nullable|string|max:100',
         'language' => 'nullable|string|in:en,fr',
+        'deduct_vat_from_profit' => 'nullable|boolean',
         'invoice_legal_text' => 'nullable|string|max:2000',
         'cf_enabled' => 'nullable|boolean',
         'cf_auto_start' => 'nullable|boolean',
@@ -70,6 +72,7 @@ class Settings extends Component
             $this->cf_auto_start = (bool) ($cf['auto_start'] ?? false);
             $this->cf_custom_domain = $cf['custom_domain'] ?? '';
             $this->cf_tunnel_token = $cf['tunnel_token'] ?? '';
+            $this->deduct_vat_from_profit = (bool) ($shop->settings['deduct_vat_from_profit'] ?? false);
             $this->invoice_legal_text = $shop->settings['invoice_legal_text'] ?? $this->invoice_legal_text;
 
             $this->fill([
@@ -116,6 +119,7 @@ class Settings extends Component
 
         $shopSettings = $shop?->settings ?? [];
         $shopSettings['language'] = $validated['language'] ?? 'en';
+        $shopSettings['deduct_vat_from_profit'] = (bool) $this->deduct_vat_from_profit;
         $shopSettings['cloudflare'] = [
             'enabled' => (bool) $this->cf_enabled,
             'auto_start' => (bool) $this->cf_auto_start,
@@ -139,6 +143,23 @@ class Settings extends Component
             $validated['currency'] = $selectedCurrency;
             $shop->update($validated);
         }
+
+        // Synchronize stored profits across sales and sale items to match setting
+        $deductVat = (bool) $this->deduct_vat_from_profit;
+        $gstPercent = (float) ($validated['gst_percent'] ?? 0);
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($deductVat, $gstPercent) {
+            $sales = \App\Models\Sale::with('saleItems')->get();
+            foreach ($sales as $sale) {
+                $saleProfitTotal = 0.0;
+                foreach ($sale->saleItems as $item) {
+                    $itemProfit = $item->getCalculatedProfit($deductVat, $gstPercent);
+                    $item->update(['profit' => $itemProfit]);
+                    $saleProfitTotal += $itemProfit;
+                }
+                $sale->update(['profit' => round($saleProfitTotal, 2)]);
+            }
+        });
 
         // Auto-stop tunnel if internet availability was disabled
         $tunnelService = app(\App\Services\CloudflareTunnelService::class);

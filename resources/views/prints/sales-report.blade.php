@@ -86,13 +86,22 @@
                 <th style="width:3%;" class="text-center">#</th>
                 <th class="text-start" style="width:72%">{{ __('Products') }}</th>
                 <th class="text-end" style="width:7%">{{ __('Discount') }}</th>
-                <th class="text-end" style="width:7%">{{ __('GST') }}<small class="text-muted" style="font-size: 0.4rem;">({{ $shop->gst_percent }}%)</small> </th>
+                <th class="text-end" style="width:7%">{{ $shop->tax_label ?? __('GST') }}<small class="text-muted" style="font-size: 0.4rem;">({{ $shop->gst_percent }}%)</small> </th>
                 <th class="text-end" style="width:7%">{{ __('Total') }}</th>
                 <th class="text-end" style="width:7%">{{ __('Profit') }}</th>
             </tr>
         </thead>
         <tbody>
+            @php
+                $deductVat = $deduct_vat_from_profit ?? (bool) ($shop?->settings['deduct_vat_from_profit'] ?? false);
+                $taxRate = $gst_percent ?? (float) ($shop?->gst_percent ?? 0);
+                $totalReportProfit = 0.0;
+            @endphp
             @foreach ($sales as $sale)
+            @php
+                $saleProfit = $sale->getCalculatedProfit($deductVat, $taxRate);
+                $totalReportProfit += $saleProfit;
+            @endphp
             <tr>
                 <td class="text-center">{{ $loop->index + 1 }}</td>
                 <td>
@@ -146,7 +155,10 @@ $attributeValue = is_array($value) ? ($value['value'] ?? '') : $value
                             <td class="text-end" style="width: 7%; padding-right:1px;"><small>Unit Sale Price</small><br><b>{{ number_format((float) $item->price, 2) }}</b></td>
                             <td class="text-end" style="width: 4%; padding-right:1px;"><small>Discount</small><br><b>{{ number_format((float) $item->discount, 2) }}</b></td>
                             <td class="text-end" style="width: 5%; padding-right:1px;"><small>Subtotal</small><br><b>{{ number_format((float) $item->total, 2) }}</b></td>
-                            <td class="text-end" style="width: 5%; padding-right:1px;"><small>Profit</small><br><b>{{ number_format((float) $item->profit, 2) }}</b></td>
+                            @php
+                                $itemProfit = $item->getCalculatedProfit($deductVat, $taxRate);
+                            @endphp
+                            <td class="text-end" style="width: 5%; padding-right:1px;"><small>Profit</small><br><b>{{ number_format((float) $itemProfit, 2) }}</b></td>
                         </tr>
                         @endforeach
                     </table>
@@ -154,7 +166,7 @@ $attributeValue = is_array($value) ? ($value['value'] ?? '') : $value
                 <td class="text-end">{{ number_format((float) $sale->discount, 2) }}</td>
                 <td class="text-end">{{ number_format((float) $sale->gst, 2) }}</td>
                 <td class="text-end fw-bold">{{ number_format((float) $sale->total_price, 2) }}</td>
-                <td class="text-end fw-bold">{{ number_format((float) $sale->profit, 2) }}</td>
+                <td class="text-end fw-bold">{{ number_format((float) $saleProfit, 2) }}</td>
             </tr>
             @endforeach
         </tbody>
@@ -168,9 +180,9 @@ $attributeValue = is_array($value) ? ($value['value'] ?? '') : $value
                 <th style="width:5%;"></th>
                 <th class="text-start" style="width:72%;"></th>
                 <th class="text-end"> <small class="text-muted">T.Discount</small> {{ number_format($sales->sum('discount'), 2) }}</th>
-                <th class="text-end"><small class="text-muted">T.GST</small>  {{ number_format($sales->sum('gst'), 2) }}</th>
+                <th class="text-end"><small class="text-muted">T.{{ $shop->tax_label ?? 'GST' }}</small>  {{ number_format($sales->sum('gst'), 2) }}</th>
                 <th class="text-end"><small class="text-muted">T.Price</small>  {{ number_format($sales->sum('total_price'), 2) }}</th>
-                <th class="text-end"><small class="text-muted">T.Profit</small> {{ number_format($sales->sum('profit'), 2) }}</th>
+                <th class="text-end"><small class="text-muted">T.Profit</small> {{ number_format($totalReportProfit, 2) }}</th>
             </tr>
         </thead>
     </table>

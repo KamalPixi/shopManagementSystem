@@ -31,4 +31,9 @@ class Shop extends Model
     {
         return strcasecmp($this->country ?? '', 'France') === 0 ? 'TVA' : 'GST';
     }
+
+    public function deductVatFromProfit(): bool
+    {
+        return (bool) ($this->settings['deduct_vat_from_profit'] ?? false);
+    }
 }

@@ -46,4 +46,22 @@ class Sale extends Model
     public function cashRegisterSession() {
         return $this->belongsTo(CashRegisterSession::class, 'cash_register_session_id');
     }
+
+    public function getCalculatedProfit(?bool $deductVat = null, ?float $gstPercent = null): float
+    {
+        if ($deductVat === null) {
+            $shop = Shop::first();
+            $deductVat = (bool) ($shop?->settings['deduct_vat_from_profit'] ?? false);
+            $gstPercent = (float) ($shop?->gst_percent ?? 0);
+        } elseif ($gstPercent === null && $deductVat) {
+            $gstPercent = (float) (Shop::first()?->gst_percent ?? 0);
+        }
+
+        $totalProfit = 0.0;
+        foreach ($this->saleItems as $item) {
+            $totalProfit += $item->getCalculatedProfit($deductVat, $gstPercent);
+        }
+
+        return round($totalProfit, 2);
+    }
 }

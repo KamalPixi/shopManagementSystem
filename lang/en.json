@@ -429,5 +429,7 @@
     "Edit Deposit Receipt": "Edit Deposit Receipt",
     "Save & Issue Receipt": "Save & Issue Receipt",
     "Please keep this receipt for collection.": "Please keep this receipt for collection.",
-    "Thank you for your trust!": "Thank you for your trust!"
+    "Thank you for your trust!": "Thank you for your trust!",
+    "Deduct :tax from Profit in Sales & Reports": "Deduct :tax from Profit in Sales & Reports",
+    "When disabled (default), profit is calculated without deducting :tax (Sale Price - Cost Price). Enable this if you want :tax to be subtracted from sales report profit.": "When disabled (default), profit is calculated without deducting :tax (Sale Price - Cost Price). Enable this if you want :tax to be subtracted from sales report profit."
 }

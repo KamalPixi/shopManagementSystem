@@ -27,15 +27,32 @@
 
                     <div class="row align-items-end g-3">
                         <div class="col-lg-9 col-md-8 col-12">
-                            <form wire:submit.prevent="add" class="m-0 p-0">
+                            <form wire:submit.prevent="add" class="m-0 p-0" id="sale_edit_barcode_form">
                                 <div>
-                                    <label class="form-label mb-1 fw-bold">{{ __('Add Item (Barcode / SKU / SerialNo)') }}</label>
-                                    <input wire:model="identifier" type="text" class="form-control m-0" style="height: 42px; line-height: 42px;" placeholder="{{ __('Scan barcode or enter SKU / Serial number') }}">
+                                    <label class="form-label mb-1 fw-bold" for="sale_edit_barcode_input">{{ __('Add Item (Barcode / SKU / SerialNo)') }}</label>
+                                    <input 
+                                        wire:model="identifier" 
+                                        wire:keydown.enter.prevent="add"
+                                        type="text" 
+                                        id="sale_edit_barcode_input"
+                                        class="form-control m-0" 
+                                        style="height: 42px; line-height: 42px;" 
+                                        autocomplete="off"
+                                        tabindex="1"
+                                        placeholder="{{ __('Scan barcode or enter SKU / Serial number') }}"
+                                    >
+                                    <button type="submit" class="d-none" tabindex="-1"></button>
                                 </div>
                             </form>
                         </div>
                         <div class="col-lg-3 col-md-4 col-12">
-                            <button wire:click="openCustomModal" type="button" class="btn btn-info text-white w-100 d-inline-flex align-items-center justify-content-center" style="height: 42px;">
+                            <button 
+                                wire:click="openCustomModal" 
+                                type="button" 
+                                tabindex="-1"
+                                class="btn btn-info text-white w-100 d-inline-flex align-items-center justify-content-center" 
+                                style="height: 42px;"
+                            >
                                 <i class="fa-solid fa-plus-circle me-2"></i> {{ __('+ Custom Item') }}
                             </button>
                         </div>

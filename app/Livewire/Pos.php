@@ -172,6 +172,7 @@ class Pos extends Component
 
         if (empty($product)) {
             session()->flash('failed', __('No product found [:id]', ['id' => $this->identifier]));
+            $this->dispatch('focus-barcode-input');
             return;
         }
 
@@ -271,6 +272,7 @@ class Pos extends Component
 
         $this->reset(['identifier']);
         $this->calculate();
+        $this->dispatch('focus-barcode-input');
     }
 
     public function selectVariation($variationId)
@@ -315,6 +317,7 @@ class Pos extends Component
         $this->showCustomModal = false;
         $this->show_custom_suggestions = false;
         $this->custom_item_suggestions = [];
+        $this->dispatch('focus-barcode-input');
     }
 
     public function updatedCustomItemName($value)
@@ -688,6 +691,8 @@ class Pos extends Component
         ]);
 
         $profit_total = 0;
+        $shop = Shop::first();
+        $deductVatFromProfit = (bool) ($shop?->settings['deduct_vat_from_profit'] ?? false);
         foreach ($this->sale_items as $item) {
             $purchase_price = 0;
 
@@ -719,7 +724,7 @@ class Pos extends Component
 
             // Calculate profit for item
             $profit_per_unit = $item['price'] - $purchase_price;
-            $itemVat = !empty($item['is_vatable']) && $this->gst_percent > 0
+            $itemVat = (!empty($item['is_vatable']) && $this->gst_percent > 0 && $deductVatFromProfit)
                 ? round((float) $item['total'] * ($this->gst_percent / 100), 2)
                 : 0;
             $profit_total_for_item = ($profit_per_unit * $item['quantity']) - $item['discount'] - $itemVat;

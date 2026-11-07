@@ -24,7 +24,7 @@ class DirectSalePriceVatTest extends TestCase
             $user->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => $name, 'guard_name' => 'web']));
         }
         $this->actingAs($user);
-        Shop::create(['name' => 'Receipt check', 'country' => 'France', 'gst_percent' => 20, 'currency' => ['code' => 'EUR', 'symbol' => '€'], 'settings' => ['language' => 'en']]);
+        Shop::create(['name' => 'Receipt check', 'country' => 'France', 'gst_percent' => 20, 'currency' => ['code' => 'EUR', 'symbol' => '€'], 'settings' => ['language' => 'en', 'deduct_vat_from_profit' => true]]);
         PaymentMethod::firstOrCreate(['code' => 'cash'], ['name' => 'Cash', 'is_active' => true]);
         CashRegisterSession::create(['user_id' => $user->id, 'opened_at' => now(), 'opening_balance' => 0, 'status' => 'open']);
 
@@ -74,6 +74,37 @@ class DirectSalePriceVatTest extends TestCase
             $this->assertSame('0.02', $component->gst);
             $this->assertSame('0.06', $component->grand_total);
         }
+    }
+
+    public function test_profit_does_not_deduct_vat_when_setting_is_disabled(): void
+    {
+        $user = User::create(['name' => 'VAT No Deduct', 'username' => 'vatnodeduct', 'password' => bcrypt('password'), 'user_type' => 'admin']);
+        foreach (['pos:read', 'pos:create', 'sales:read', 'sales:create', 'sales:update'] as $name) {
+            $user->givePermissionTo(\Spatie\Permission\Models\Permission::firstOrCreate(['name' => $name, 'guard_name' => 'web']));
+        }
+        $this->actingAs($user);
+        Shop::create([
+            'name' => 'No Deduct Shop',
+            'country' => 'France',
+            'gst_percent' => 20,
+            'currency' => ['code' => 'EUR', 'symbol' => '€'],
+            'settings' => ['language' => 'en', 'deduct_vat_from_profit' => false]
+        ]);
+        PaymentMethod::firstOrCreate(['code' => 'cash'], ['name' => 'Cash', 'is_active' => true]);
+        CashRegisterSession::create(['user_id' => $user->id, 'opened_at' => now(), 'opening_balance' => 0, 'status' => 'open']);
+
+        $items = [
+            'vat' => $this->item('VAT item', 10, 3, true),
+            'nonvat' => $this->item('Non-VAT item', 5, 2, false),
+        ];
+        Livewire::test(Pos::class)->set('sale_items', $items)->call('sale')->assertHasNoErrors();
+        $sale = Sale::with('saleItems')->latest('id')->first();
+
+        // Total price = 15.00, GST = 2.00
+        // Gross profit: (10 - 3) + (5 - 2) = 7 + 3 = 10.00
+        // Because deduct_vat_from_profit is false, profit MUST be 10.00 (not 8.00)
+        $this->assertSame('10.00', $sale->profit);
+        $this->assertEquals(10.00, (float) $sale->saleItems->sum('profit'));
     }
 
     private function item(string $name, float $price, float $cost, bool $vat): array

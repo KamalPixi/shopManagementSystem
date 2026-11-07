@@ -54,4 +54,29 @@ class SaleItem extends Model
     {
         return $this->item_name ?: ($this->product?->name ?? 'Item');
     }
+
+    public function getCalculatedProfit(?bool $deductVat = null, ?float $gstPercent = null): float
+    {
+        if ($deductVat === null) {
+            $shop = Shop::first();
+            $deductVat = (bool) ($shop?->settings['deduct_vat_from_profit'] ?? false);
+            $gstPercent = (float) ($shop?->gst_percent ?? 0);
+        } elseif ($gstPercent === null && $deductVat) {
+            $gstPercent = (float) (Shop::first()?->gst_percent ?? 0);
+        }
+
+        $price = (float) ($this->price ?? 0);
+        $cost = (float) ($this->purchase_price ?? 0);
+        $qty = (int) ($this->quantity ?? 1);
+        $discount = (float) ($this->discount ?? 0);
+
+        $grossProfit = (($price - $cost) * $qty) - $discount;
+
+        if ($deductVat && $this->is_vatable && ($gstPercent ?? 0) > 0) {
+            $vat = round((float) ($this->total ?? 0) * ($gstPercent / 100), 2);
+            return round($grossProfit - $vat, 2);
+        }
+
+        return round($grossProfit, 2);
+    }
 }

@@ -210,6 +210,7 @@ class SaleEdit extends Component
 
         if (empty($product)) {
             session()->flash('failed', __('No product found [:id]', ['id' => $this->identifier]));
+            $this->dispatch('focus-barcode-input');
             return;
         }
 
@@ -283,6 +284,7 @@ class SaleEdit extends Component
 
         $this->reset(['identifier']);
         $this->calculate();
+        $this->dispatch('focus-barcode-input');
     }
 
     public function openCustomModal()
@@ -311,6 +313,7 @@ class SaleEdit extends Component
         $this->showCustomModal = false;
         $this->show_custom_suggestions = false;
         $this->custom_item_suggestions = [];
+        $this->dispatch('focus-barcode-input');
     }
 
     public function updatedCustomItemName($value)
@@ -479,13 +482,15 @@ class SaleEdit extends Component
         $this->gst = number_format($this->gst, 2, '.', '');
         $this->grand_total = number_format($this->grand_total, 2, '.', '');
 
+        $shop = Shop::first();
+        $deductVatFromProfit = (bool) ($shop?->settings['deduct_vat_from_profit'] ?? false);
         $profitTotal = 0;
         foreach ($this->sale_items as $itm) {
             $cost = max(0, (float) ($itm['purchase_price'] ?? 0));
             $price = (float) ($itm['price'] ?? 0);
             $qty = (int) ($itm['quantity'] ?? 1);
             $disc = (float) ($itm['discount'] ?? 0);
-            $vat = !empty($itm['is_vatable']) && $this->gst_percent > 0
+            $vat = (!empty($itm['is_vatable']) && $this->gst_percent > 0 && $deductVatFromProfit)
                 ? round((float) ($itm['total'] ?? 0) * ($this->gst_percent / 100), 2)
                 : 0;
             $profitTotal += (($price - $cost) * $qty) - $disc - $vat;
@@ -597,6 +602,8 @@ class SaleEdit extends Component
             // Remove old sale items and recreate fresh items
             $this->sale->saleItems()->delete();
 
+            $shop = Shop::first();
+            $deductVatFromProfit = (bool) ($shop?->settings['deduct_vat_from_profit'] ?? false);
             $profit_total = 0;
             foreach ($this->sale_items as $item) {
                 $purchase_price = 0;
@@ -612,7 +619,7 @@ class SaleEdit extends Component
                 }
 
                 $profit_per_unit = $item['price'] - $purchase_price;
-                $itemVat = !empty($item['is_vatable']) && $this->gst_percent > 0
+                $itemVat = (!empty($item['is_vatable']) && $this->gst_percent > 0 && $deductVatFromProfit)
                     ? round((float) $item['total'] * ($this->gst_percent / 100), 2)
                     : 0;
                 $profit_total_for_item = ($profit_per_unit * $item['quantity']) - $item['discount'] - $itemVat;

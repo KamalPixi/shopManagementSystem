@@ -106,14 +106,27 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-4">
+                <div class="row align-items-center">
+                    <div class="col-md-4 col-12">
                         <div class="mb-4">
                             <label>{{ __('Language') }}</label>
                             <select wire:model="language" class="form-select">
                                 <option value="en">English (EN)</option>
                                 <option value="fr">{{ __('French (FR)') }}</option>
                             </select>
+                        </div>
+                    </div>
+                    <div class="col-md-8 col-12">
+                        <div class="card bg-light border p-3 mb-4">
+                            <div class="form-check form-switch mb-1">
+                                <input class="form-check-input" type="checkbox" role="switch" id="deduct_vat_from_profit" wire:model="deduct_vat_from_profit">
+                                <label class="form-check-label fw-bold" for="deduct_vat_from_profit">
+                                    {{ __('Deduct :tax from Profit in Sales & Reports', ['tax' => strcasecmp($country ?? '', 'France') === 0 ? 'TVA' : 'GST/VAT']) }}
+                                </label>
+                            </div>
+                            <small class="text-muted d-block" style="font-size: 0.78rem;">
+                                {{ __('When disabled (default), profit is calculated without deducting :tax (Sale Price - Cost Price). Enable this if you want :tax to be subtracted from sales report profit.', ['tax' => strcasecmp($country ?? '', 'France') === 0 ? 'TVA' : 'tax']) }}
+                            </small>
                         </div>
                     </div>
                 </div>

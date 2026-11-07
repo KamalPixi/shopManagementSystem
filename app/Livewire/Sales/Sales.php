@@ -65,11 +65,17 @@ class Sales extends Component
             $reportDateLabel = ($this->start_date ?: 'Start') . ' to ' . ($this->end_date ?: 'Now');
         }
 
+        $shop = Shop::first();
+        $deductVat = (bool) ($shop?->settings['deduct_vat_from_profit'] ?? false);
+        $gstPercent = (float) ($shop?->gst_percent ?? 0);
+
         $categoryBreakdown = $this->getCategoryBreakdown();
 
         $data = [
             'sales' => $sales,
-            'shop' => Shop::first(),
+            'shop' => $shop,
+            'deduct_vat_from_profit' => $deductVat,
+            'gst_percent' => $gstPercent,
             'report_date' => $reportDateLabel,
             'report_date_filter_type' => $this->filter_by,
             'report_print_date' => date('Y-m-d H:i:s'),
@@ -236,6 +242,10 @@ class Sales extends Component
             'is_selected' => false,
         ];
 
+        $shop = Shop::first();
+        $deductVat = (bool) ($shop?->settings['deduct_vat_from_profit'] ?? false);
+        $gstPercent = (float) ($shop?->gst_percent ?? 0);
+
         if ($baseSaleIds->isNotEmpty()) {
             $saleItems = SaleItem::whereIn('sale_id', $baseSaleIds)
                 ->with(['product'])
@@ -246,7 +256,7 @@ class Sales extends Component
                 $qty = (int) $item->quantity;
                 $sales = (float) $item->total;
                 $cost = (float) $item->purchase_price * $qty;
-                $profit = (float) $item->profit;
+                $profit = $item->getCalculatedProfit($deductVat, $gstPercent);
 
                 if ($catId && isset($breakdown[$catId])) {
                     $breakdown[$catId]['items_count'] += $qty;
