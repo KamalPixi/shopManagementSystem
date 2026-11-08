@@ -26,4 +26,9 @@ class MoneyMovement extends Model
     {
         return $this->belongsTo(CashRegisterSession::class, 'cash_register_session_id');
     }
+
+    public function cashRegisterSession()
+    {
+        return $this->belongsTo(CashRegisterSession::class, 'cash_register_session_id');
+    }
 }

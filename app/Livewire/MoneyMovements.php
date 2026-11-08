@@ -276,10 +276,9 @@ class MoneyMovements extends Component
         session()->flash('success', __('Entry deleted.'));
     }
 
-    public function render()
+    protected function buildMovementsQuery()
     {
-        $currentSession = CashRegisterSession::currentOpenSession();
-        $query = MoneyMovement::with(['user', 'category'])->latest();
+        $query = MoneyMovement::with(['user', 'category', 'cashRegisterSession'])->latest();
 
         if (!empty($this->filter_type)) {
             $query->where('type', $this->filter_type);
@@ -300,6 +299,67 @@ class MoneyMovements extends Component
         if (!empty($this->filter_end_date)) {
             $query->whereDate('created_at', '<=', $this->filter_end_date);
         }
+
+        return $query;
+    }
+
+    public function printReport()
+    {
+        $movements = $this->buildMovementsQuery()->get();
+
+        $totalIn = (float) $movements->where('type', 'in')->sum('amount');
+        $totalOut = (float) $movements->where('type', 'out')->sum('amount');
+        $netCash = $totalIn - $totalOut;
+
+        $categoryBreakdown = ['in' => [], 'out' => []];
+        foreach ($movements as $m) {
+            $catName = $m->category?->name ?? __('Uncategorized');
+            $categoryBreakdown[$m->type][$catName] = ($categoryBreakdown[$m->type][$catName] ?? 0) + (float) $m->amount;
+        }
+
+        $selectedCategory = !empty($this->filter_category_id)
+            ? MoneyCategory::find($this->filter_category_id)?->name
+            : null;
+
+        $selectedUser = !empty($this->filter_user_id)
+            ? User::find($this->filter_user_id)?->name
+            : null;
+
+        $filterTypeLabel = match ($this->filter_type) {
+            'in' => __('Cash In'),
+            'out' => __('Cash Out'),
+            default => __('All Types'),
+        };
+
+        $shop = Shop::first();
+
+        $data = [
+            'movements' => $movements,
+            'shop' => $shop,
+            'locale' => app()->getLocale(),
+            'totalIn' => $totalIn,
+            'totalOut' => $totalOut,
+            'netCash' => $netCash,
+            'totalCount' => $movements->count(),
+            'categoryBreakdown' => $categoryBreakdown,
+            'filter_type_label' => $filterTypeLabel,
+            'filter_category_name' => $selectedCategory ? __($selectedCategory) : null,
+            'filter_user_name' => $selectedUser,
+            'filter_start_date' => $this->filter_start_date,
+            'filter_end_date' => $this->filter_end_date,
+            'print_date' => date('d/m/Y H:i'),
+        ];
+
+        $service = new \App\Services\MoneyMovementPdfService();
+        $url = $service->generateMovementHistoryPdf($data);
+
+        $this->dispatch('print-pdf', ['url' => $url]);
+    }
+
+    public function render()
+    {
+        $currentSession = CashRegisterSession::currentOpenSession();
+        $query = $this->buildMovementsQuery();
 
         // Totals for filtered period
         $statsQuery = clone $query;

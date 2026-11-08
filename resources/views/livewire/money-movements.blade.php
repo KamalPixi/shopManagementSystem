@@ -1,7 +1,7 @@
 <div>
     @include('includes.breadcrumb', ['data' => [__('Money Movements') => '']])
 
-    <div wire:loading.flex wire:target="recordMovement,saveCategory,deleteMovement,addUnassignedToDrawer">
+    <div wire:loading.flex wire:target="recordMovement,saveCategory,deleteMovement,addUnassignedToDrawer,printReport">
         @include('includes.spinner')
     </div>
 
@@ -208,11 +208,24 @@
         {{-- Money Movements History Table --}}
         <div class="col-lg-7 col-12">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white border-bottom border-light py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 fw-bold text-dark d-flex align-items-center">
-                        <i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i> {{ __('Movement History Log') }}
-                    </h6>
-                    <span class="text-muted small">{{ __('Total') }}: <strong>{{ $movements->total() }}</strong></span>
+                <div class="card-header bg-white border-bottom border-light py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <h6 class="mb-0 fw-bold text-dark d-flex align-items-center">
+                            <i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i> {{ __('Movement History Log') }}
+                        </h6>
+                        <span class="badge bg-light text-muted border small">{{ __('Total') }}: {{ $movements->total() }}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" wire:click="printReport" wire:loading.attr="disabled" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center shadow-sm" title="{{ __('Print filtered movement history report as PDF') }}">
+                            <span wire:loading.remove wire:target="printReport">
+                                <i class="fa-solid fa-file-pdf me-1"></i> {{ __('Print PDF') }}
+                            </span>
+                            <span wire:loading wire:target="printReport">
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                {{ __('Generating...') }}
+                            </span>
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body p-3 p-md-4">
                     {{-- Filter Controls --}}
