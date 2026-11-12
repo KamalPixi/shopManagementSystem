@@ -112,22 +112,19 @@
                 <div class="card-body">
                     <div class="row align-items-end g-3">
                         <div class="col-lg-9 col-md-8 col-12">
-                            <form wire:submit.prevent="add" class="m-0 p-0" id="pos_barcode_form">
+                            <form wire:submit.prevent="add" onsubmit="return false;" class="m-0 p-0" id="pos_barcode_form">
                                 <div>
                                     <label class="form-label mb-1 fw-bold" for="pos_barcode_input">{{ __('Barcode / SKU / SerialNo*') }}</label>
                                     <input 
                                         wire:model="identifier" 
-                                        wire:keydown.enter.prevent="add"
                                         type="text" 
                                         id="pos_barcode_input"
                                         class="form-control m-0" 
                                         style="height: 42px; line-height: 42px; box-sizing: border-box;" 
                                         autofocus 
                                         autocomplete="off"
-                                        tabindex="1"
                                         placeholder="{{ __('Scan barcode or enter SKU / Serial number') }}"
                                     >
-                                    <button type="submit" class="d-none" tabindex="-1"></button>
                                 </div>
                             </form>
                         </div>
@@ -880,44 +877,178 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
 
     <script>
         document.addEventListener('livewire:initialized', function () {
-            function focusBarcodeField() {
-                // Do not steal focus if a modal is currently open
-                if (document.querySelector('.modal.show')) return;
+            const barcodeInputId = 'pos_barcode_input';
+            let isSubmitting = false;
+            let lastCharTime = 0;
+            let charDeltas = [];
+            let scannerTimer = null;
 
-                const barcodeInput = document.getElementById('pos_barcode_input');
-                if (barcodeInput && document.activeElement !== barcodeInput) {
-                    barcodeInput.focus();
+            function getBarcodeInput() {
+                return document.getElementById(barcodeInputId);
+            }
+
+            function isModalOpen() {
+                return !!document.querySelector('.modal.show');
+            }
+
+            function isOtherInputFocused() {
+                const active = document.activeElement;
+                return active && active.id !== barcodeInputId && (
+                    active.tagName === 'INPUT' || 
+                    active.tagName === 'TEXTAREA' || 
+                    active.tagName === 'SELECT' ||
+                    active.isContentEditable
+                );
+            }
+
+            function focusBarcodeField(selectText) {
+                if (isModalOpen() || isOtherInputFocused()) return;
+
+                const input = getBarcodeInput();
+                if (input) {
+                    if (document.activeElement !== input) {
+                        input.focus();
+                    }
+                    if (selectText && input.value) {
+                        input.select();
+                    }
                 }
             }
 
-            // Initial focus
-            setTimeout(focusBarcodeField, 150);
+            function submitBarcode(scannedValue) {
+                if (isSubmitting) return;
 
-            // Listen for server-side dispatch
+                const input = getBarcodeInput();
+                const val = (typeof scannedValue === 'string' ? scannedValue : (input ? input.value : '')).trim();
+                if (!val) return;
+
+                isSubmitting = true;
+                if (scannerTimer) {
+                    clearTimeout(scannerTimer);
+                    scannerTimer = null;
+                }
+                charDeltas = [];
+
+                const lwEl = input ? input.closest('[wire\\:id]') : document.querySelector('[wire\\:id]');
+                if (lwEl && window.Livewire) {
+                    const comp = Livewire.find(lwEl.getAttribute('wire:id'));
+                    if (comp) {
+                        comp.call('add', val).then(function () {
+                            isSubmitting = false;
+                            setTimeout(focusBarcodeField, 50);
+                        }).catch(function () {
+                            isSubmitting = false;
+                            setTimeout(focusBarcodeField, 50);
+                        });
+                        if (input) input.value = '';
+                        return;
+                    }
+                }
+
+                // Fallback: trigger form submit event
+                const form = document.getElementById('pos_barcode_form');
+                if (form) {
+                    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                }
+                setTimeout(function () {
+                    isSubmitting = false;
+                    focusBarcodeField();
+                }, 300);
+            }
+
+            // 1. Initial focus
+            setTimeout(focusBarcodeField, 120);
+
+            // 2. Server-side focus event listener
             window.addEventListener('focus-barcode-input', function () {
+                isSubmitting = false;
                 setTimeout(function () {
-                    const barcodeInput = document.getElementById('pos_barcode_input');
-                    if (barcodeInput) {
-                        barcodeInput.focus();
-                        barcodeInput.select();
-                    }
+                    focusBarcodeField(true);
                 }, 50);
             });
 
-            // Maintain focus after Livewire updates unless user is actively typing in another input
-            Livewire.hook('morph.updated', function () {
-                setTimeout(function () {
-                    const active = document.activeElement;
-                    const isOtherInput = active && active.id !== 'pos_barcode_input' && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.tagName === 'SELECT');
-                    const modalOpen = document.querySelector('.modal.show');
-                    if (!modalOpen && !isOtherInput) {
-                        const barcodeInput = document.getElementById('pos_barcode_input');
-                        if (barcodeInput) {
-                            barcodeInput.focus();
-                        }
+            // 3. Keep focus after Livewire updates
+            if (window.Livewire && typeof window.Livewire.hook === 'function') {
+                window.Livewire.hook('commit', function (options) {
+                    if (options && typeof options.succeed === 'function') {
+                        options.succeed(function () {
+                            isSubmitting = false;
+                            setTimeout(focusBarcodeField, 60);
+                        });
                     }
-                }, 50);
+                });
+                window.Livewire.hook('morphed', function () {
+                    isSubmitting = false;
+                    setTimeout(focusBarcodeField, 60);
+                });
+            }
+
+            // 4. Clicking empty area returns focus to barcode input
+            document.addEventListener('click', function (e) {
+                if (isModalOpen()) return;
+                const interactive = e.target.closest('a, button, input, select, textarea, label, [role="button"], .dropdown-menu');
+                if (!interactive) {
+                    setTimeout(focusBarcodeField, 60);
+                }
             });
+
+            // 5. Handle keydown on barcode input: prevent Tab from escaping to sidebar logo, and handle Enter & auto-scans
+            document.addEventListener('keydown', function (e) {
+                const barcodeInput = getBarcodeInput();
+                if (!barcodeInput) return;
+
+                // When user is typing inside the barcode input
+                if (document.activeElement === barcodeInput) {
+                    const now = Date.now();
+                    if (lastCharTime) {
+                        charDeltas.push(now - lastCharTime);
+                        if (charDeltas.length > 12) charDeltas.shift();
+                    }
+                    lastCharTime = now;
+
+                    // Intercept Enter (13) and Tab (9) so focus never jumps to sidebar brand logo
+                    if (e.key === 'Enter' || e.keyCode === 13 || e.key === 'Tab' || e.keyCode === 9) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const val = barcodeInput.value.trim();
+                        if (val) {
+                            submitBarcode(val);
+                        }
+                        return false;
+                    }
+
+                    // Auto-detect fast hardware scanner output without Enter/Tab suffix
+                    if (scannerTimer) clearTimeout(scannerTimer);
+                    scannerTimer = setTimeout(function () {
+                        const val = barcodeInput.value.trim();
+                        const avg = charDeltas.length >= 3 
+                            ? charDeltas.reduce((a, b) => a + b, 0) / charDeltas.length 
+                            : 999;
+                        if (avg < 55 && val.length >= 3) {
+                            submitBarcode(val);
+                        }
+                        charDeltas = [];
+                    }, 120);
+                    return;
+                }
+
+                // Global scanner catch: if cashier scans while focus is not in any text input/modal
+                if (isModalOpen() || isOtherInputFocused()) return;
+
+                if (e.key === 'Enter' || e.keyCode === 13 || e.key === 'Tab' || e.keyCode === 9) {
+                    const val = barcodeInput.value.trim();
+                    if (val.length >= 2) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        submitBarcode(val);
+                    }
+                    return;
+                }
+
+                if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
+                    barcodeInput.focus();
+                }
+            }, true);
         });
     </script>
 </div>

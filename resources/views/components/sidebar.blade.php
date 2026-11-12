@@ -1,5 +1,5 @@
 <nav class="navbar navbar-dark navbar-theme-primary px-4 col-12 d-lg-none">
-    <a class="navbar-brand me-lg-5" href="">
+    <a class="navbar-brand me-lg-5" href="{{ route('dashboard') }}" tabindex="-1">
         <img class="navbar-brand-dark" src="{{ asset($shop?->logo) }}" alt="Volt logo">
         <img class="navbar-brand-light" src="{{ asset($shop?->logo) }}" alt="Volt logo">
     </a>
@@ -30,7 +30,7 @@
         </div>
         <ul class="nav flex-column pt-3 pt-md-0">
             <li class="nav-item">
-                <a href="{{ route('dashboard') }}" class="nav-link d-flex align-items-center"><span class="sidebar-icon">
+                <a href="{{ route('dashboard') }}" class="nav-link d-flex align-items-center" tabindex="-1"><span class="sidebar-icon">
                     <img class="border border-white border-2" style="width:2rem; border-radius:2px;" src="{{ asset($shop?->logo) }}" alt="logo"></span>
                     <span class="mt-1 ms-1 sidebar-text" style="font-size: 0.8rem;"> {{ $shop?->name }} </span>
                 </a>

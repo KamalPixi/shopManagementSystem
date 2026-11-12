@@ -486,4 +486,107 @@ class AuditingAndPosImprovementsTest extends TestCase
             ->assertDispatched('focus-barcode-input')
             ->assertCount('sale_items', 1);
     }
+
+    public function test_smart_barcode_reading_variations_and_scanner_direct_call(): void
+    {
+        CashRegisterSession::where('status', 'open')->update(['status' => 'closed']);
+        CashRegisterSession::create([
+            'user_id' => $this->user->id,
+            'opening_balance' => 100.00,
+            'status' => 'open',
+            'opened_at' => now(),
+        ]);
+
+        // 1. Direct call with parameter add($barcode)
+        $standaloneBarcode = 'STANDALONE-' . uniqid();
+        Product::create([
+            'name' => 'Standalone Smart Item',
+            'sku' => $standaloneBarcode,
+            'purchase_price' => 5.00,
+            'price' => 15.00,
+            'quantity' => 10,
+            'is_active' => true,
+        ]);
+
+        Livewire::test(Pos::class)
+            ->call('add', $standaloneBarcode)
+            ->assertDispatched('focus-barcode-input')
+            ->assertCount('sale_items', 1)
+            ->assertSet('identifier', '');
+
+        // 2. Product with variations shows variation selector and dispatches focus-barcode-input
+        $masterBarcode = 'MASTER-PHONE-' . uniqid();
+        $variationProduct = Product::create([
+            'name' => 'iPhone 15',
+            'sku' => $masterBarcode,
+            'has_variations' => true,
+            'purchase_price' => 500.00,
+            'price' => 800.00,
+            'quantity' => 10,
+            'is_active' => true,
+        ]);
+
+        $var1Barcode = 'VAR-128GB-' . uniqid();
+        $var1 = ProductVariation::create([
+            'product_id' => $variationProduct->id,
+            'variation_name' => '128GB Black',
+            'sku' => $var1Barcode,
+            'purchase_price' => 500.00,
+            'price' => 800.00,
+            'quantity' => 5,
+        ]);
+
+        $var2 = ProductVariation::create([
+            'product_id' => $variationProduct->id,
+            'variation_name' => '256GB Blue',
+            'sku' => 'VAR-256GB-' . uniqid(),
+            'purchase_price' => 600.00,
+            'price' => 950.00,
+            'quantity' => 5,
+        ]);
+
+        // Scanning the master barcode shows variations and dispatches focus-barcode-input
+        Livewire::test(Pos::class)
+            ->call('add', $masterBarcode)
+            ->assertSet('pendingVariationProductId', $variationProduct->id)
+            ->assertDispatched('focus-barcode-input')
+            ->assertCount('sale_items', 0)
+            ->call('selectVariation', $var1->id)
+            ->assertSet('pendingVariationProductId', null)
+            ->assertDispatched('focus-barcode-input')
+            ->assertCount('sale_items', 1);
+
+        // Cancelling variation selection also dispatches focus-barcode-input
+        Livewire::test(Pos::class)
+            ->call('add', $masterBarcode)
+            ->assertSet('pendingVariationProductId', $variationProduct->id)
+            ->call('cancelVariationSelection')
+            ->assertSet('pendingVariationProductId', null)
+            ->assertDispatched('focus-barcode-input');
+
+        // Direct scanning of variation barcode adds the variation directly
+        Livewire::test(Pos::class)
+            ->call('add', $var1Barcode)
+            ->assertSet('pendingVariationProductId', null)
+            ->assertDispatched('focus-barcode-input')
+            ->assertCount('sale_items', 1);
+
+        // Out of stock product resets identifier and dispatches focus-barcode-input
+        $outOfStockBarcode = 'OOS-' . uniqid();
+        Product::create([
+            'name' => 'Out of Stock Item',
+            'sku' => $outOfStockBarcode,
+            'purchase_price' => 5.00,
+            'price' => 15.00,
+            'quantity' => 0,
+            'is_active' => true,
+        ]);
+
+        Livewire::test(Pos::class)
+            ->call('add', $outOfStockBarcode)
+            ->assertDispatched('focus-barcode-input')
+            ->assertSet('identifier', '');
+
+        $this->assertContains('failed', session('_flash.new'));
+    }
 }

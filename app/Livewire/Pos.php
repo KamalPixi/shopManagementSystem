@@ -228,13 +228,18 @@ class Pos extends Component
         return round((float) $this->grand_total - $this->getSplitPaidTotal(), 2);
     }
 
-    public function add() {
+    public function add($scannedIdentifier = null) {
+        if (!empty($scannedIdentifier)) {
+            $this->identifier = trim($scannedIdentifier);
+        }
+
         $selectedVariation = $this->selectedVariationId ? ProductVariation::with('product')->find($this->selectedVariationId) : null;
         $product = $selectedVariation?->product ?: Product::findBySkuSerialOrModel($this->identifier);
         $this->selectedVariationId = null;
 
         if (empty($product)) {
             session()->flash('failed', __('No product found [:id]', ['id' => $this->identifier]));
+            $this->reset(['identifier']);
             $this->dispatch('focus-barcode-input');
             return;
         }
@@ -244,6 +249,7 @@ class Pos extends Component
         if ($product->has_variations && !$matchedVariation) {
             $this->pendingVariationProductId = $product->id;
             $this->identifier = '';
+            $this->dispatch('focus-barcode-input');
             return;
         }
 
@@ -252,6 +258,8 @@ class Pos extends Component
         if ($matchedVariation) {
             if ($matchedVariation->quantity < 1) {
                 session()->flash('failed', __('Variation [:name] is out of stock!', ['name' => $matchedVariation->variation_name]));
+                $this->reset(['identifier']);
+                $this->dispatch('focus-barcode-input');
                 return;
             }
 
@@ -260,6 +268,8 @@ class Pos extends Component
             if (isset($this->sale_items[$itemKey])) {
                 $qtyLeft = $matchedVariation->quantity - (int) $this->sale_items[$itemKey]['quantity'];
                 if ($qtyLeft < 1) {
+                    $this->reset(['identifier']);
+                    $this->dispatch('focus-barcode-input');
                     return session()->flash('failed', __('Variation quantity out of stock!'));
                 }
                 $this->sale_items[$itemKey]['quantity'] += 1;
@@ -293,6 +303,8 @@ class Pos extends Component
             // Standalone product or master product
             if ($product->quantity < 1) {
                 session()->flash('failed', __('Out of stock!'));
+                $this->reset(['identifier']);
+                $this->dispatch('focus-barcode-input');
                 return;
             }
 
@@ -302,6 +314,8 @@ class Pos extends Component
             if (isset($this->sale_items[$itemKey])) {
                 $qtyLeft = $product->quantity - (int) $this->sale_items[$itemKey]['quantity'];
                 if ($qtyLeft < 1) {
+                    $this->reset(['identifier']);
+                    $this->dispatch('focus-barcode-input');
                     return session()->flash('failed', __('Quantity out of stock!'));
                 }
                 $this->sale_items[$itemKey]['quantity'] += 1;
@@ -352,6 +366,7 @@ class Pos extends Component
     public function cancelVariationSelection()
     {
         $this->pendingVariationProductId = null;
+        $this->dispatch('focus-barcode-input');
     }
 
     public function openCustomModal() {
