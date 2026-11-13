@@ -144,6 +144,27 @@ class CashDepositReceiptTest extends TestCase
         $this->assertEquals(0.00, (float) $deposit->fresh()->remaining_balance);
     }
 
+    public function test_deposit_save_shows_print_language_modal_instead_of_auto_printing(): void
+    {
+        Livewire::test(Deposits::class)
+            ->set('customer_name', 'Marc Petit')
+            ->set('customer_phone', '0655443322')
+            ->set('item_description', 'iPad Pro Glass Replacement')
+            ->set('total_amount', '350.00')
+            ->set('deposit_amount', '100.00')
+            ->set('payment_method', 'cash')
+            ->call('saveDeposit')
+            ->assertHasNoErrors()
+            ->assertNotDispatched('print-pdf') // Ensures NO auto-printing without staff choice
+            ->assertSet('showSuccessModal', true)
+            ->assertSet('lastCustomerName', 'Marc Petit')
+            ->assertSet('lastDepositAmount', '100.00')
+            ->assertSet('lastRemainingBalance', '250.00')
+            ->call('dismissDepositSuccess')
+            ->assertSet('showSuccessModal', false)
+            ->assertSet('lastDepositId', null);
+    }
+
     public function test_deposit_pdf_service_generates_both_80mm_and_a4_receipts_in_en_and_fr(): void
     {
         $deposit = Deposit::create([

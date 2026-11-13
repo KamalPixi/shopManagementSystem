@@ -26,6 +26,14 @@ class Deposits extends Component
     public $showModal = false;
     public $editId = null;
 
+    // Success / Print language selection overlay
+    public $showSuccessModal = false;
+    public $lastDepositId = null;
+    public $lastReferenceNo = null;
+    public $lastCustomerName = null;
+    public $lastDepositAmount = null;
+    public $lastRemainingBalance = null;
+
     // Form inputs
     public $customer_id = null;
     public $customer_name = '';
@@ -221,17 +229,26 @@ class Deposits extends Component
 
             session()->flash('message', __('Deposit receipt #:ref created successfully.', ['ref' => $deposit->reference_no]));
 
-            // Auto-trigger 80mm PDF preview after creation
-            try {
-                $s = new DepositService();
-                $url = $s->generateDepositReceipt($deposit->id);
-                $this->dispatch('print-pdf', ['url' => $url]);
-            } catch (\Throwable $e) {
-                // Ignore preview trigger error
-            }
+            // Prompt staff for print language / receipt choices instead of auto-printing a blind specific language
+            $this->lastDepositId = $deposit->id;
+            $this->lastReferenceNo = $deposit->reference_no;
+            $this->lastCustomerName = $deposit->customer_name;
+            $this->lastDepositAmount = number_format((float) $deposit->deposit_amount, 2);
+            $this->lastRemainingBalance = number_format((float) $deposit->remaining_balance, 2);
+            $this->showSuccessModal = true;
         }
 
         $this->closeModal();
+    }
+
+    public function dismissDepositSuccess(): void
+    {
+        $this->showSuccessModal = false;
+        $this->lastDepositId = null;
+        $this->lastReferenceNo = null;
+        $this->lastCustomerName = null;
+        $this->lastDepositAmount = null;
+        $this->lastRemainingBalance = null;
     }
 
     public function markCompleted(int $id): void

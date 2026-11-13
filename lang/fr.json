@@ -501,5 +501,7 @@
     "Please retain this deposit receipt. It must be presented upon collecting your device or completed order. The remaining balance must be paid in full prior to release.": "Veuillez conserver ce reçu d'acompte. Il doit être présenté lors du retrait de votre appareil ou commande. Le solde restant doit être réglé en totalité avant la restitution.",
     "Customer Signature": "Signature du client",
     "Authorized Shop Signature": "Signature autorisée de la boutique",
-    "Deposit receipt #:ref deleted successfully.": "Le reçu d'acompte #:ref a été supprimé avec succès."
+    "Deposit receipt #:ref deleted successfully.": "Le reçu d'acompte #:ref a été supprimé avec succès.",
+    "Deposit Receipt Created!": "Reçu d'acompte créé !",
+    "Choose Receipt Language to Print": "Choisissez la langue du reçu à imprimer"
 }

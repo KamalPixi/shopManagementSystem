@@ -1,15 +1,120 @@
 <div>
     @include('includes.breadcrumb', ['data' => [__('Deposits / Advance Receipts') => route('deposits.index')]])
 
+    @php
+        $currencySymbol = $shop?->currency['symbol'] ?? '€';
+    @endphp
+
+    {{-- ── DEPOSIT SUCCESS / PRINT LANGUAGE OVERLAY ──────────────────── --}}
+    @if ($showSuccessModal)
+    <div
+        style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99990;display:flex;align-items:center;justify-content:center;"
+        wire:key="deposit-success-overlay"
+    >
+        <div class="card border-0 shadow-lg text-center" style="min-width:340px;max-width:440px;border-radius:1rem;overflow:hidden;">
+
+            {{-- Green header bar --}}
+            <div class="bg-success text-white px-4 pt-4 pb-3">
+                <div class="mb-2" style="font-size:3rem;line-height:1;">&#10004;</div>
+                <h5 class="fw-bold mb-1">{{ __('Deposit Receipt Created!') }}</h5>
+                <div class="opacity-75 small">#{{ $lastReferenceNo }} &bull; {{ $lastCustomerName }}</div>
+            </div>
+
+            {{-- Body --}}
+            <div class="card-body px-4 py-3">
+                {{-- Financial summary --}}
+                <div class="p-2 bg-light rounded-3 mb-3 border">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted small">{{ __('Deposit Paid') }}</span>
+                        <span class="fw-bold text-success fs-5">
+                            {{ $currencySymbol }}{{ $lastDepositAmount }}
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted small">{{ __('Remaining Balance') }}</span>
+                        <span class="fw-bold text-danger">
+                            {{ $currencySymbol }}{{ $lastRemainingBalance }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="fw-bold text-secondary small text-uppercase mb-2" style="letter-spacing: 0.5px; font-size: 0.72rem;">
+                    {{ __('Choose Receipt Language to Print') }}
+                </div>
+
+                <div class="d-grid gap-2">
+                    {{-- English / French thermal POS receipt choices --}}
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button type="button" class="btn btn-dark w-100 fw-bold py-3"
+                                wire:click="printDepositReceiptPos({{ $lastDepositId }}, 'en')"
+                                wire:loading.attr="disabled" wire:target="printDepositReceiptPos">
+                                <span wire:loading.remove wire:target="printDepositReceiptPos"><i class="fa-solid fa-print me-1"></i>{{ __('English receipt') }}</span>
+                                <span wire:loading wire:target="printDepositReceiptPos"><span class="spinner-border spinner-border-sm me-1"></span>{{ __('Printing…') }}</span>
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-outline-dark w-100 fw-bold py-3"
+                                wire:click="printDepositReceiptPos({{ $lastDepositId }}, 'fr')"
+                                wire:loading.attr="disabled" wire:target="printDepositReceiptPos">
+                                <span wire:loading.remove wire:target="printDepositReceiptPos"><i class="fa-solid fa-print me-1"></i>{{ __('French receipt') }}</span>
+                                <span wire:loading wire:target="printDepositReceiptPos"><span class="spinner-border spinner-border-sm me-1"></span>{{ __('Printing…') }}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- PDF 80mm & A4 Invoices (EN/FR) --}}
+                    <div class="row g-2 mt-1">
+                        <div class="col-6">
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-danger w-50 py-1"
+                                    wire:click="printDepositReceipt({{ $lastDepositId }}, 'en')"
+                                    title="{{ __('English 80mm PDF') }}">
+                                    <i class="fa-solid fa-file-pdf me-1"></i>PDF EN
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger w-50 py-1"
+                                    wire:click="printDepositReceipt({{ $lastDepositId }}, 'fr')"
+                                    title="{{ __('French 80mm PDF') }}">
+                                    <i class="fa-solid fa-file-pdf me-1"></i>PDF FR
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-info w-50 py-1"
+                                    wire:click="printDepositReceiptA4({{ $lastDepositId }}, 'en')"
+                                    title="{{ __('English A4 PDF') }}">
+                                    <i class="fa-solid fa-file-lines me-1"></i>A4 EN
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-info w-50 py-1"
+                                    wire:click="printDepositReceiptA4({{ $lastDepositId }}, 'fr')"
+                                    title="{{ __('French A4 PDF') }}">
+                                    <i class="fa-solid fa-file-lines me-1"></i>A4 FR
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Close button --}}
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary fw-semibold mt-2"
+                        wire:click="dismissDepositSuccess"
+                    >
+                        <i class="fa-solid fa-xmark me-1"></i>{{ __('Close') }}
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    @endif
+
     <div wire:loading.flex wire:target="saveDeposit,markCompleted,deleteDeposit">
         @include('includes.spinner')
     </div>
 
     @include('includes.alert')
-
-    @php
-        $currencySymbol = $shop?->currency['symbol'] ?? '€';
-    @endphp
 
     {{-- Top Summary KPI Cards --}}
     <div class="row g-3 mb-4">

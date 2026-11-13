@@ -501,5 +501,7 @@
     "Please retain this deposit receipt. It must be presented upon collecting your device or completed order. The remaining balance must be paid in full prior to release.": "Please retain this deposit receipt. It must be presented upon collecting your device or completed order. The remaining balance must be paid in full prior to release.",
     "Customer Signature": "Customer Signature",
     "Authorized Shop Signature": "Authorized Shop Signature",
-    "Deposit receipt #:ref deleted successfully.": "Deposit receipt #:ref deleted successfully."
+    "Deposit receipt #:ref deleted successfully.": "Deposit receipt #:ref deleted successfully.",
+    "Deposit Receipt Created!": "Deposit Receipt Created!",
+    "Choose Receipt Language to Print": "Choose Receipt Language to Print"
 }
