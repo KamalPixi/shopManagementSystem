@@ -192,9 +192,16 @@
                                             'bank_transfer' => 'bg-warning text-dark',
                                             default => 'bg-secondary',
                                         };
+                                        $pMethodLabel = match(strtolower($deposit->payment_method ?: 'cash')) {
+                                            'cash', 'espece', 'espèces', 'especes' => __('Cash'),
+                                            'card', 'carte', 'cb', 'credit_card', 'carte bancaire' => __('Card'),
+                                            'bank_transfer', 'virement', 'transfer' => __('Bank transfer'),
+                                            'other', 'autre' => __('Other'),
+                                            default => ucfirst(str_replace('_', ' ', $deposit->payment_method)),
+                                        };
                                     @endphp
                                     <span class="badge {{ $pBadge }} text-uppercase" style="font-size: 0.68rem;">
-                                        {{ str_replace('_', ' ', $deposit->payment_method) }}
+                                        {{ $pMethodLabel }}
                                     </span>
                                 </td>
 

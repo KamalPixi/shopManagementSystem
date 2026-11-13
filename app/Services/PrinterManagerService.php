@@ -648,9 +648,10 @@ class PrinterManagerService
             // ── METADATA ───────────────────────────────────────────────────
             $printer->setJustification(Printer::JUSTIFY_LEFT);
             $paymentMethod = match (strtolower($deposit->payment_method ?: 'cash')) {
-                'cash' => $translate('Cash'),
-                'card' => $translate('Card'),
-                'bank_transfer' => $translate('Bank transfer'),
+                'cash', 'espece', 'espèces', 'especes' => $translate('Cash'),
+                'card', 'carte', 'cb', 'credit_card', 'carte bancaire' => $translate('Card'),
+                'bank_transfer', 'virement', 'transfer' => $translate('Bank transfer'),
+                'other', 'autre' => $translate('Other'),
                 default => ucfirst(str_replace('_', ' ', $deposit->payment_method)),
             };
 
@@ -677,6 +678,9 @@ class PrinterManagerService
             foreach (explode("\n", wordwrap($deposit->item_description, $printWidth, "\n", true)) as $line) {
                 $write('  ' . $line . "\n");
             }
+            if ($deposit->notes) {
+                $write($translate('Notes') . ' : ' . $deposit->notes . "\n");
+            }
             $write($divider);
 
             // ── FINANCIAL BREAKDOWN ────────────────────────────────────────
@@ -701,6 +705,7 @@ class PrinterManagerService
             if ($shop?->contact_no) {
                 $write($translate('For any inquiry, please call us') . ' ' . $shop->contact_no . "\n");
             }
+            $write($translate('Thank you for your trust!') . "\n");
             $printer->feed(3);
 
             if (!empty($settings['cut_paper'])) {

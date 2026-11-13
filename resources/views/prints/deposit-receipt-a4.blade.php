@@ -195,9 +195,10 @@
         $shopTimezone = $shop?->timezone ?? 'Europe/Paris';
         $currencySymbol = $shop?->currency['symbol'] ?? '€';
         $paymentMethodLabel = match (strtolower($deposit->payment_method ?: 'cash')) {
-            'cash' => __('Cash'),
-            'card' => __('Card'),
-            'bank_transfer' => __('Bank transfer'),
+            'cash', 'espece', 'espèces', 'especes' => __('Cash'),
+            'card', 'carte', 'cb', 'credit_card', 'carte bancaire' => __('Card'),
+            'bank_transfer', 'virement', 'transfer' => __('Bank transfer'),
+            'other', 'autre' => __('Other'),
             default => ucfirst(str_replace('_', ' ', $deposit->payment_method)),
         };
     @endphp

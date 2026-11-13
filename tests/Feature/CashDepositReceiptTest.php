@@ -171,6 +171,34 @@ class CashDepositReceiptTest extends TestCase
         $this->assertStringContainsString('deposit-receipts/deposit_receipt_DEP-000042_fr.pdf', $url80Fr);
         $this->assertStringContainsString('deposit-receipts/deposit_receipt_a4_DEP-000042_en.pdf', $urlA4En);
         $this->assertStringContainsString('deposit-receipts/deposit_receipt_a4_DEP-000042_fr.pdf', $urlA4Fr);
+
+        // Verify 80mm view renders pure French without mixed English
+        app()->setLocale('fr');
+        $shop = Shop::first();
+        $html80Fr = view('prints.deposit-receipt', ['deposit' => $deposit, 'shop' => $shop])->render();
+        $this->assertStringContainsString('Mode de paiement', $html80Fr);
+        $this->assertStringContainsString('Coordonnées du client', $html80Fr);
+        $this->assertStringContainsString('Description du produit / problème', $html80Fr);
+        $this->assertStringContainsString('Montant total', $html80Fr);
+        $this->assertStringContainsString('Solde restant dû', $html80Fr);
+        $this->assertStringNotContainsString('Payment Method', $html80Fr);
+        $this->assertStringNotContainsString('Customer Details', $html80Fr);
+        $this->assertStringNotContainsString('Product / Problem Description', $html80Fr);
+        $this->assertStringNotContainsString('Total Amount', $html80Fr);
+        $this->assertStringNotContainsString('Remaining Balance', $html80Fr);
+
+        // Verify A4 view renders pure French without mixed English
+        $htmlA4Fr = view('prints.deposit-receipt-a4', ['deposit' => $deposit, 'shop' => $shop])->render();
+        $this->assertStringContainsString('Informations client', $htmlA4Fr);
+        $this->assertStringContainsString('Mode de paiement', $htmlA4Fr);
+        $this->assertStringContainsString('Montant convenu', $htmlA4Fr);
+        $this->assertStringContainsString('Montant total estimé / convenu', $htmlA4Fr);
+        $this->assertStringContainsString('Acompte / Avance versée', $htmlA4Fr);
+        $this->assertStringContainsString('Solde restant dû', $htmlA4Fr);
+        $this->assertStringContainsString('Remarque importante', $htmlA4Fr);
+        $this->assertStringNotContainsString('Customer Information', $htmlA4Fr);
+        $this->assertStringNotContainsString('Agreed Amount', $htmlA4Fr);
+        $this->assertStringNotContainsString('Important Notice', $htmlA4Fr);
     }
 
     public function test_deposits_livewire_component_dispatches_print_events(): void

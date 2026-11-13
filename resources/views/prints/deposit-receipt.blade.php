@@ -125,9 +125,10 @@
         $shopTimezone = $shop?->timezone ?? 'Europe/Paris';
         $currencySymbol = $shop?->currency['symbol'] ?? '€';
         $paymentMethodLabel = match (strtolower($deposit->payment_method ?: 'cash')) {
-            'cash' => __('Cash'),
-            'card' => __('Card'),
-            'bank_transfer' => __('Bank transfer'),
+            'cash', 'espece', 'espèces', 'especes' => __('Cash'),
+            'card', 'carte', 'cb', 'credit_card', 'carte bancaire' => __('Card'),
+            'bank_transfer', 'virement', 'transfer' => __('Bank transfer'),
+            'other', 'autre' => __('Other'),
             default => ucfirst(str_replace('_', ' ', $deposit->payment_method)),
         };
     @endphp
@@ -218,7 +219,7 @@
     {{-- Footer --}}
     <div class="footer">
         <p style="font-weight: bold; color: #0f172a;">{{ __('Please keep this receipt for collection.') }}</p>
-        <p>{{ __('For any inquiry, please call us') }}: {{ $shop->contact_no ?? '-' }}</p>
+        <p>{{ __('For any inquiry, please call us') }} {{ $shop->contact_no ?? '-' }}</p>
         <p>{{ __('Thank you for your trust!') }}</p>
     </div>
 </body>
