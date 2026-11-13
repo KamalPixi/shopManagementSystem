@@ -133,17 +133,49 @@
     </main>
     <script src="{{ asset('/vendor/@popperjs/core/dist/umd/popper.min.js') }}"></script>
     <script src="{{ asset('/vendor/bootstrap/dist/js/bootstrap.min.js') }}"></script>
-    <script src="{{ asset('/assets/js/volt.js') }}"></script>
     <script>
-      window.addEventListener('print-pdf', function (event) {
-        var url = event.detail?.[0]?.url || event.detail?.url;
-        if (url) {
+      // Global PDF window.open guard: prevents double popups from duplicate listeners, double-clicks, or cached scripts
+      (function() {
+        var lastOpenedPdf = null;
+        var lastOpenedPdfTime = 0;
+        var nativeWindowOpen = window.open;
+
+        window.open = function(url, target, features) {
+          if (url && typeof url === 'string' && (url.indexOf('.pdf') !== -1 || url.indexOf('sales/') !== -1 || url.indexOf('prints/') !== -1 || url.indexOf('receipt') !== -1)) {
+            var now = Date.now();
+            if (lastOpenedPdf === url && (now - lastOpenedPdfTime) < 1200) {
+              return null;
+            }
+            lastOpenedPdf = url;
+            lastOpenedPdfTime = now;
+          }
+          return nativeWindowOpen.apply(window, arguments);
+        };
+      })();
+    </script>
+    <script src="{{ asset('/assets/js/volt.js') }}?v={{ file_exists(public_path('assets/js/volt.js')) ? filemtime(public_path('assets/js/volt.js')) : '1.0' }}"></script>
+    <script>
+      (function() {
+        var lastPrintUrl = null;
+        var lastPrintTime = 0;
+
+        window.addEventListener('print-pdf', function (event) {
+          var url = event.detail?.[0]?.url || event.detail?.url;
+          if (!url) return;
+
+          var now = Date.now();
+          if (lastPrintUrl === url && (now - lastPrintTime) < 1200) {
+            return;
+          }
+          lastPrintUrl = url;
+          lastPrintTime = now;
+
           var printWin = window.open(url, '_blank');
           if (printWin) {
             printWin.focus();
           }
-        }
-      });
+        });
+      })();
 
       // Desktop Application UI Keep-Alive & Unfreeze Watchdog
       (function() {
