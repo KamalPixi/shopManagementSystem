@@ -13,19 +13,19 @@
 
     {{-- Current Session Card --}}
     <div class="card border-0 shadow mb-4">
-        <div class="card-header bg-gray-800 text-white d-flex justify-content-between align-items-center py-3">
+        <div class="card-header bg-gray-800 text-white d-flex justify-content-between align-items-center py-2 px-3">
             <h5 class="h6 mb-0 text-white d-flex align-items-center">
                 <i class="fa-solid fa-cash-register me-2 text-warning"></i> {{ __('Today\'s Register Status') }}
             </h5>
             <div>
                 @if ($currentSession)
-                    <span class="badge bg-success px-3 py-2 fs-7">{{ __('REGISTER IS OPEN') }}</span>
+                    <span class="badge bg-success px-3 py-1 fs-7 fw-bold">{{ __('REGISTER IS OPEN') }}</span>
                 @else
-                    <span class="badge bg-secondary px-3 py-2 fs-7">{{ __('REGISTER IS CLOSED') }}</span>
+                    <span class="badge bg-secondary px-3 py-1 fs-7 fw-bold">{{ __('REGISTER IS CLOSED') }}</span>
                 @endif
             </div>
         </div>
-        <div class="card-body">
+        <div class="card-body p-3">
             @if ($currentSession)
                 @if ($currentSession->opened_at->startOfDay()->lt(now()->startOfDay()))
                     <div class="alert alert-warning border-start border-4 border-warning d-flex align-items-center mb-3 py-2 px-3" role="alert">
@@ -36,97 +36,185 @@
                         </div>
                     </div>
                 @endif
-                <div class="row g-3 mb-4">
-                    <div class="col-md-3 col-sm-6 col-12">
-                        <div class="border rounded p-3 bg-light">
-                            <small class="text-muted fw-bold d-block">{{ __('OPENED BY') }}</small>
-                            <span class="fs-6 fw-bold text-dark">{{ $currentSession->user?->name ?? '-' }}</span>
-                            <br><small class="text-muted">{{ $currentSession->opened_at->format('d/m/Y h:i A') }}</small>
+
+                {{-- Compact Session Metadata Strip --}}
+                <div class="bg-light border rounded px-3 py-2 mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2" style="font-size: 0.78rem;">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted fw-bold"><i class="fa-solid fa-user-tie text-primary me-1"></i>{{ __('Opened by') }}:</span>
+                        <span class="fw-bold text-dark">{{ $currentSession->user?->name ?? '-' }}</span>
+                        <span class="text-muted">({{ $currentSession->opened_at->format('d/m/Y h:i A') }})</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div>
+                            <span class="text-muted fw-bold"><i class="fa-solid fa-vault text-success me-1"></i>{{ __('Opening Float') }}:</span>
+                            <span class="fw-bold text-dark">{{ $currencySymbol }}{{ number_format($currentSession->opening_balance, 2) }}</span>
+                        </div>
+                        <span class="text-muted border-start ps-3">
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0" style="font-size: 0.7rem;">
+                                <i class="fa-solid fa-circle fa-2xs me-1 text-success"></i>{{ __('Session #:id', ['id' => $currentSession->id]) }}
+                            </span>
+                        </span>
+                    </div>
+                </div>
+
+                @php
+                    $nonCashTotal = (float)($paymentBreakdown['card'] ?? 0) + (float)($paymentBreakdown['bank_transfer'] ?? 0) + (float)($paymentBreakdown['other'] ?? 0);
+                    $totalSales = (float)($paymentBreakdown['total_sales'] ?? 0);
+                @endphp
+
+                {{-- 3 Core Executive KPI Cards (Total Shift Sales First!) --}}
+                <div class="row g-2 mb-3">
+                    {{-- 1. TOTAL SHIFT SALES (All Methods) --}}
+                    <div class="col-md-4 col-12">
+                        <div class="card border-0 shadow-sm h-100 bg-primary text-white p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-uppercase fw-bold text-white-50" style="font-size: 0.72rem; letter-spacing: 0.5px;">{{ __('Total Shift Sales') }}</span>
+                                <span class="badge bg-white text-primary fw-bold px-2 py-0" style="font-size: 0.68rem;">{{ __('All Methods') }}</span>
+                            </div>
+                            <div class="fs-3 fw-bold my-1">
+                                {{ $currencySymbol }}{{ number_format($totalSales, 2) }}
+                            </div>
+                            <div class="text-white-50 small" style="font-size: 0.73rem;">
+                                <i class="fa-solid fa-circle-check me-1"></i>{{ __('Total customer revenue collected across all channels') }}
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-3 col-sm-6 col-12">
-                        <div class="border rounded p-3 bg-light">
-                            <small class="text-muted fw-bold d-block">{{ __('OPENING BALANCE') }}</small>
-                            <span class="fs-5 fw-bold text-primary">{{ $currencySymbol }}{{ number_format($currentSession->opening_balance, 2) }}</span>
+
+                    {{-- 2. EXPECTED CASH IN DRAWER (Physical Cash) --}}
+                    <div class="col-md-4 col-12">
+                        <div class="card border-0 shadow-sm h-100 bg-white border p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-uppercase fw-bold text-muted" style="font-size: 0.72rem; letter-spacing: 0.5px;">{{ __('Expected Cash in Drawer') }}</span>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0" style="font-size: 0.68rem;">
+                                    <i class="fa-solid fa-money-bill-wave me-1"></i>{{ __('Physical Drawer') }}
+                                </span>
+                            </div>
+                            <div class="fs-3 fw-bold text-dark my-1">
+                                {{ $currencySymbol }}{{ number_format($expectedCash, 2) }}
+                            </div>
+                            <div class="d-flex justify-content-between text-muted small" style="font-size: 0.73rem;">
+                                <span>{{ __('Opening') }}: <strong>{{ $currencySymbol }}{{ number_format($currentSession->opening_balance, 2) }}</strong></span>
+                                <span>{{ __('Cash Sales') }}: <strong class="text-success">+{{ $currencySymbol }}{{ number_format($paymentBreakdown['cash'] ?? 0, 2) }}</strong></span>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-3 col-sm-6 col-12">
-                        <div class="border rounded p-3 bg-light">
-                            <small class="text-muted fw-bold d-block">{{ __('CASH SALES TODAY') }}</small>
-                            <span class="fs-5 fw-bold text-success">+{{ $currencySymbol }}{{ number_format($paymentBreakdown['cash'] ?? 0, 2) }}</span>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-sm-6 col-12">
-                        <div class="border rounded p-3 bg-light">
-                            <small class="text-muted fw-bold d-block">{{ __('EXPECTED CASH IN DRAWER') }}</small>
-                            <span class="fs-4 fw-bold text-dark">{{ $currencySymbol }}{{ number_format($expectedCash, 2) }}</span>
+
+                    {{-- 3. NON-CASH SALES (Electronic & Bank) --}}
+                    <div class="col-md-4 col-12">
+                        <div class="card border-0 shadow-sm h-100 bg-white border p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="text-uppercase fw-bold text-muted" style="font-size: 0.72rem; letter-spacing: 0.5px;">{{ __('Non-Cash Electronic Sales') }}</span>
+                                <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-0" style="font-size: 0.68rem;">
+                                    <i class="fa-solid fa-credit-card me-1"></i>{{ __('Electronic') }}
+                                </span>
+                            </div>
+                            <div class="fs-3 fw-bold text-info my-1">
+                                {{ $currencySymbol }}{{ number_format($nonCashTotal, 2) }}
+                            </div>
+                            <div class="d-flex justify-content-between text-muted small" style="font-size: 0.73rem;">
+                                <span>{{ __('Card') }}: <strong class="text-info">{{ $currencySymbol }}{{ number_format($paymentBreakdown['card'] ?? 0, 2) }}</strong></span>
+                                <span>{{ __('Bank') }}: <strong class="text-primary">{{ $currencySymbol }}{{ number_format($paymentBreakdown['bank_transfer'] ?? 0, 2) }}</strong></span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 {{-- Shift Payment Methods & Card Terminal Reconciliation --}}
-                <div class="card border border-light-subtle bg-white shadow-none mb-4">
+                <div class="card border-0 shadow-sm bg-white mb-3">
                     <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center">
-                        <span class="small fw-bold text-secondary text-uppercase" style="letter-spacing: 0.5px;">
+                        <span class="small fw-bold text-secondary text-uppercase" style="letter-spacing: 0.5px; font-size: 0.75rem;">
                             <i class="fa-solid fa-chart-pie me-1 text-primary"></i> {{ __('Shift Revenue & Payment Methods Breakdown') }}
                         </span>
-                        <span class="small text-muted">{{ __('Total Shift Sales') }}: <strong class="text-dark">{{ $currencySymbol }}{{ number_format($paymentBreakdown['total_sales'] ?? 0, 2) }}</strong></span>
+                        <span class="small text-muted" style="font-size: 0.73rem;">
+                            {{ __('All Sales Today') }}: <strong class="text-dark">{{ $currencySymbol }}{{ number_format($totalSales, 2) }}</strong>
+                        </span>
                     </div>
-                    <div class="card-body p-3">
+                    <div class="card-body p-2 px-3">
                         <div class="row g-2">
+                            {{-- Cash Method --}}
                             <div class="col-md-3 col-6">
-                                <div class="border rounded p-2 bg-light text-center">
-                                    <small class="text-muted fw-semibold d-block" style="font-size: 0.72rem;">
-                                        <i class="fa-solid fa-money-bill-wave text-success me-1"></i> {{ __('Cash Received') }}
-                                    </small>
-                                    <span class="fs-6 fw-bold text-success">{{ $currencySymbol }}{{ number_format($paymentBreakdown['cash'] ?? 0, 2) }}</span>
-                                    <small class="text-muted d-block" style="font-size: 0.65rem;">({{ __('In Drawer') }})</small>
+                                <div class="border rounded p-2 bg-light text-center h-100">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small class="text-muted fw-bold" style="font-size: 0.72rem;">
+                                            <i class="fa-solid fa-money-bill-wave text-success me-1"></i> {{ __('Cash Received') }}
+                                        </small>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-1 py-0" style="font-size: 0.62rem;">
+                                            {{ __('In Drawer') }}
+                                        </span>
+                                    </div>
+                                    <span class="fs-5 fw-bold text-success d-block my-1">{{ $currencySymbol }}{{ number_format($paymentBreakdown['cash'] ?? 0, 2) }}</span>
                                     @if (!empty($methodMovements['cash']['in']) || !empty($methodMovements['cash']['out']))
-                                        <small class="text-muted d-block" style="font-size: 0.62rem;">
-                                            {{ __('Mov') }}: <span class="text-success">+{{ $currencySymbol }}{{ number_format($methodMovements['cash']['in'], 2) }}</span> / <span class="text-danger">-{{ $currencySymbol }}{{ number_format($methodMovements['cash']['out'], 2) }}</span>
-                                        </small>
+                                        <div class="text-muted pt-1 border-top" style="font-size: 0.65rem;">
+                                            {{ __('Mov') }}: <span class="text-success fw-semibold">+{{ $currencySymbol }}{{ number_format($methodMovements['cash']['in'], 2) }}</span> / <span class="text-danger fw-semibold">-{{ $currencySymbol }}{{ number_format($methodMovements['cash']['out'], 2) }}</span>
+                                        </div>
+                                    @else
+                                        <small class="text-muted" style="font-size: 0.65rem;">{{ __('Affects drawer count') }}</small>
                                     @endif
                                 </div>
                             </div>
+
+                            {{-- Card Terminal Method --}}
                             <div class="col-md-3 col-6">
-                                <div class="border rounded p-2 bg-light text-center">
-                                    <small class="text-muted fw-semibold d-block" style="font-size: 0.72rem;">
-                                        <i class="fa-solid fa-credit-card text-info me-1"></i> {{ __('Card Terminal Total') }}
-                                    </small>
-                                    <span class="fs-6 fw-bold text-info">{{ $currencySymbol }}{{ number_format(($paymentBreakdown['card'] ?? 0) + ($methodMovements['card']['net'] ?? 0), 2) }}</span>
-                                    <small class="text-muted d-block" style="font-size: 0.65rem;">({{ __('Terminal Batch') }})</small>
+                                <div class="border rounded p-2 bg-light text-center h-100">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small class="text-muted fw-bold" style="font-size: 0.72rem;">
+                                            <i class="fa-solid fa-credit-card text-info me-1"></i> {{ __('Card Terminal Total') }}
+                                        </small>
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle px-1 py-0" style="font-size: 0.62rem;">
+                                            {{ __('Terminal Batch') }}
+                                        </span>
+                                    </div>
+                                    <span class="fs-5 fw-bold text-info d-block my-1">{{ $currencySymbol }}{{ number_format(($paymentBreakdown['card'] ?? 0) + ($methodMovements['card']['net'] ?? 0), 2) }}</span>
                                     @if (!empty($methodMovements['card']['in']) || !empty($methodMovements['card']['out']))
-                                        <small class="text-muted d-block" style="font-size: 0.62rem;">
-                                            {{ __('Mov') }}: <span class="text-success">+{{ $currencySymbol }}{{ number_format($methodMovements['card']['in'], 2) }}</span> / <span class="text-danger">-{{ $currencySymbol }}{{ number_format($methodMovements['card']['out'], 2) }}</span>
-                                        </small>
+                                        <div class="text-muted pt-1 border-top" style="font-size: 0.65rem;">
+                                            {{ __('Mov') }}: <span class="text-success fw-semibold">+{{ $currencySymbol }}{{ number_format($methodMovements['card']['in'], 2) }}</span> / <span class="text-danger fw-semibold">-{{ $currencySymbol }}{{ number_format($methodMovements['card']['out'], 2) }}</span>
+                                        </div>
+                                    @else
+                                        <small class="text-muted" style="font-size: 0.65rem;">{{ __('Match with POS slip') }}</small>
                                     @endif
                                 </div>
                             </div>
+
+                            {{-- Bank Transfer Method --}}
                             <div class="col-md-3 col-6">
-                                <div class="border rounded p-2 bg-light text-center">
-                                    <small class="text-muted fw-semibold d-block" style="font-size: 0.72rem;">
-                                        <i class="fa-solid fa-building-columns text-primary me-1"></i> {{ __('Bank Transfer') }}
-                                    </small>
-                                    <span class="fs-6 fw-bold text-primary">{{ $currencySymbol }}{{ number_format(($paymentBreakdown['bank_transfer'] ?? 0) + ($methodMovements['bank_transfer']['net'] ?? 0), 2) }}</span>
-                                    <small class="text-muted d-block" style="font-size: 0.65rem;">({{ __('Online / Wire') }})</small>
+                                <div class="border rounded p-2 bg-light text-center h-100">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small class="text-muted fw-bold" style="font-size: 0.72rem;">
+                                            <i class="fa-solid fa-building-columns text-primary me-1"></i> {{ __('Bank Transfer') }}
+                                        </small>
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-1 py-0" style="font-size: 0.62rem;">
+                                            {{ __('Online / Wire') }}
+                                        </span>
+                                    </div>
+                                    <span class="fs-5 fw-bold text-primary d-block my-1">{{ $currencySymbol }}{{ number_format(($paymentBreakdown['bank_transfer'] ?? 0) + ($methodMovements['bank_transfer']['net'] ?? 0), 2) }}</span>
                                     @if (!empty($methodMovements['bank_transfer']['in']) || !empty($methodMovements['bank_transfer']['out']))
-                                        <small class="text-muted d-block" style="font-size: 0.62rem;">
-                                            {{ __('Mov') }}: <span class="text-success">+{{ $currencySymbol }}{{ number_format($methodMovements['bank_transfer']['in'], 2) }}</span> / <span class="text-danger">-{{ $currencySymbol }}{{ number_format($methodMovements['bank_transfer']['out'], 2) }}</span>
-                                        </small>
+                                        <div class="text-muted pt-1 border-top" style="font-size: 0.65rem;">
+                                            {{ __('Mov') }}: <span class="text-success fw-semibold">+{{ $currencySymbol }}{{ number_format($methodMovements['bank_transfer']['in'], 2) }}</span> / <span class="text-danger fw-semibold">-{{ $currencySymbol }}{{ number_format($methodMovements['bank_transfer']['out'], 2) }}</span>
+                                        </div>
+                                    @else
+                                        <small class="text-muted" style="font-size: 0.65rem;">{{ __('Direct bank credits') }}</small>
                                     @endif
                                 </div>
                             </div>
+
+                            {{-- Other / Cheque Method --}}
                             <div class="col-md-3 col-6">
-                                <div class="border rounded p-2 bg-light text-center">
-                                    <small class="text-muted fw-semibold d-block" style="font-size: 0.72rem;">
-                                        <i class="fa-solid fa-ellipsis text-secondary me-1"></i> {{ __('Other / Cheque') }}
-                                    </small>
-                                    <span class="fs-6 fw-bold text-secondary">{{ $currencySymbol }}{{ number_format(($paymentBreakdown['other'] ?? 0) + ($methodMovements['other']['net'] ?? 0), 2) }}</span>
-                                    <small class="text-muted d-block" style="font-size: 0.65rem;">({{ __('Cheque / Custom') }})</small>
-                                    @if (!empty($methodMovements['other']['in']) || !empty($methodMovements['other']['out']))
-                                        <small class="text-muted d-block" style="font-size: 0.62rem;">
-                                            {{ __('Mov') }}: <span class="text-success">+{{ $currencySymbol }}{{ number_format($methodMovements['other']['in'], 2) }}</span> / <span class="text-danger">-{{ $currencySymbol }}{{ number_format($methodMovements['other']['out'], 2) }}</span>
+                                <div class="border rounded p-2 bg-light text-center h-100">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small class="text-muted fw-bold" style="font-size: 0.72rem;">
+                                            <i class="fa-solid fa-ellipsis text-secondary me-1"></i> {{ __('Other / Cheque') }}
                                         </small>
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-1 py-0" style="font-size: 0.62rem;">
+                                            {{ __('Cheque / Custom') }}
+                                        </span>
+                                    </div>
+                                    <span class="fs-5 fw-bold text-secondary d-block my-1">{{ $currencySymbol }}{{ number_format(($paymentBreakdown['other'] ?? 0) + ($methodMovements['other']['net'] ?? 0), 2) }}</span>
+                                    @if (!empty($methodMovements['other']['in']) || !empty($methodMovements['other']['out']))
+                                        <div class="text-muted pt-1 border-top" style="font-size: 0.65rem;">
+                                            {{ __('Mov') }}: <span class="text-success fw-semibold">+{{ $currencySymbol }}{{ number_format($methodMovements['other']['in'], 2) }}</span> / <span class="text-danger fw-semibold">-{{ $currencySymbol }}{{ number_format($methodMovements['other']['out'], 2) }}</span>
+                                        </div>
+                                    @else
+                                        <small class="text-muted" style="font-size: 0.65rem;">{{ __('Vouchers & coupons') }}</small>
                                     @endif
                                 </div>
                             </div>
@@ -134,16 +222,17 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <a href="{{ route('pos') }}" class="btn btn-outline-primary me-2">
+                {{-- Compact Action Toolbar --}}
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-1">
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="{{ route('pos') }}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center shadow-sm">
                             <i class="fa-solid fa-cart-shopping me-1"></i> {{ __('Go to POS') }}
                         </a>
-                        <a href="{{ route('moneyMovements') }}" class="btn btn-outline-info">
+                        <a href="{{ route('moneyMovements') }}" class="btn btn-sm btn-outline-info d-inline-flex align-items-center shadow-sm">
                             <i class="fa-solid fa-money-bill-transfer me-1"></i> {{ __('Cash In / Cash Out') }}
                         </a>
                     </div>
-                    <button wire:click="openCloseModal" class="btn btn-danger px-4">
+                    <button wire:click="openCloseModal" class="btn btn-sm btn-danger px-3 py-2 d-inline-flex align-items-center shadow-sm">
                         <i class="fa-solid fa-lock me-1"></i> {{ __('Close Register (Count Drawer)') }}
                     </button>
                 </div>
