@@ -8,10 +8,10 @@
     {{-- ── DEPOSIT SUCCESS / PRINT LANGUAGE OVERLAY ──────────────────── --}}
     @if ($showSuccessModal)
     <div
-        style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99990;display:flex;align-items:center;justify-content:center;"
+        style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99990;display:flex;align-items:center;justify-content:center;padding:1rem;"
         wire:key="deposit-success-overlay"
     >
-        <div class="card border-0 shadow-lg text-center" style="min-width:340px;max-width:440px;border-radius:1rem;overflow:hidden;">
+        <div class="card border-0 shadow-lg text-center" style="width:100%;max-width:520px;border-radius:1rem;overflow:hidden;">
 
             {{-- Green header bar --}}
             <div class="bg-success text-white px-4 pt-4 pb-3">
@@ -23,7 +23,7 @@
             {{-- Body --}}
             <div class="card-body px-4 py-3">
                 {{-- Financial summary --}}
-                <div class="p-2 bg-light rounded-3 mb-3 border">
+                <div class="p-3 bg-light rounded-3 mb-3 border">
                     <div class="d-flex justify-content-between align-items-center mb-1">
                         <span class="text-muted small">{{ __('Deposit Paid') }}</span>
                         <span class="fw-bold text-success fs-5">
@@ -46,7 +46,7 @@
                     {{-- English / French thermal POS receipt choices --}}
                     <div class="row g-2">
                         <div class="col-6">
-                            <button type="button" class="btn btn-dark w-100 fw-bold py-3"
+                            <button type="button" class="btn btn-dark w-100 fw-bold py-2 px-2 text-nowrap"
                                 wire:click="printDepositReceiptPos({{ $lastDepositId }}, 'en')"
                                 wire:loading.attr="disabled" wire:target="printDepositReceiptPos">
                                 <span wire:loading.remove wire:target="printDepositReceiptPos"><i class="fa-solid fa-print me-1"></i>{{ __('English receipt') }}</span>
@@ -54,7 +54,7 @@
                             </button>
                         </div>
                         <div class="col-6">
-                            <button type="button" class="btn btn-outline-dark w-100 fw-bold py-3"
+                            <button type="button" class="btn btn-outline-dark w-100 fw-bold py-2 px-2 text-nowrap"
                                 wire:click="printDepositReceiptPos({{ $lastDepositId }}, 'fr')"
                                 wire:loading.attr="disabled" wire:target="printDepositReceiptPos">
                                 <span wire:loading.remove wire:target="printDepositReceiptPos"><i class="fa-solid fa-print me-1"></i>{{ __('French receipt') }}</span>
@@ -67,13 +67,17 @@
                     <div class="row g-2 mt-1">
                         <div class="col-6">
                             <div class="btn-group w-100" role="group">
-                                <button type="button" class="btn btn-sm btn-outline-danger w-50 py-1"
+                                <button type="button" class="btn btn-outline-danger w-50 py-2 px-2 text-nowrap fw-bold"
+                                    style="font-size: 0.82rem;"
                                     wire:click="printDepositReceipt({{ $lastDepositId }}, 'en')"
+                                    wire:loading.attr="disabled"
                                     title="{{ __('English 80mm PDF') }}">
                                     <i class="fa-solid fa-file-pdf me-1"></i>PDF EN
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-danger w-50 py-1"
+                                <button type="button" class="btn btn-outline-danger w-50 py-2 px-2 text-nowrap fw-bold"
+                                    style="font-size: 0.82rem;"
                                     wire:click="printDepositReceipt({{ $lastDepositId }}, 'fr')"
+                                    wire:loading.attr="disabled"
                                     title="{{ __('French 80mm PDF') }}">
                                     <i class="fa-solid fa-file-pdf me-1"></i>PDF FR
                                 </button>
@@ -81,13 +85,17 @@
                         </div>
                         <div class="col-6">
                             <div class="btn-group w-100" role="group">
-                                <button type="button" class="btn btn-sm btn-outline-info w-50 py-1"
+                                <button type="button" class="btn btn-outline-info w-50 py-2 px-2 text-nowrap fw-bold"
+                                    style="font-size: 0.82rem;"
                                     wire:click="printDepositReceiptA4({{ $lastDepositId }}, 'en')"
+                                    wire:loading.attr="disabled"
                                     title="{{ __('English A4 PDF') }}">
                                     <i class="fa-solid fa-file-lines me-1"></i>A4 EN
                                 </button>
-                                <button type="button" class="btn btn-sm btn-outline-info w-50 py-1"
+                                <button type="button" class="btn btn-outline-info w-50 py-2 px-2 text-nowrap fw-bold"
+                                    style="font-size: 0.82rem;"
                                     wire:click="printDepositReceiptA4({{ $lastDepositId }}, 'fr')"
+                                    wire:loading.attr="disabled"
                                     title="{{ __('French A4 PDF') }}">
                                     <i class="fa-solid fa-file-lines me-1"></i>A4 FR
                                 </button>
@@ -98,7 +106,7 @@
                     {{-- Close button --}}
                     <button
                         type="button"
-                        class="btn btn-outline-secondary fw-semibold mt-2"
+                        class="btn btn-outline-secondary fw-semibold mt-2 py-2"
                         wire:click="dismissDepositSuccess"
                     >
                         <i class="fa-solid fa-xmark me-1"></i>{{ __('Close') }}

@@ -22,10 +22,10 @@
     {{-- Staff must click "Print Receipt" or "Close" manually.           --}}
     @if ($showSaleSuccess)
     <div
-        style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99990;display:flex;align-items:center;justify-content:center;"
+        style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:99990;display:flex;align-items:center;justify-content:center;padding:1rem;"
         wire:key="sale-success-overlay"
     >
-        <div class="card border-0 shadow-lg text-center" style="min-width:340px;max-width:440px;border-radius:1rem;overflow:hidden;">
+        <div class="card border-0 shadow-lg text-center" style="width:100%;max-width:480px;border-radius:1rem;overflow:hidden;">
 
             {{-- Green header bar --}}
             <div class="bg-success text-white px-4 pt-4 pb-3">
@@ -47,7 +47,7 @@
                     {{-- English / French thermal receipt choices --}}
                     <div class="row g-2">
                         <div class="col-6">
-                            <button type="button" class="btn btn-dark w-100 fw-bold py-3"
+                            <button type="button" class="btn btn-dark w-100 fw-bold py-3 text-nowrap"
                                 wire:click="printSaleReceiptPos({{ $lastSaleId }}, 'en')"
                                 wire:loading.attr="disabled" wire:target="printSaleReceiptPos">
                                 <span wire:loading.remove wire:target="printSaleReceiptPos"><i class="fa-solid fa-print me-1"></i>{{ __('English receipt') }}</span>
@@ -55,7 +55,7 @@
                             </button>
                         </div>
                         <div class="col-6">
-                            <button type="button" class="btn btn-outline-dark w-100 fw-bold py-3"
+                            <button type="button" class="btn btn-outline-dark w-100 fw-bold py-3 text-nowrap"
                                 wire:click="printSaleReceiptPos({{ $lastSaleId }}, 'fr')"
                                 wire:loading.attr="disabled" wire:target="printSaleReceiptPos">
                                 <span wire:loading.remove wire:target="printSaleReceiptPos"><i class="fa-solid fa-print me-1"></i>{{ __('French receipt') }}</span>
@@ -66,7 +66,7 @@
                     {{-- Close --}}
                     <button
                         type="button"
-                        class="btn btn-outline-secondary fw-semibold"
+                        class="btn btn-outline-secondary fw-semibold py-2"
                         wire:click="dismissSaleSuccess"
                     >
                         <i class="fa-solid fa-xmark me-1"></i>{{ __('Close') }}
