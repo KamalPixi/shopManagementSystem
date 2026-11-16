@@ -6,9 +6,10 @@
     @php
         $currency = \App\Models\Shop::first()?->currency['symbol'] ?? '€';
         $breakdown = $session->calculatePaymentBreakdown();
+        $methodMovements = $session->calculateMethodMovementsBreakdown();
         $cashSales = $breakdown['cash'];
-        $cashIn = $session->moneyMovements->where('type', 'in')->sum('amount');
-        $cashOut = $session->moneyMovements->where('type', 'out')->sum('amount');
+        $cashIn = $methodMovements['cash']['in'];
+        $cashOut = $methodMovements['cash']['out'];
         $expected = (float) $session->opening_balance + $cashSales + $cashIn - $cashOut;
     @endphp
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -32,35 +33,55 @@
         <div class="card-body p-3">
             <div class="row g-2">
                 <div class="col-md-3 col-6">
-                    <div class="border rounded p-2 bg-light text-center">
+                    <div class="border rounded p-2 bg-light text-center h-100">
                         <small class="text-muted fw-semibold d-block" style="font-size: 0.72rem;">
-                            <i class="fa-solid fa-money-bill-wave text-success me-1"></i> {{ __('Cash Total') }}
+                            <i class="fa-solid fa-money-bill-wave text-success me-1"></i> {{ __('Cash Sales') }}
                         </small>
                         <span class="fs-6 fw-bold text-success">{{ $currency }}{{ number_format($breakdown['cash'], 2) }}</span>
+                        @if ($methodMovements['cash']['in'] > 0 || $methodMovements['cash']['out'] > 0)
+                            <div class="small text-muted mt-1" style="font-size: 0.68rem;">
+                                {{ __('Movements') }}: <span class="text-success">+{{ $currency }}{{ number_format($methodMovements['cash']['in'], 2) }}</span> / <span class="text-danger">-{{ $currency }}{{ number_format($methodMovements['cash']['out'], 2) }}</span>
+                            </div>
+                        @endif
                     </div>
                 </div>
                 <div class="col-md-3 col-6">
-                    <div class="border rounded p-2 bg-light text-center">
+                    <div class="border rounded p-2 bg-light text-center h-100">
                         <small class="text-muted fw-semibold d-block" style="font-size: 0.72rem;">
                             <i class="fa-solid fa-credit-card text-info me-1"></i> {{ __('Card Terminal Total') }}
                         </small>
                         <span class="fs-6 fw-bold text-info">{{ $currency }}{{ number_format($breakdown['card'], 2) }}</span>
+                        @if ($methodMovements['card']['in'] > 0 || $methodMovements['card']['out'] > 0)
+                            <div class="small text-muted mt-1" style="font-size: 0.68rem;">
+                                {{ __('Movements') }}: <span class="text-success">+{{ $currency }}{{ number_format($methodMovements['card']['in'], 2) }}</span> / <span class="text-danger">-{{ $currency }}{{ number_format($methodMovements['card']['out'], 2) }}</span>
+                            </div>
+                        @endif
                     </div>
                 </div>
                 <div class="col-md-3 col-6">
-                    <div class="border rounded p-2 bg-light text-center">
+                    <div class="border rounded p-2 bg-light text-center h-100">
                         <small class="text-muted fw-semibold d-block" style="font-size: 0.72rem;">
                             <i class="fa-solid fa-building-columns text-primary me-1"></i> {{ __('Bank Transfer Total') }}
                         </small>
                         <span class="fs-6 fw-bold text-primary">{{ $currency }}{{ number_format($breakdown['bank_transfer'], 2) }}</span>
+                        @if ($methodMovements['bank_transfer']['in'] > 0 || $methodMovements['bank_transfer']['out'] > 0)
+                            <div class="small text-muted mt-1" style="font-size: 0.68rem;">
+                                {{ __('Movements') }}: <span class="text-success">+{{ $currency }}{{ number_format($methodMovements['bank_transfer']['in'], 2) }}</span> / <span class="text-danger">-{{ $currency }}{{ number_format($methodMovements['bank_transfer']['out'], 2) }}</span>
+                            </div>
+                        @endif
                     </div>
                 </div>
                 <div class="col-md-3 col-6">
-                    <div class="border rounded p-2 bg-light text-center">
+                    <div class="border rounded p-2 bg-light text-center h-100">
                         <small class="text-muted fw-semibold d-block" style="font-size: 0.72rem;">
                             <i class="fa-solid fa-ellipsis text-secondary me-1"></i> {{ __('Other Payments') }}
                         </small>
                         <span class="fs-6 fw-bold text-secondary">{{ $currency }}{{ number_format($breakdown['other'], 2) }}</span>
+                        @if ($methodMovements['other']['in'] > 0 || $methodMovements['other']['out'] > 0)
+                            <div class="small text-muted mt-1" style="font-size: 0.68rem;">
+                                {{ __('Movements') }}: <span class="text-success">+{{ $currency }}{{ number_format($methodMovements['other']['in'], 2) }}</span> / <span class="text-danger">-{{ $currency }}{{ number_format($methodMovements['other']['out'], 2) }}</span>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -68,11 +89,19 @@
     </div>
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-header bg-white fw-bold">{{ __('Session Entries') }}</div>
-        <div class="table-responsive"><table class="table table-hover mb-0"><thead class="thead-light"><tr><th>{{ __('Date & Time') }}</th><th>{{ __('Type') }}</th><th>{{ __('Amount') }}</th><th>{{ __('Category') }}</th><th>{{ __('Reason / Remark') }}</th><th>{{ __('Done By') }}</th></tr></thead><tbody>
+        <div class="table-responsive"><table class="table table-hover mb-0"><thead class="thead-light"><tr><th>{{ __('Date & Time') }}</th><th>{{ __('Type') }}</th><th>{{ __('Method') }}</th><th>{{ __('Amount') }}</th><th>{{ __('Category') }}</th><th>{{ __('Reason / Remark') }}</th><th>{{ __('Done By') }}</th></tr></thead><tbody>
             @forelse ($session->moneyMovements->sortBy('created_at') as $movement)
-                <tr><td>{{ $movement->created_at->format('d/m/Y H:i') }}</td><td>{{ $movement->type === 'in' ? __('Cash In') : __('Cash Out') }}</td><td class="fw-bold {{ $movement->type === 'in' ? 'text-success' : 'text-danger' }}">{{ $movement->type === 'in' ? '+' : '-' }}{{ $currency }}{{ number_format($movement->amount, 2) }}</td><td>{{ $movement->category?->name ?? '-' }}</td><td>{{ $movement->reason }}</td><td>{{ $movement->user?->name ?? '-' }}</td></tr>
+                <tr>
+                    <td>{{ $movement->created_at->format('d/m/Y H:i') }}</td>
+                    <td>{{ $movement->type === 'in' ? __('Cash In') : __('Cash Out') }}</td>
+                    <td><span class="badge {{ $movement->method_badge_class }}"><i class="fa-solid {{ $movement->method_icon }} me-1"></i>{{ $movement->method_label }}</span></td>
+                    <td class="fw-bold {{ $movement->type === 'in' ? 'text-success' : 'text-danger' }}">{{ $movement->type === 'in' ? '+' : '-' }}{{ $currency }}{{ number_format($movement->amount, 2) }}</td>
+                    <td>{{ $movement->category?->name ?? '-' }}</td>
+                    <td>{{ $movement->reason }}</td>
+                    <td>{{ $movement->user?->name ?? '-' }}</td>
+                </tr>
             @empty
-                <tr><td colspan="6" class="text-center text-muted py-4">{{ __('No money movements recorded.') }}</td></tr>
+                <tr><td colspan="7" class="text-center text-muted py-4">{{ __('No money movements recorded.') }}</td></tr>
             @endforelse
         </tbody></table></div>
     </div>

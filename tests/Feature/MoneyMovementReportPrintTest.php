@@ -237,4 +237,125 @@ class MoneyMovementReportPrintTest extends TestCase
         // Print date must only appear once (in the metadata section, not duplicated in footer)
         $this->assertEquals(1, substr_count($html, 'Print Date'));
     }
+
+    public function test_record_movement_persists_payment_method(): void
+    {
+        Livewire::test(MoneyMovements::class)
+            ->set('type', 'in')
+            ->set('payment_method', 'bank_transfer')
+            ->set('amount', '1500.00')
+            ->set('money_category_id', $this->catIn->id)
+            ->set('reason', 'Capital Injection via Bank Wire')
+            ->call('recordMovement')
+            ->assertHasNoErrors();
+
+        $movement = MoneyMovement::where('amount', 1500.00)->first();
+        $this->assertNotNull($movement);
+        $this->assertEquals('bank_transfer', $movement->payment_method);
+        $this->assertEquals('Bank transfer', $movement->method_label);
+
+        Livewire::test(MoneyMovements::class)
+            ->set('type', 'out')
+            ->set('payment_method', 'card')
+            ->set('amount', '85.50')
+            ->set('reason', 'Office Software Paid by Business Card')
+            ->call('recordMovement')
+            ->assertHasNoErrors();
+
+        $outMovement = MoneyMovement::where('amount', 85.50)->first();
+        $this->assertNotNull($outMovement);
+        $this->assertEquals('card', $outMovement->payment_method);
+        $this->assertEquals('Card', $outMovement->method_label);
+    }
+
+    public function test_non_cash_movements_do_not_alter_physical_cash_drawer(): void
+    {
+        // Opening balance is 200.00
+        $this->assertEquals(200.00, $this->session->calculateExpectedCash());
+
+        // 1. Bank transfer in of 1000.00 - should NOT affect cash drawer
+        MoneyMovement::create([
+            'cash_register_session_id' => $this->session->id,
+            'type' => 'in',
+            'payment_method' => 'bank_transfer',
+            'amount' => 1000.00,
+            'money_category_id' => $this->catIn->id,
+            'reason' => 'Bank Capital Addition',
+            'user_id' => $this->admin->id,
+        ]);
+
+        // 2. Card expense out of 150.00 - should NOT affect cash drawer
+        MoneyMovement::create([
+            'cash_register_session_id' => $this->session->id,
+            'type' => 'out',
+            'payment_method' => 'card',
+            'amount' => 150.00,
+            'money_category_id' => $this->catOut->id,
+            'reason' => 'Card Purchase',
+            'user_id' => $this->admin->id,
+        ]);
+
+        // Expected cash in drawer must STILL be 200.00 (non-cash does NOT alter physical drawer)
+        $this->assertEquals(200.00, $this->session->fresh()->calculateExpectedCash());
+
+        // 3. Physical cash in of 50.00 - DOES increase cash drawer
+        MoneyMovement::create([
+            'cash_register_session_id' => $this->session->id,
+            'type' => 'in',
+            'payment_method' => 'cash',
+            'amount' => 50.00,
+            'money_category_id' => $this->catIn->id,
+            'reason' => 'Coins for Till',
+            'user_id' => $this->admin->id,
+        ]);
+
+        // Drawer is now 200.00 + 50.00 = 250.00
+        $this->assertEquals(250.00, $this->session->fresh()->calculateExpectedCash());
+
+        // Verify method movements breakdown tracking
+        $breakdown = $this->session->fresh()->calculateMethodMovementsBreakdown();
+        $this->assertEquals(50.00, $breakdown['cash']['in']);
+        $this->assertEquals(50.00, $breakdown['cash']['net']);
+
+        $this->assertEquals(1000.00, $breakdown['bank_transfer']['in']);
+        $this->assertEquals(1000.00, $breakdown['bank_transfer']['net']);
+
+        $this->assertEquals(150.00, $breakdown['card']['out']);
+        $this->assertEquals(-150.00, $breakdown['card']['net']);
+    }
+
+    public function test_movements_filter_by_payment_method(): void
+    {
+        MoneyMovement::create([
+            'cash_register_session_id' => $this->session->id,
+            'type' => 'in',
+            'payment_method' => 'cash',
+            'amount' => 100.00,
+            'money_category_id' => $this->catIn->id,
+            'reason' => 'Cash Float',
+            'user_id' => $this->admin->id,
+        ]);
+
+        MoneyMovement::create([
+            'cash_register_session_id' => $this->session->id,
+            'type' => 'in',
+            'payment_method' => 'bank_transfer',
+            'amount' => 2000.00,
+            'money_category_id' => $this->catIn->id,
+            'reason' => 'Wire from Director',
+            'user_id' => $this->admin->id,
+        ]);
+
+        // Filter for bank_transfer only
+        Livewire::test(MoneyMovements::class)
+            ->set('filter_payment_method', 'bank_transfer')
+            ->assertSee('Wire from Director')
+            ->assertDontSee('Cash Float');
+
+        // Filter for cash only
+        Livewire::test(MoneyMovements::class)
+            ->set('filter_payment_method', 'cash')
+            ->assertSee('Cash Float')
+            ->assertDontSee('Wire from Director');
+    }
 }

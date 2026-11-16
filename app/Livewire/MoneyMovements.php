@@ -19,6 +19,7 @@ class MoneyMovements extends Component
 
     // Entry Form
     public $type = 'in'; // 'in' or 'out'
+    public $payment_method = 'cash'; // 'cash', 'card', 'bank_transfer', 'other'
     public $amount = '';
     public $money_category_id = '';
     public $reason = '';
@@ -33,6 +34,7 @@ class MoneyMovements extends Component
 
     // Filters
     public $filter_type = '';
+    public $filter_payment_method = '';
     public $filter_category_id = '';
     public $filter_user_id = '';
     public $filter_start_date = '';
@@ -44,6 +46,7 @@ class MoneyMovements extends Component
             // Money In requires selecting a category as specified: "at money adding in business must slect the category"
             return [
                 'type' => 'required|in:in,out',
+                'payment_method' => 'required|in:cash,card,bank_transfer,other',
                 'amount' => 'required|numeric|min:0.01',
                 'money_category_id' => 'required|exists:money_categories,id',
                 'reason' => 'required|string|max:1000',
@@ -53,6 +56,7 @@ class MoneyMovements extends Component
             // Money Out requires entering reason: "anyone can take ourt money from business and enter the resone, so admin knows who ttok moaney and why, and when"
             return [
                 'type' => 'required|in:in,out',
+                'payment_method' => 'required|in:cash,card,bank_transfer,other',
                 'amount' => 'required|numeric|min:0.01',
                 'money_category_id' => 'nullable|exists:money_categories,id',
                 'reason' => 'required|string|max:1000',
@@ -102,6 +106,7 @@ class MoneyMovements extends Component
         $movement = MoneyMovement::create([
             'cash_register_session_id' => $currentSession->id,
             'type' => $this->type,
+            'payment_method' => $this->payment_method ?: 'cash',
             'amount' => $this->amount,
             'money_category_id' => !empty($this->money_category_id) ? $this->money_category_id : null,
             'reason' => trim($this->reason),
@@ -110,28 +115,38 @@ class MoneyMovements extends Component
         ]);
 
         $catName = $movement->category?->name ?? 'General';
+        $methodLabel = match($this->payment_method) {
+            'card' => __('Card'),
+            'bank_transfer' => __('Bank transfer'),
+            'other' => __('Other'),
+            default => __('Cash'),
+        };
         $action = $this->type === 'in' ? 'money_in' : 'money_out';
         $desc = $this->type === 'in'
-            ? __(':user added :amount to cash (Source: :cat). Reason: :reason', [
+            ? __(':user added :amount via :method (Source: :cat). Reason: :reason', [
                 'user' => auth()->user()->name,
                 'amount' => number_format($this->amount, 2),
+                'method' => $methodLabel,
                 'cat' => $catName,
                 'reason' => $this->reason
             ])
-            : __(':user took out :amount from cash. Reason: :reason', [
+            : __(':user took out :amount via :method. Reason: :reason', [
                 'user' => auth()->user()->name,
                 'amount' => number_format($this->amount, 2),
+                'method' => $methodLabel,
                 'reason' => $this->reason
             ]);
 
         AuditLogger::log($action, $desc, $movement, [
             'type' => $this->type,
+            'payment_method' => $this->payment_method,
             'amount' => $this->amount,
             'category' => $catName,
             'reason' => $this->reason
         ]);
 
         $this->reset(['amount', 'reason', 'money_category_id', 'attachment']);
+        $this->payment_method = 'cash';
         session()->flash('success', __('Money entry recorded successfully.'));
     }
 
@@ -284,6 +299,10 @@ class MoneyMovements extends Component
             $query->where('type', $this->filter_type);
         }
 
+        if (!empty($this->filter_payment_method)) {
+            $query->where('payment_method', $this->filter_payment_method);
+        }
+
         if (!empty($this->filter_category_id)) {
             $query->where('money_category_id', $this->filter_category_id);
         }
@@ -312,9 +331,29 @@ class MoneyMovements extends Component
         $netCash = $totalIn - $totalOut;
 
         $categoryBreakdown = ['in' => [], 'out' => []];
+        $methodBreakdown = [
+            'cash' => ['in' => 0.0, 'out' => 0.0, 'net' => 0.0],
+            'card' => ['in' => 0.0, 'out' => 0.0, 'net' => 0.0],
+            'bank_transfer' => ['in' => 0.0, 'out' => 0.0, 'net' => 0.0],
+            'other' => ['in' => 0.0, 'out' => 0.0, 'net' => 0.0],
+        ];
+
         foreach ($movements as $m) {
             $catName = $m->category?->name ?? __('Uncategorized');
             $categoryBreakdown[$m->type][$catName] = ($categoryBreakdown[$m->type][$catName] ?? 0) + (float) $m->amount;
+
+            $meth = strtolower($m->payment_method ?: 'cash');
+            if (!isset($methodBreakdown[$meth])) {
+                $methodBreakdown[$meth] = ['in' => 0.0, 'out' => 0.0, 'net' => 0.0];
+            }
+            $amt = (float) $m->amount;
+            if ($m->type === 'in') {
+                $methodBreakdown[$meth]['in'] += $amt;
+                $methodBreakdown[$meth]['net'] += $amt;
+            } else {
+                $methodBreakdown[$meth]['out'] += $amt;
+                $methodBreakdown[$meth]['net'] -= $amt;
+            }
         }
 
         $selectedCategory = !empty($this->filter_category_id)
@@ -331,6 +370,14 @@ class MoneyMovements extends Component
             default => __('All Types'),
         };
 
+        $filterMethodLabel = match ($this->filter_payment_method) {
+            'cash' => __('Cash'),
+            'card' => __('Card'),
+            'bank_transfer' => __('Bank transfer'),
+            'other' => __('Other'),
+            default => __('All Methods'),
+        };
+
         $shop = Shop::first();
 
         $data = [
@@ -342,7 +389,9 @@ class MoneyMovements extends Component
             'netCash' => $netCash,
             'totalCount' => $movements->count(),
             'categoryBreakdown' => $categoryBreakdown,
+            'methodBreakdown' => $methodBreakdown,
             'filter_type_label' => $filterTypeLabel,
+            'filter_method_label' => $filterMethodLabel,
             'filter_category_name' => $selectedCategory ? __($selectedCategory) : null,
             'filter_user_name' => $selectedUser,
             'filter_start_date' => $this->filter_start_date,
@@ -367,6 +416,29 @@ class MoneyMovements extends Component
         $totalOut = (float) (clone $statsQuery)->where('type', 'out')->sum('amount');
         $netCash = $totalIn - $totalOut;
 
+        $methodBreakdown = [
+            'cash' => ['in' => 0.0, 'out' => 0.0, 'net' => 0.0],
+            'card' => ['in' => 0.0, 'out' => 0.0, 'net' => 0.0],
+            'bank_transfer' => ['in' => 0.0, 'out' => 0.0, 'net' => 0.0],
+            'other' => ['in' => 0.0, 'out' => 0.0, 'net' => 0.0],
+        ];
+
+        $allFiltered = (clone $statsQuery)->get();
+        foreach ($allFiltered as $m) {
+            $meth = strtolower($m->payment_method ?: 'cash');
+            if (!isset($methodBreakdown[$meth])) {
+                $methodBreakdown[$meth] = ['in' => 0.0, 'out' => 0.0, 'net' => 0.0];
+            }
+            $amt = (float) $m->amount;
+            if ($m->type === 'in') {
+                $methodBreakdown[$meth]['in'] += $amt;
+                $methodBreakdown[$meth]['net'] += $amt;
+            } else {
+                $methodBreakdown[$meth]['out'] += $amt;
+                $methodBreakdown[$meth]['net'] -= $amt;
+            }
+        }
+
         $inCategories = MoneyCategory::whereIn('type', ['in', 'both'])->orderBy('name')->get();
         $outCategories = MoneyCategory::whereIn('type', ['out', 'both'])->orderBy('name')->get();
         $allCategories = MoneyCategory::orderBy('name')->get();
@@ -376,6 +448,7 @@ class MoneyMovements extends Component
             'totalIn' => $totalIn,
             'totalOut' => $totalOut,
             'netCash' => $netCash,
+            'methodBreakdown' => $methodBreakdown,
             'inCategories' => $inCategories,
             'outCategories' => $outCategories,
             'allCategories' => $allCategories,

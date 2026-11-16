@@ -506,5 +506,18 @@
     "Authorized Shop Signature": "Signature autorisée de la boutique",
     "Deposit receipt #:ref deleted successfully.": "Le reçu d'acompte #:ref a été supprimé avec succès.",
     "Deposit Receipt Created!": "Reçu d'acompte créé !",
-    "Choose Receipt Language to Print": "Choisissez la langue du reçu à imprimer"
+    "Choose Receipt Language to Print": "Choisissez la langue du reçu à imprimer",
+    "Method": "Mode",
+    "All Methods": "Tous les modes",
+    "Cash (Drawer)": "Espèces (Tiroir)",
+    "Card Terminal": "Terminal carte",
+    "Bank Transfer": "Virement bancaire",
+    "Other Methods": "Autres modes",
+    "Directly affects the physical cash register drawer.": "Affecte directement le tiroir-caisse physique.",
+    "Non-cash movement: Tracks :method balance and does NOT alter the physical cash drawer.": "Mouvement hors espèces : suit le solde :method et n'affecte PAS le tiroir-caisse.",
+    ":user added :amount via :method (Source: :cat). Reason: :reason": ":user a ajouté :amount via :method (Source : :cat). Motif : :reason",
+    ":user took out :amount via :method. Reason: :reason": ":user a retiré :amount via :method. Motif : :reason",
+    "Cash Sales": "Ventes espèces",
+    "Movements": "Mouvements",
+    "Mov": "Mouv"
 }

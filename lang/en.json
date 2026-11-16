@@ -506,5 +506,18 @@
     "Authorized Shop Signature": "Authorized Shop Signature",
     "Deposit receipt #:ref deleted successfully.": "Deposit receipt #:ref deleted successfully.",
     "Deposit Receipt Created!": "Deposit Receipt Created!",
-    "Choose Receipt Language to Print": "Choose Receipt Language to Print"
+    "Choose Receipt Language to Print": "Choose Receipt Language to Print",
+    "Method": "Method",
+    "All Methods": "All Methods",
+    "Cash (Drawer)": "Cash (Drawer)",
+    "Card Terminal": "Card Terminal",
+    "Bank Transfer": "Bank Transfer",
+    "Other Methods": "Other Methods",
+    "Directly affects the physical cash register drawer.": "Directly affects the physical cash register drawer.",
+    "Non-cash movement: Tracks :method balance and does NOT alter the physical cash drawer.": "Non-cash movement: Tracks :method balance and does NOT alter the physical cash drawer.",
+    ":user added :amount via :method (Source: :cat). Reason: :reason": ":user added :amount via :method (Source: :cat). Reason: :reason",
+    ":user took out :amount via :method. Reason: :reason": ":user took out :amount via :method. Reason: :reason",
+    "Cash Sales": "Cash Sales",
+    "Movements": "Movements",
+    "Mov": "Mov"
 }

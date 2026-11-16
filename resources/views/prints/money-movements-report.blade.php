@@ -211,7 +211,7 @@
     {{-- Filter Metadata Bar --}}
     <table class="filter-badges-table">
         <tr>
-            <td style="width: 32%;">
+            <td style="width: 25%;">
                 <span class="filter-label">{{ __('Period') }}:</span>
                 @if (!empty($filter_start_date) || !empty($filter_end_date))
                     {{ $filter_start_date ?: '-' }} {{ __('to') }} {{ $filter_end_date ?: '-' }}
@@ -219,28 +219,66 @@
                     {{ __('All Dates') }}
                 @endif
             </td>
-            <td style="width: 22%;">
+            <td style="width: 18%;">
                 <span class="filter-label">{{ __('Type') }}:</span>
                 {{ $filter_type_label ?? __('All Types') }}
             </td>
-            <td style="width: 26%;">
+            <td style="width: 18%;">
+                <span class="filter-label">{{ __('Method') }}:</span>
+                {{ $filter_method_label ?? __('All Methods') }}
+            </td>
+            <td style="width: 21%;">
                 <span class="filter-label">{{ __('Category') }}:</span>
                 {{ $filter_category_name ?? __('All Categories') }}
             </td>
-            <td style="width: 20%;" class="text-end">
+            <td style="width: 18%;" class="text-end">
                 <span class="filter-label">{{ __('Print Date') }}:</span>
                 {{ $print_date ?? date('d/m/Y H:i') }}
             </td>
         </tr>
         @if (!empty($filter_user_name))
         <tr>
-            <td colspan="4" style="border-top: 1px dashed #cbd5e1; padding-top: 2px;">
+            <td colspan="5" style="border-top: 1px dashed #cbd5e1; padding-top: 2px;">
                 <span class="filter-label">{{ __('Staff / Done By') }}:</span>
                 {{ $filter_user_name }}
             </td>
         </tr>
         @endif
     </table>
+
+    {{-- Payment Method Breakdown Strip --}}
+    @if (!empty($methodBreakdown))
+        <table class="category-summary-table" style="margin-bottom: 6px;">
+            <thead>
+                <tr>
+                    <th style="width: 25%;" class="text-center">{{ __('Cash (Drawer)') }}</th>
+                    <th style="width: 25%;" class="text-center">{{ __('Card Terminal') }}</th>
+                    <th style="width: 25%;" class="text-center">{{ __('Bank Transfer') }}</th>
+                    <th style="width: 25%;" class="text-center">{{ __('Other Methods') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    @foreach (['cash', 'card', 'bank_transfer', 'other'] as $methKey)
+                        @php
+                            $mNet = $methodBreakdown[$methKey]['net'] ?? 0.0;
+                            $mIn = $methodBreakdown[$methKey]['in'] ?? 0.0;
+                            $mOut = $methodBreakdown[$methKey]['out'] ?? 0.0;
+                        @endphp
+                        <td style="vertical-align: top; text-align: center; font-size: 7.5px;">
+                            <div style="font-weight: bold; font-size: 8px; color: {{ $mNet >= 0 ? '#15803d' : '#b91c1c' }};">
+                                {{ __('Net') }}: {{ $mNet >= 0 ? '+' : '' }}{{ $currencySymbol }} {{ number_format($mNet, 2) }}
+                            </div>
+                            <div style="color: #64748b; font-size: 7px;">
+                                <span class="text-success">+{{ $currencySymbol }}{{ number_format($mIn, 2) }}</span> /
+                                <span class="text-danger">-{{ $currencySymbol }}{{ number_format($mOut, 2) }}</span>
+                            </div>
+                        </td>
+                    @endforeach
+                </tr>
+            </tbody>
+        </table>
+    @endif
 
     {{-- Optional Compact Category Breakdown --}}
     @if (!empty($categoryBreakdown) && (count($categoryBreakdown['in'] ?? []) > 0 || count($categoryBreakdown['out'] ?? []) > 0))
@@ -288,12 +326,13 @@
             <tr>
                 <th style="width: 3%;" class="text-center">#</th>
                 <th style="width: 12%;" class="text-start">{{ __('Date & Time') }}</th>
-                <th style="width: 9%;" class="text-center">{{ __('Type') }}</th>
-                <th style="width: 17%;" class="text-start">{{ __('Category') }}</th>
-                <th style="width: 12%;" class="text-end">{{ __('Amount') }}</th>
-                <th style="width: 25%;" class="text-start">{{ __('Reason / Remark') }}</th>
-                <th style="width: 11%;" class="text-start">{{ __('Done By') }}</th>
-                <th style="width: 11%;" class="text-center">{{ __('Register') }}</th>
+                <th style="width: 8%;" class="text-center">{{ __('Type') }}</th>
+                <th style="width: 10%;" class="text-center">{{ __('Method') }}</th>
+                <th style="width: 15%;" class="text-start">{{ __('Category') }}</th>
+                <th style="width: 11%;" class="text-end">{{ __('Amount') }}</th>
+                <th style="width: 23%;" class="text-start">{{ __('Reason / Remark') }}</th>
+                <th style="width: 9%;" class="text-start">{{ __('Done By') }}</th>
+                <th style="width: 9%;" class="text-center">{{ __('Register') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -313,6 +352,9 @@
                             <span class="badge-type-out">- {{ __('Out') }}</span>
                         @endif
                     </td>
+                    <td class="text-center" style="font-size: 7.5px; font-weight: bold; color: #0f2c59;">
+                        {{ $movement->method_label }}
+                    </td>
                     <td class="text-start fw-bold">
                         {{ __($catName) }}
                     </td>
@@ -331,7 +373,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="text-center text-muted" style="padding: 15px;">
+                    <td colspan="9" class="text-center text-muted" style="padding: 15px;">
                         {{ __('No money movements found for the selected filter criteria.') }}
                     </td>
                 </tr>

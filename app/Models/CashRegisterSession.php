@@ -91,17 +91,60 @@ class CashRegisterSession extends Model
                 ->sum('total_price');
         }
 
-        // Cash In movements
+        // Cash In movements (physical cash only)
         $cashIn = (float) $this->moneyMovements()
             ->where('type', 'in')
+            ->where(function ($q) {
+                $q->where('payment_method', 'cash')
+                  ->orWhereNull('payment_method');
+            })
             ->sum('amount');
 
-        // Cash Out movements
+        // Cash Out movements (physical cash only)
         $cashOut = (float) $this->moneyMovements()
             ->where('type', 'out')
+            ->where(function ($q) {
+                $q->where('payment_method', 'cash')
+                  ->orWhereNull('payment_method');
+            })
             ->sum('amount');
 
         return round($opening + $cashSales + $cashIn - $cashOut, 2);
+    }
+
+    /**
+     * Calculate Money Movements breakdown by payment method for this session
+     */
+    public function calculateMethodMovementsBreakdown(): array
+    {
+        $methods = ['cash', 'card', 'bank_transfer', 'other'];
+        $result = [];
+
+        foreach ($methods as $m) {
+            $result[$m] = [
+                'in' => 0.0,
+                'out' => 0.0,
+                'net' => 0.0,
+            ];
+        }
+
+        $movements = $this->moneyMovements;
+        foreach ($movements as $movement) {
+            $method = strtolower($movement->payment_method ?: 'cash');
+            if (!isset($result[$method])) {
+                $result[$method] = ['in' => 0.0, 'out' => 0.0, 'net' => 0.0];
+            }
+            $amt = (float) $movement->amount;
+            if ($movement->type === 'in') {
+                $result[$method]['in'] += $amt;
+                $result[$method]['net'] += $amt;
+            } else {
+                $result[$method]['out'] += $amt;
+                $result[$method]['net'] -= $amt;
+            }
+        }
+
+        return $result;
     }
 
     /**

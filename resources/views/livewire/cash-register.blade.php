@@ -81,6 +81,11 @@
                                     </small>
                                     <span class="fs-6 fw-bold text-success">{{ $currencySymbol }}{{ number_format($paymentBreakdown['cash'] ?? 0, 2) }}</span>
                                     <small class="text-muted d-block" style="font-size: 0.65rem;">({{ __('In Drawer') }})</small>
+                                    @if (!empty($methodMovements['cash']['in']) || !empty($methodMovements['cash']['out']))
+                                        <small class="text-muted d-block" style="font-size: 0.62rem;">
+                                            {{ __('Mov') }}: <span class="text-success">+{{ $currencySymbol }}{{ number_format($methodMovements['cash']['in'], 2) }}</span> / <span class="text-danger">-{{ $currencySymbol }}{{ number_format($methodMovements['cash']['out'], 2) }}</span>
+                                        </small>
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-md-3 col-6">
@@ -88,8 +93,13 @@
                                     <small class="text-muted fw-semibold d-block" style="font-size: 0.72rem;">
                                         <i class="fa-solid fa-credit-card text-info me-1"></i> {{ __('Card Terminal Total') }}
                                     </small>
-                                    <span class="fs-6 fw-bold text-info">{{ $currencySymbol }}{{ number_format($paymentBreakdown['card'] ?? 0, 2) }}</span>
+                                    <span class="fs-6 fw-bold text-info">{{ $currencySymbol }}{{ number_format(($paymentBreakdown['card'] ?? 0) + ($methodMovements['card']['net'] ?? 0), 2) }}</span>
                                     <small class="text-muted d-block" style="font-size: 0.65rem;">({{ __('Terminal Batch') }})</small>
+                                    @if (!empty($methodMovements['card']['in']) || !empty($methodMovements['card']['out']))
+                                        <small class="text-muted d-block" style="font-size: 0.62rem;">
+                                            {{ __('Mov') }}: <span class="text-success">+{{ $currencySymbol }}{{ number_format($methodMovements['card']['in'], 2) }}</span> / <span class="text-danger">-{{ $currencySymbol }}{{ number_format($methodMovements['card']['out'], 2) }}</span>
+                                        </small>
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-md-3 col-6">
@@ -97,8 +107,13 @@
                                     <small class="text-muted fw-semibold d-block" style="font-size: 0.72rem;">
                                         <i class="fa-solid fa-building-columns text-primary me-1"></i> {{ __('Bank Transfer') }}
                                     </small>
-                                    <span class="fs-6 fw-bold text-primary">{{ $currencySymbol }}{{ number_format($paymentBreakdown['bank_transfer'] ?? 0, 2) }}</span>
+                                    <span class="fs-6 fw-bold text-primary">{{ $currencySymbol }}{{ number_format(($paymentBreakdown['bank_transfer'] ?? 0) + ($methodMovements['bank_transfer']['net'] ?? 0), 2) }}</span>
                                     <small class="text-muted d-block" style="font-size: 0.65rem;">({{ __('Online / Wire') }})</small>
+                                    @if (!empty($methodMovements['bank_transfer']['in']) || !empty($methodMovements['bank_transfer']['out']))
+                                        <small class="text-muted d-block" style="font-size: 0.62rem;">
+                                            {{ __('Mov') }}: <span class="text-success">+{{ $currencySymbol }}{{ number_format($methodMovements['bank_transfer']['in'], 2) }}</span> / <span class="text-danger">-{{ $currencySymbol }}{{ number_format($methodMovements['bank_transfer']['out'], 2) }}</span>
+                                        </small>
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-md-3 col-6">
@@ -106,8 +121,13 @@
                                     <small class="text-muted fw-semibold d-block" style="font-size: 0.72rem;">
                                         <i class="fa-solid fa-ellipsis text-secondary me-1"></i> {{ __('Other / Cheque') }}
                                     </small>
-                                    <span class="fs-6 fw-bold text-secondary">{{ $currencySymbol }}{{ number_format($paymentBreakdown['other'] ?? 0, 2) }}</span>
+                                    <span class="fs-6 fw-bold text-secondary">{{ $currencySymbol }}{{ number_format(($paymentBreakdown['other'] ?? 0) + ($methodMovements['other']['net'] ?? 0), 2) }}</span>
                                     <small class="text-muted d-block" style="font-size: 0.65rem;">({{ __('Cheque / Custom') }})</small>
+                                    @if (!empty($methodMovements['other']['in']) || !empty($methodMovements['other']['out']))
+                                        <small class="text-muted d-block" style="font-size: 0.62rem;">
+                                            {{ __('Mov') }}: <span class="text-success">+{{ $currencySymbol }}{{ number_format($methodMovements['other']['in'], 2) }}</span> / <span class="text-danger">-{{ $currencySymbol }}{{ number_format($methodMovements['other']['out'], 2) }}</span>
+                                        </small>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -245,15 +265,24 @@
                             <div class="row g-1 text-center">
                                 <div class="col-4">
                                     <small class="text-muted d-block" style="font-size: 0.68rem;">{{ __('Card Terminal') }}</small>
-                                    <strong class="text-info font-monospace">{{ $currencySymbol }}{{ number_format($paymentBreakdown['card'] ?? 0, 2) }}</strong>
+                                    <strong class="text-info font-monospace">{{ $currencySymbol }}{{ number_format(($paymentBreakdown['card'] ?? 0) + ($methodMovements['card']['net'] ?? 0), 2) }}</strong>
+                                    @if (!empty($methodMovements['card']['net']))
+                                        <small class="text-muted d-block" style="font-size: 0.60rem;">({{ __('Sales') }} {{ number_format($paymentBreakdown['card'] ?? 0, 2) }}, {{ __('Mov') }} {{ ($methodMovements['card']['net'] >= 0 ? '+' : '') . number_format($methodMovements['card']['net'], 2) }})</small>
+                                    @endif
                                 </div>
                                 <div class="col-4">
                                     <small class="text-muted d-block" style="font-size: 0.68rem;">{{ __('Bank Transfer') }}</small>
-                                    <strong class="text-primary font-monospace">{{ $currencySymbol }}{{ number_format($paymentBreakdown['bank_transfer'] ?? 0, 2) }}</strong>
+                                    <strong class="text-primary font-monospace">{{ $currencySymbol }}{{ number_format(($paymentBreakdown['bank_transfer'] ?? 0) + ($methodMovements['bank_transfer']['net'] ?? 0), 2) }}</strong>
+                                    @if (!empty($methodMovements['bank_transfer']['net']))
+                                        <small class="text-muted d-block" style="font-size: 0.60rem;">({{ __('Sales') }} {{ number_format($paymentBreakdown['bank_transfer'] ?? 0, 2) }}, {{ __('Mov') }} {{ ($methodMovements['bank_transfer']['net'] >= 0 ? '+' : '') . number_format($methodMovements['bank_transfer']['net'], 2) }})</small>
+                                    @endif
                                 </div>
                                 <div class="col-4">
                                     <small class="text-muted d-block" style="font-size: 0.68rem;">{{ __('Other / Cheque') }}</small>
-                                    <strong class="text-secondary font-monospace">{{ $currencySymbol }}{{ number_format($paymentBreakdown['other'] ?? 0, 2) }}</strong>
+                                    <strong class="text-secondary font-monospace">{{ $currencySymbol }}{{ number_format(($paymentBreakdown['other'] ?? 0) + ($methodMovements['other']['net'] ?? 0), 2) }}</strong>
+                                    @if (!empty($methodMovements['other']['net']))
+                                        <small class="text-muted d-block" style="font-size: 0.60rem;">({{ __('Sales') }} {{ number_format($paymentBreakdown['other'] ?? 0, 2) }}, {{ __('Mov') }} {{ ($methodMovements['other']['net'] >= 0 ? '+' : '') . number_format($methodMovements['other']['net'], 2) }})</small>
+                                    @endif
                                 </div>
                             </div>
                         </div>

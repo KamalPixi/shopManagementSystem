@@ -174,6 +174,12 @@ class CashRegister extends Component
             'total_sales' => 0.0,
             'non_cash_total' => 0.0,
         ];
+        $methodMovements = $currentSession ? $currentSession->calculateMethodMovementsBreakdown() : [
+            'cash' => ['in' => 0.0, 'out' => 0.0, 'net' => 0.0],
+            'card' => ['in' => 0.0, 'out' => 0.0, 'net' => 0.0],
+            'bank_transfer' => ['in' => 0.0, 'out' => 0.0, 'net' => 0.0],
+            'other' => ['in' => 0.0, 'out' => 0.0, 'net' => 0.0],
+        ];
 
         $query = CashRegisterSession::with(['user', 'closedBy'])->latest('opened_at');
 
@@ -193,6 +199,7 @@ class CashRegister extends Component
             'currentSession' => $currentSession,
             'expectedCash' => $expectedCash,
             'paymentBreakdown' => $paymentBreakdown,
+            'methodMovements' => $methodMovements,
             'sessions' => $query->paginate(15),
             'users' => User::all(),
             'shop' => Shop::first(),

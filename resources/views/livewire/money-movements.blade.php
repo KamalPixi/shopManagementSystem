@@ -11,189 +11,270 @@
         $currencySymbol = $shop?->currency['symbol'] ?? '€';
     @endphp
 
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-                <div class="small text-muted fw-bold">{{ __('Expected cash in drawer') }}</div>
-                <div class="fs-4 fw-bold text-dark">{{ $currentSession ? $currencySymbol . number_format($expectedCash, 2) : '-' }}</div>
-            </div>
-            <a href="{{ route('cashRegister') }}" class="btn btn-sm btn-outline-primary">{{ $currentSession ? __('View Cash Register') : __('Open Cash Register') }}</a>
-        </div>
-    </div>
-
     @if ($unassignedCount > 0)
-        <div class="alert alert-warning mb-4">
-            {{ __(':count cash movement(s) are not assigned to a register and are excluded from the drawer balance.', ['count' => $unassignedCount]) }}
+        <div class="alert alert-warning py-2 px-3 mb-3 small d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                {{ __(':count cash movement(s) are not assigned to a register and are excluded from the drawer balance.', ['count' => $unassignedCount]) }}
+            </div>
         </div>
     @endif
 
-    {{-- Page Header --}}
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center mb-4">
+    {{-- Compact Page Header --}}
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <div>
-            <h1 class="h4 fw-bold text-dark mb-0">{{ __('Money Movements (Cash In / Cash Out)') }}</h1>
+            <h1 class="h5 fw-bold text-dark mb-0">{{ __('Money Movements (Cash In / Cash Out)') }}</h1>
             <p class="text-muted small mb-0">{{ __('Record and audit external cash injections, owner withdrawals, and shop expenses.') }}</p>
         </div>
-        <div class="btn-toolbar mb-2 mb-md-0 d-flex align-items-center gap-2">
-            <button wire:click="openCategoryModal" type="button" class="btn btn-sm btn-outline-gray-600 d-inline-flex align-items-center">
-                <i class="fa-solid fa-tags me-2 text-muted"></i> {{ __('Manage Categories') }}
+        <div class="d-flex align-items-center gap-2">
+            <div class="bg-white border rounded px-3 py-1 shadow-sm d-flex align-items-center gap-2">
+                <span class="text-muted small fw-semibold"><i class="fa-solid fa-cash-register text-primary me-1"></i>{{ __('Drawer') }}:</span>
+                <span class="fw-bold text-dark">{{ $currentSession ? $currencySymbol . number_format($expectedCash, 2) : '-' }}</span>
+            </div>
+            <button wire:click="openCategoryModal" type="button" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center shadow-sm">
+                <i class="fa-solid fa-tags me-1"></i> {{ __('Categories') }}
             </button>
-            <a href="{{ route('cashRegister') }}" class="btn btn-sm btn-primary d-inline-flex align-items-center">
-                <i class="fa-solid fa-cash-register me-2"></i> {{ __('Cash Register') }}
+            <a href="{{ route('cashRegister') }}" class="btn btn-sm btn-primary d-inline-flex align-items-center shadow-sm">
+                <i class="fa-solid fa-cash-register me-1"></i> {{ $currentSession ? __('Cash Register') : __('Open Register') }}
             </a>
         </div>
     </div>
 
-    {{-- Clean Metric KPI Cards --}}
-    <div class="row g-3 mb-4">
-        <div class="col-12 col-md-4">
+    {{-- Compact Metric KPI Cards --}}
+    <div class="row g-2 mb-2">
+        <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-body p-3">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="text-muted small fw-bold text-uppercase">{{ __('Total Cash In (Period)') }}</span>
-                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 small">
+                <div class="card-body p-2 px-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">{{ __('Total Cash In') }}</span>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-1 py-0" style="font-size: 0.65rem;">
                             <i class="fa-solid fa-arrow-down me-1"></i>{{ __('Inflow') }}
                         </span>
                     </div>
-                    <h3 class="fs-4 fw-bold text-success mb-1">
+                    <div class="fs-5 fw-bold text-success mt-1">
                         +{{ $currencySymbol }}{{ number_format($totalIn, 2) }}
-                    </h3>
-                    <div class="d-flex justify-content-between align-items-center small text-muted pt-1 border-top">
-                        <span>{{ __('Inflow Source') }}:</span>
-                        <span class="fw-semibold text-dark">{{ __('Capital & Additions') }}</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-md-4">
+        <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-body p-3">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="text-muted small fw-bold text-uppercase">{{ __('Total Cash Out (Period)') }}</span>
-                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 small">
+                <div class="card-body p-2 px-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">{{ __('Total Cash Out') }}</span>
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-1 py-0" style="font-size: 0.65rem;">
                             <i class="fa-solid fa-arrow-up me-1"></i>{{ __('Outflow') }}
                         </span>
                     </div>
-                    <h3 class="fs-4 fw-bold text-danger mb-1">
+                    <div class="fs-5 fw-bold text-danger mt-1">
                         -{{ $currencySymbol }}{{ number_format($totalOut, 2) }}
-                    </h3>
-                    <div class="d-flex justify-content-between align-items-center small text-muted pt-1 border-top">
-                        <span>{{ __('Outflow Source') }}:</span>
-                        <span class="fw-semibold text-dark">{{ __('Expenses & Withdrawals') }}</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-12 col-md-4">
+        <div class="col-6 col-md-3">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-body p-3">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="text-muted small fw-bold text-uppercase">{{ __('Net Cash Flow (Period)') }}</span>
-                        <span class="badge {{ $netCash >= 0 ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-warning-subtle text-warning border border-warning-subtle' }} px-2 py-1 small">
+                <div class="card-body p-2 px-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">{{ __('Net Cash Flow') }}</span>
+                        <span class="badge {{ $netCash >= 0 ? 'bg-primary-subtle text-primary border border-primary-subtle' : 'bg-warning-subtle text-warning border border-warning-subtle' }} px-1 py-0" style="font-size: 0.65rem;">
                             {{ $netCash >= 0 ? __('Surplus') : __('Deficit') }}
                         </span>
                     </div>
-                    <h3 class="fs-4 fw-bold {{ $netCash >= 0 ? 'text-primary' : 'text-danger' }} mb-1">
+                    <div class="fs-5 fw-bold {{ $netCash >= 0 ? 'text-primary' : 'text-danger' }} mt-1">
                         {{ $netCash >= 0 ? '+' : '' }}{{ $currencySymbol }}{{ number_format($netCash, 2) }}
-                    </h3>
-                    <div class="d-flex justify-content-between align-items-center small text-muted pt-1 border-top">
-                        <span>{{ __('Inflow minus Outflow') }}</span>
-                        <span class="text-muted small">{{ __('Filtered Range') }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-2 px-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="text-muted fw-bold text-uppercase" style="font-size: 0.7rem;">{{ __('Drawer Balance') }}</span>
+                        <span class="badge {{ $currentSession ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-secondary-subtle text-muted' }} px-1 py-0" style="font-size: 0.65rem;">
+                            {{ $currentSession ? __('Open') : __('Closed') }}
+                        </span>
+                    </div>
+                    <div class="fs-5 fw-bold text-dark mt-1">
+                        {{ $currentSession ? $currencySymbol . number_format($expectedCash, 2) : '-' }}
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row g-4 mb-4">
-        {{-- Record Movement Form --}}
-        <div class="col-lg-5 col-12">
+    {{-- Compact Method Balances Strip --}}
+    <div class="row g-2 mb-3">
+        @php
+            $methodsList = [
+                'cash' => ['label' => __('Cash (Drawer)'), 'icon' => 'fa-money-bill-wave', 'color' => 'success', 'bg' => 'bg-success-subtle text-success border-success-subtle'],
+                'card' => ['label' => __('Card Terminal'), 'icon' => 'fa-credit-card', 'color' => 'info', 'bg' => 'bg-info-subtle text-info border-info-subtle'],
+                'bank_transfer' => ['label' => __('Bank Transfer'), 'icon' => 'fa-building-columns', 'color' => 'primary', 'bg' => 'bg-primary-subtle text-primary border-primary-subtle'],
+                'other' => ['label' => __('Other Methods'), 'icon' => 'fa-ellipsis', 'color' => 'secondary', 'bg' => 'bg-secondary-subtle text-secondary border-secondary-subtle'],
+            ];
+        @endphp
+        @foreach ($methodsList as $mKey => $mMeta)
+            @php
+                $mNet = $methodBreakdown[$mKey]['net'] ?? 0.0;
+                $mIn = $methodBreakdown[$mKey]['in'] ?? 0.0;
+                $mOut = $methodBreakdown[$mKey]['out'] ?? 0.0;
+            @endphp
+            <div class="col-6 col-md-3">
+                <div class="border rounded p-2 bg-white shadow-sm h-100">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="badge {{ $mMeta['bg'] }} border px-1 py-0 fw-semibold" style="font-size: 0.72rem;">
+                            <i class="fa-solid {{ $mMeta['icon'] }} me-1"></i> {{ $mMeta['label'] }}
+                        </span>
+                        <span class="fw-bold {{ $mNet >= 0 ? 'text-dark' : 'text-danger' }}" style="font-size: 0.78rem;">
+                            {{ $mNet >= 0 ? '+' : '' }}{{ $currencySymbol }}{{ number_format($mNet, 2) }}
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted" style="font-size: 0.7rem;">
+                        <span class="text-success"><i class="fa-solid fa-arrow-down fa-xs"></i> +{{ $currencySymbol }}{{ number_format($mIn, 2) }}</span>
+                        <span class="text-danger"><i class="fa-solid fa-arrow-up fa-xs"></i> -{{ $currencySymbol }}{{ number_format($mOut, 2) }}</span>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+
+    <div class="row g-3 mb-4">
+        {{-- Record Movement Form (Compact Column) --}}
+        <div class="col-lg-4 col-12">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white border-bottom border-light py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0 fw-bold text-dark d-flex align-items-center">
+                <div class="card-header bg-white border-bottom border-light py-2 px-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold text-dark small d-flex align-items-center">
                         <i class="fa-solid fa-money-bill-transfer me-2 text-primary"></i> {{ __('Record Movement') }}
                     </h6>
-                    <span class="badge {{ $type === 'in' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-danger-subtle text-danger border border-danger-subtle' }} px-2 py-1">
+                    <span class="badge {{ $type === 'in' ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-danger-subtle text-danger border border-danger-subtle' }} px-2 py-0" style="font-size: 0.72rem;">
                         {{ $type === 'in' ? __('Cash In') : __('Cash Out') }}
                     </span>
                 </div>
-                <div class="card-body p-3 p-md-4">
+                <div class="card-body p-3">
                     {{-- Clean Type Switcher Buttons --}}
-                    <div class="btn-group w-100 mb-3" role="group">
-                        <button type="button" wire:click="setType('in')" class="btn py-2 {{ $type === 'in' ? 'btn-success text-white fw-bold shadow-sm' : 'btn-outline-secondary' }}">
+                    <div class="btn-group btn-group-sm w-100 mb-2" role="group">
+                        <button type="button" wire:click="setType('in')" class="btn py-1 {{ $type === 'in' ? 'btn-success text-white fw-bold shadow-none' : 'btn-outline-secondary' }}">
                             <i class="fa-solid fa-arrow-down me-1"></i> {{ __('+ Cash In') }}
                         </button>
-                        <button type="button" wire:click="setType('out')" class="btn py-2 {{ $type === 'out' ? 'btn-danger text-white fw-bold shadow-sm' : 'btn-outline-secondary' }}">
+                        <button type="button" wire:click="setType('out')" class="btn py-1 {{ $type === 'out' ? 'btn-danger text-white fw-bold shadow-none' : 'btn-outline-secondary' }}">
                             <i class="fa-solid fa-arrow-up me-1"></i> {{ __('- Cash Out') }}
                         </button>
                     </div>
 
                     @if (!$currentSession)
-                        <div class="alert alert-warning">{{ __('Open the cash register before recording a cash movement.') }}</div>
+                        <div class="alert alert-warning py-1 px-2 mb-2 small" style="font-size: 0.75rem;">
+                            <i class="fa-solid fa-triangle-exclamation me-1"></i>{{ __('Open cash register before recording movements.') }}
+                        </div>
                     @endif
+
                     <form wire:submit.prevent="recordMovement">
                         @if ($type === 'in')
-                            <div class="alert alert-success-subtle border border-success-subtle py-2 px-3 mb-3 small text-success-emphasis rounded">
-                                <i class="fa-solid fa-circle-info me-1"></i> {{ __('Add money to business/drawer. Please select the source category.') }}
+                            <div class="py-1 px-2 mb-2 text-success border border-success-subtle bg-success-subtle rounded small d-flex align-items-center" style="font-size: 0.74rem;">
+                                <i class="fa-solid fa-circle-info me-1"></i> {{ __('Add money to business/drawer. Select method and category.') }}
                             </div>
                         @else
-                            <div class="alert alert-danger-subtle border border-danger-subtle py-2 px-3 mb-3 small text-danger-emphasis rounded">
-                                <i class="fa-solid fa-triangle-exclamation me-1"></i> {{ __('Take money out for expenses or withdrawals. A clear explanation is required.') }}
+                            <div class="py-1 px-2 mb-2 text-danger border border-danger-subtle bg-danger-subtle rounded small d-flex align-items-center" style="font-size: 0.74rem;">
+                                <i class="fa-solid fa-triangle-exclamation me-1"></i> {{ __('Take money out for expenses or withdrawals. Reason required.') }}
                             </div>
                         @endif
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-gray-700 mb-1">{{ __('Amount') }} <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light text-muted fw-bold">{{ $currencySymbol }}</span>
-                                <input wire:model="amount" type="number" step="0.01" min="0.01" class="form-control text-end fw-bold fs-6" placeholder="0" required>
-                            </div>
-                            @error('amount') <span class="text-danger small">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div class="mb-3">
+                        {{-- Payment Method Selector --}}
+                        <div class="mb-2">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <label class="form-label fw-bold small text-gray-700 mb-0">
-                                    {{ __('Category') }}
-                                    @if ($type === 'in')
-                                        <span class="text-danger">*</span>
-                                    @else
-                                        <span class="text-muted fw-normal">({{ __('Optional') }})</span>
-                                    @endif
+                                <label class="form-label fw-bold text-gray-700 mb-0" style="font-size: 0.75rem;">
+                                    {{ __('Payment Method') }} <span class="text-danger">*</span>
                                 </label>
-                                <button wire:click="openCategoryModal" type="button" class="btn btn-link btn-xs text-primary text-decoration-none p-0 fw-semibold">
-                                    <i class="fa-solid fa-plus me-1"></i>{{ __('New Category') }}
-                                </button>
+                                @if ($payment_method === 'cash')
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle py-0 px-1" style="font-size: 0.68rem;">
+                                        <i class="fa-solid fa-check me-1"></i>{{ __('Hits Drawer') }}
+                                    </span>
+                                @else
+                                    <span class="badge bg-info-subtle text-info border border-info-subtle py-0 px-1" style="font-size: 0.68rem;">
+                                        <i class="fa-solid fa-info-circle me-1"></i>{{ __('Non-Drawer') }}
+                                    </span>
+                                @endif
                             </div>
-                            <select wire:model="money_category_id" class="form-select" {{ $type === 'in' ? 'required' : '' }}>
-                                <option value="">{{ $type === 'in' ? __('-- Select Source Category --') : __('-- Optional Category --') }}</option>
-                                @php
-                                    $cats = $type === 'in' ? $inCategories : $outCategories;
-                                @endphp
-                                @foreach ($cats as $cat)
-                                    <option value="{{ $cat->id }}">{{ __($cat->name) }}</option>
-                                @endforeach
-                            </select>
-                            @error('money_category_id') <span class="text-danger small">{{ $message }}</span> @enderror
+                            <div class="btn-group btn-group-sm w-100" role="group">
+                                <input type="radio" class="btn-check" name="payment_method" id="pm_cash" value="cash" wire:model.live="payment_method">
+                                <label class="btn {{ $payment_method === 'cash' ? 'btn-success text-white fw-bold' : 'btn-outline-secondary' }} py-1 px-1" for="pm_cash" style="font-size: 0.75rem;">
+                                    <i class="fa-solid fa-money-bill-wave me-1"></i>{{ __('Cash') }}
+                                </label>
+
+                                <input type="radio" class="btn-check" name="payment_method" id="pm_card" value="card" wire:model.live="payment_method">
+                                <label class="btn {{ $payment_method === 'card' ? 'btn-info text-white fw-bold' : 'btn-outline-secondary' }} py-1 px-1" for="pm_card" style="font-size: 0.75rem;">
+                                    <i class="fa-solid fa-credit-card me-1"></i>{{ __('Card') }}
+                                </label>
+
+                                <input type="radio" class="btn-check" name="payment_method" id="pm_bank" value="bank_transfer" wire:model.live="payment_method">
+                                <label class="btn {{ $payment_method === 'bank_transfer' ? 'btn-primary text-white fw-bold' : 'btn-outline-secondary' }} py-1 px-1" for="pm_bank" style="font-size: 0.75rem;">
+                                    <i class="fa-solid fa-building-columns me-1"></i>{{ __('Bank') }}
+                                </label>
+
+                                <input type="radio" class="btn-check" name="payment_method" id="pm_other" value="other" wire:model.live="payment_method">
+                                <label class="btn {{ $payment_method === 'other' ? 'btn-secondary text-white fw-bold' : 'btn-outline-secondary' }} py-1 px-1" for="pm_other" style="font-size: 0.75rem;">
+                                    <i class="fa-solid fa-ellipsis me-1"></i>{{ __('Other') }}
+                                </label>
+                            </div>
+                            @error('payment_method') <span class="text-danger small d-block">{{ $message }}</span> @enderror
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold small text-gray-700 mb-1">
-                                {{ $type === 'in' ? __('Remark / Explanation') : __('Reason Why Money Taken') }}
-                                <span class="text-danger">*</span>
+                        {{-- Amount & Category Side-by-Side --}}
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <label class="form-label fw-bold text-gray-700 mb-1" style="font-size: 0.75rem;">
+                                    {{ __('Amount') }} <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-light text-muted fw-bold px-2">{{ $currencySymbol }}</span>
+                                    <input wire:model="amount" type="number" step="0.01" min="0.01" class="form-control text-end fw-bold" placeholder="0.00" required>
+                                </div>
+                                @error('amount') <span class="text-danger small d-block">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <label class="form-label fw-bold text-gray-700 mb-0" style="font-size: 0.75rem;">
+                                        {{ __('Category') }} @if ($type === 'in')<span class="text-danger">*</span>@endif
+                                    </label>
+                                    <button wire:click="openCategoryModal" type="button" class="btn btn-link btn-xs text-primary text-decoration-none p-0 fw-semibold" title="{{ __('Manage Categories') }}">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+                                <select wire:model="money_category_id" class="form-select form-select-sm" {{ $type === 'in' ? 'required' : '' }}>
+                                    <option value="">{{ $type === 'in' ? __('-- Select --') : __('-- Optional --') }}</option>
+                                    @php
+                                        $cats = $type === 'in' ? $inCategories : $outCategories;
+                                    @endphp
+                                    @foreach ($cats as $cat)
+                                        <option value="{{ $cat->id }}">{{ __($cat->name) }}</option>
+                                    @endforeach
+                                </select>
+                                @error('money_category_id') <span class="text-danger small d-block">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+
+                        {{-- Reason / Remark --}}
+                        <div class="mb-2">
+                            <label class="form-label fw-bold text-gray-700 mb-1" style="font-size: 0.75rem;">
+                                {{ $type === 'in' ? __('Remark / Explanation') : __('Reason Why Taken') }} <span class="text-danger">*</span>
                             </label>
-                            <textarea wire:model="reason" class="form-control" rows="3" placeholder="" required></textarea>
-                            @error('reason') <span class="text-danger small">{{ $message }}</span> @enderror
+                            <textarea wire:model="reason" class="form-control form-control-sm" rows="2" placeholder="{{ $type === 'in' ? __('e.g., Owner cash injection, change float...') : __('e.g., Office supplies, courier, withdrawal...') }}" required></textarea>
+                            @error('reason') <span class="text-danger small d-block">{{ $message }}</span> @enderror
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold small text-gray-700 mb-1">{{ __('Receipt / Slip Attachment') }} <span class="text-muted fw-normal">({{ __('Optional image/pdf') }})</span></label>
-                            <input wire:model="attachment" type="file" accept="image/*,application/pdf" class="form-control">
-                            @error('attachment') <span class="text-danger small">{{ $message }}</span> @enderror
+                        {{-- Slip Attachment --}}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-gray-700 mb-1" style="font-size: 0.75rem;">
+                                {{ __('Receipt / Slip') }} <span class="text-muted fw-normal">({{ __('Optional') }})</span>
+                            </label>
+                            <input wire:model="attachment" type="file" accept="image/*,application/pdf" class="form-control form-control-sm">
+                            @error('attachment') <span class="text-danger small d-block">{{ $message }}</span> @enderror
                         </div>
 
-                        <button type="submit" @disabled(!$currentSession) class="btn w-100 py-2 {{ $type === 'in' ? 'btn-success' : 'btn-danger' }} text-white fw-bold shadow-sm">
+                        <button type="submit" @disabled(!$currentSession) class="btn btn-sm w-100 py-2 {{ $type === 'in' ? 'btn-success' : 'btn-danger' }} text-white fw-bold shadow-sm">
                             @if ($type === 'in')
                                 <i class="fa-solid fa-circle-check me-1"></i> {{ __('Record Cash In') }}
                             @else
@@ -205,18 +286,18 @@
             </div>
         </div>
 
-        {{-- Money Movements History Table --}}
-        <div class="col-lg-7 col-12">
+        {{-- Money Movements History Table (Expanded Column) --}}
+        <div class="col-lg-8 col-12">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white border-bottom border-light py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div class="card-header bg-white border-bottom border-light py-2 px-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <div class="d-flex align-items-center gap-2">
-                        <h6 class="mb-0 fw-bold text-dark d-flex align-items-center">
+                        <h6 class="mb-0 fw-bold text-dark small d-flex align-items-center">
                             <i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i> {{ __('Movement History Log') }}
                         </h6>
-                        <span class="badge bg-light text-muted border small">{{ __('Total') }}: {{ $movements->total() }}</span>
+                        <span class="badge bg-light text-muted border px-2 py-0" style="font-size: 0.72rem;">{{ __('Total') }}: {{ $movements->total() }}</span>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <button type="button" wire:click="printReport" wire:loading.attr="disabled" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center shadow-sm" title="{{ __('Print filtered movement history report as PDF') }}">
+                    <div>
+                        <button type="button" wire:click="printReport" wire:loading.attr="disabled" class="btn btn-xs btn-outline-primary d-inline-flex align-items-center shadow-sm" title="{{ __('Print filtered movement history report as PDF') }}">
                             <span wire:loading.remove wire:target="printReport">
                                 <i class="fa-solid fa-file-pdf me-1"></i> {{ __('Print PDF') }}
                             </span>
@@ -227,107 +308,123 @@
                         </button>
                     </div>
                 </div>
-                <div class="card-body p-3 p-md-4">
-                    {{-- Filter Controls --}}
-                    <div class="row g-2 mb-3">
-                        <div class="col-md-3 col-6">
-                            <label class="small text-muted mb-1">{{ __('Type') }}</label>
-                            <select wire:model.live="filter_type" class="form-select form-select-sm">
-                                <option value="">{{ __('All Types') }}</option>
-                                <option value="in">{{ __('Cash In') }}</option>
-                                <option value="out">{{ __('Cash Out') }}</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <label class="small text-muted mb-1">{{ __('Category') }}</label>
-                            <select wire:model.live="filter_category_id" class="form-select form-select-sm">
-                                <option value="">{{ __('All Categories') }}</option>
-                                @foreach ($allCategories as $c)
-                                    <option value="{{ $c->id }}">{{ __($c->name) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <label class="small text-muted mb-1">{{ __('From Date') }}</label>
-                            <input wire:model.live="filter_start_date" type="date" class="form-control form-control-sm">
-                        </div>
-                        <div class="col-md-3 col-6">
-                            <label class="small text-muted mb-1">{{ __('To Date') }}</label>
-                            <input wire:model.live="filter_end_date" type="date" class="form-control form-control-sm">
+                <div class="card-body p-3">
+                    {{-- Compact Filter Controls --}}
+                    <div class="p-2 mb-2 bg-light rounded border">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-6 col-sm-3">
+                                <select wire:model.live="filter_type" class="form-select form-select-sm bg-white" style="font-size: 0.75rem;">
+                                    <option value="">{{ __('All Types') }}</option>
+                                    <option value="in">{{ __('Cash In') }}</option>
+                                    <option value="out">{{ __('Cash Out') }}</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-sm-3">
+                                <select wire:model.live="filter_payment_method" class="form-select form-select-sm bg-white" style="font-size: 0.75rem;">
+                                    <option value="">{{ __('All Methods') }}</option>
+                                    <option value="cash">{{ __('Cash (Drawer)') }}</option>
+                                    <option value="card">{{ __('Card') }}</option>
+                                    <option value="bank_transfer">{{ __('Bank Transfer') }}</option>
+                                    <option value="other">{{ __('Other') }}</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-sm-3">
+                                <select wire:model.live="filter_category_id" class="form-select form-select-sm bg-white" style="font-size: 0.75rem;">
+                                    <option value="">{{ __('All Categories') }}</option>
+                                    @foreach ($allCategories as $c)
+                                        <option value="{{ $c->id }}">{{ __($c->name) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-6 col-sm-3">
+                                <div class="input-group input-group-sm">
+                                    <input wire:model.live="filter_start_date" type="date" class="form-control form-control-sm bg-white px-1" title="{{ __('From Date') }}" style="font-size: 0.72rem;">
+                                    <span class="input-group-text bg-white px-1 text-muted border-start-0 border-end-0">-</span>
+                                    <input wire:model.live="filter_end_date" type="date" class="form-control form-control-sm bg-white px-1" title="{{ __('To Date') }}" style="font-size: 0.72rem;">
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <div class="table-responsive">
-                        <table class="table table-centered table-nowrap table-hover mb-0">
+                        <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.78rem;">
                             <thead class="thead-light">
                                 <tr>
-                                    <th class="border-0 px-2 py-2">#</th>
-                                    <th class="border-0 py-2">{{ __('Type') }}</th>
-                                    <th class="border-0 py-2 text-end">{{ __('Amount') }}</th>
-                                    <th class="border-0 py-2">{{ __('Category') }}</th>
-                                    <th class="border-0 py-2">{{ __('Reason / Remark') }}</th>
-                                    <th class="border-0 py-2">{{ __('Done By') }}</th>
-                                    <th class="border-0 py-2">{{ __('Date & Time') }}</th>
-                                    <th class="border-0 py-2 text-center">{{ __('Slip') }}</th>
-                                    <th class="border-0 px-2 py-2 text-end">-</th>
+                                    <th class="border-0 px-2 py-1 text-muted">#</th>
+                                    <th class="border-0 py-1">{{ __('Type') }}</th>
+                                    <th class="border-0 py-1">{{ __('Method') }}</th>
+                                    <th class="border-0 py-1 text-end">{{ __('Amount') }}</th>
+                                    <th class="border-0 py-1">{{ __('Category') }}</th>
+                                    <th class="border-0 py-1">{{ __('Reason / Remark') }}</th>
+                                    <th class="border-0 py-1">{{ __('Done By') }}</th>
+                                    <th class="border-0 py-1">{{ __('Date') }}</th>
+                                    <th class="border-0 py-1 text-center">{{ __('Slip') }}</th>
+                                    <th class="border-0 px-2 py-1 text-end">-</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($movements as $m)
                                 <tr>
-                                    <td class="px-2 py-2 align-middle text-muted small">{{ $m->id }}</td>
-                                    <td class="py-2 align-middle">
+                                    <td class="px-2 py-1 text-muted small">{{ $m->id }}</td>
+                                    <td class="py-1">
                                         @if ($m->type === 'in')
-                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                                                <i class="fa-solid fa-arrow-down me-1"></i>{{ __('Cash In') }}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle px-1 py-0" style="font-size: 0.7rem;">
+                                                <i class="fa-solid fa-arrow-down me-1"></i>{{ __('In') }}
                                             </span>
                                         @else
-                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
-                                                <i class="fa-solid fa-arrow-up me-1"></i>{{ __('Cash Out') }}
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-1 py-0" style="font-size: 0.7rem;">
+                                                <i class="fa-solid fa-arrow-up me-1"></i>{{ __('Out') }}
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="py-2 align-middle text-end fw-bold {{ $m->type === 'in' ? 'text-success' : 'text-danger' }}">
+                                    <td class="py-1">
+                                        <span class="badge {{ $m->method_badge_class }} px-1 py-0" style="font-size: 0.7rem;">
+                                            <i class="fa-solid {{ $m->method_icon }} me-1"></i>{{ $m->method_label }}
+                                        </span>
+                                    </td>
+                                    <td class="py-1 text-end fw-bold {{ $m->type === 'in' ? 'text-success' : 'text-danger' }}">
                                         {{ $m->type === 'in' ? '+' : '-' }}{{ $currencySymbol }}{{ number_format($m->amount, 2) }}
                                     </td>
-                                    <td class="py-2 align-middle">
-                                        <span class="badge bg-gray-100 text-gray-800 border px-2 py-1">{{ $m->category ? __($m->category->name) : __('General') }}</span>
+                                    <td class="py-1">
+                                        <span class="badge bg-light text-dark border px-1 py-0" style="font-size: 0.7rem;">
+                                            {{ $m->category ? __($m->category->name) : __('General') }}
+                                        </span>
                                     </td>
-                                    <td class="py-2 align-middle" style="max-width: 200px; white-space: normal; line-height: 1.35;">
-                                        <small class="text-dark">{{ $m->reason }}</small>
+                                    <td class="py-1" style="max-width: 150px;">
+                                        <div class="text-truncate text-dark" title="{{ $m->reason }}">{{ $m->reason }}</div>
                                     </td>
-                                    <td class="py-2 align-middle">
+                                    <td class="py-1">
                                         <span class="fw-semibold text-dark small">{{ $m->user?->name ?? '-' }}</span>
                                     </td>
-                                    <td class="py-2 align-middle text-muted small">
+                                    <td class="py-1 text-muted small">
                                         {{ $m->created_at->format('d/m/Y H:i') }}
                                     </td>
-                                    <td class="py-2 align-middle text-center">
+                                    <td class="py-1 text-center">
                                         @if ($m->attachment)
-                                            <a href="{{ asset($m->attachment) }}" target="_blank" class="btn btn-xs btn-outline-primary px-2" title="{{ __('View Attachment') }}">
+                                            <a href="{{ asset($m->attachment) }}" target="_blank" class="btn btn-xs btn-outline-primary px-1 py-0" title="{{ __('View Attachment') }}">
                                                 <i class="fa-solid fa-paperclip"></i>
                                             </a>
                                         @else
                                             <span class="text-muted small">-</span>
                                         @endif
                                     </td>
-                                    <td class="px-2 py-2 align-middle text-end">
+                                    <td class="px-2 py-1 text-end">
                                         @if (!$m->cash_register_session_id)
-                                            <span class="badge bg-warning text-dark d-block mb-1">{{ __('Outside register') }}</span>
+                                            <span class="badge bg-warning text-dark d-block mb-1 py-0 px-1" style="font-size: 0.65rem;">{{ __('Outside register') }}</span>
                                             @if ($currentSession && auth()->user()->hasPermissionTo('money-movements:create'))
-                                                <button type="button" wire:click="addUnassignedToDrawer({{ $m->id }})" wire:confirm="{{ __('Add this movement to the current drawer? Check that it is not already included in the opening balance.') }}" class="btn btn-xs btn-outline-primary mb-1">{{ __('Add to drawer') }}</button>
+                                                <button type="button" wire:click="addUnassignedToDrawer({{ $m->id }})" wire:confirm="{{ __('Add this movement to the current drawer? Check that it is not already included in the opening balance.') }}" class="btn btn-xs btn-outline-primary py-0 px-1 mb-1" style="font-size: 0.68rem;">{{ __('Add to drawer') }}</button>
                                             @endif
                                         @endif
                                         @if (auth()->user()->hasRole('admin'))
-                                            <button wire:click="deleteMovement({{ $m->id }})" wire:confirm="{{ __('Delete this record?') }}" class="btn btn-xs btn-outline-danger px-2" title="{{ __('Delete') }}">
-                                                <i class="fa-solid fa-trash"></i>
+                                            <button wire:click="deleteMovement({{ $m->id }})" wire:confirm="{{ __('Delete this record?') }}" class="btn btn-xs btn-outline-danger px-1 py-0" title="{{ __('Delete') }}">
+                                                <i class="fa-solid fa-trash fa-xs"></i>
                                             </button>
                                         @endif
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="9" class="text-center text-muted py-5">
+                                    <td colspan="10" class="text-center text-muted py-4">
                                         <i class="fa-solid fa-inbox fs-4 d-block mb-2 text-gray-400"></i>
                                         {{ __('No money movement records found.') }}
                                     </td>
@@ -337,7 +434,7 @@
                         </table>
                     </div>
 
-                    <div class="mt-3">
+                    <div class="mt-2">
                         {{ $movements->links() }}
                     </div>
                 </div>
