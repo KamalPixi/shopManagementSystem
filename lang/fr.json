@@ -519,5 +519,14 @@
     ":user took out :amount via :method. Reason: :reason": ":user a retiré :amount via :method. Motif : :reason",
     "Cash Sales": "Ventes espèces",
     "Movements": "Mouvements",
-    "Mov": "Mouv"
+    "Mov": "Mouv",
+    "Type": "Type",
+    "Amount": "Montant",
+    "Reason / Remark": "Motif / Remarque",
+    "Session #": "Session n°",
+    "Money Movements Report (Cash In / Cash Out)": "Rapport des mouvements de caisse (Entrées / Sorties)",
+    "Movement History Log Report": "Rapport des mouvements de caisse (Entrées / Sorties)",
+    "Executive Summary": "Synthèse financière",
+    "Total Inflow": "Total des entrées",
+    "Total Outflow": "Total des sorties"
 }

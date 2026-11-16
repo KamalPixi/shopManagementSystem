@@ -71,7 +71,7 @@
             background-color: #f8fafc;
             border: 1px solid #cbd5e1;
             border-radius: 4px;
-            margin-bottom: 8px;
+            margin-bottom: 7px;
         }
         .filter-badges-table td {
             padding: 4px 8px;
@@ -84,11 +84,35 @@
             color: #0f2c59;
         }
 
+        /* Executive KPI Summary Table */
+        .kpi-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 7px;
+        }
+        .kpi-summary-table td {
+            border: 1px solid #cbd5e1;
+            padding: 4px 6px;
+            text-align: center;
+            background-color: #ffffff;
+        }
+        .kpi-summary-label {
+            font-size: 7px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #64748b;
+            margin-bottom: 1px;
+        }
+        .kpi-summary-value {
+            font-size: 10.5px;
+            font-weight: bold;
+        }
+
         /* Category Breakdown Mini Table */
         .category-summary-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 9px;
+            margin-bottom: 7px;
             font-size: 7.5px;
         }
         .category-summary-table th {
@@ -162,6 +186,34 @@
             text-transform: uppercase;
             border: 0.5px solid #fca5a5;
         }
+        .badge-method {
+            display: inline-block;
+            font-size: 7px;
+            font-weight: bold;
+            padding: 1px 4px;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+        .badge-method-cash {
+            background-color: #dcfce7;
+            color: #166534;
+            border: 0.5px solid #86efac;
+        }
+        .badge-method-card {
+            background-color: #e0f2fe;
+            color: #075985;
+            border: 0.5px solid #7dd3fc;
+        }
+        .badge-method-bank_transfer {
+            background-color: #ede9fe;
+            color: #5b21b6;
+            border: 0.5px solid #c4b5fd;
+        }
+        .badge-method-other {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 0.5px solid #cbd5e1;
+        }
 
         /* Table Footer */
         .movements-table tfoot td {
@@ -170,17 +222,6 @@
             padding: 4px 5px;
             border: 1px solid #cbd5e1;
             font-size: 8px;
-        }
-
-        /* Page Footer */
-        .page-footer {
-            margin-top: 10px;
-            padding-top: 5px;
-            border-top: 1px solid #cbd5e1;
-            font-size: 7px;
-            color: #64748b;
-            display: flex;
-            justify-content: space-between;
         }
     </style>
 </head>
@@ -214,7 +255,7 @@
             <td style="width: 25%;">
                 <span class="filter-label">{{ __('Period') }}:</span>
                 @if (!empty($filter_start_date) || !empty($filter_end_date))
-                    {{ $filter_start_date ?: '-' }} {{ __('to') }} {{ $filter_end_date ?: '-' }}
+                    {{ $filter_start_date ? (is_string($filter_start_date) && strtotime($filter_start_date) ? \Carbon\Carbon::parse($filter_start_date)->format('d/m/Y') : $filter_start_date) : '-' }} {{ __('to') }} {{ $filter_end_date ? (is_string($filter_end_date) && strtotime($filter_end_date) ? \Carbon\Carbon::parse($filter_end_date)->format('d/m/Y') : $filter_end_date) : '-' }}
                 @else
                     {{ __('All Dates') }}
                 @endif
@@ -267,9 +308,9 @@
                         @endphp
                         <td style="vertical-align: top; text-align: center; font-size: 7.5px;">
                             <div style="font-weight: bold; font-size: 8px; color: {{ $mNet >= 0 ? '#15803d' : '#b91c1c' }};">
-                                {{ __('Net') }}: {{ $mNet >= 0 ? '+' : '' }}{{ $currencySymbol }} {{ number_format($mNet, 2) }}
+                                {{ __('Net') }}: {{ $mNet >= 0 ? '+' : '' }}{{ $currencySymbol }}{{ number_format($mNet, 2) }}
                             </div>
-                            <div style="color: #64748b; font-size: 7px;">
+                            <div style="color: #64748b; font-size: 7px; margin-top: 1px;">
                                 <span class="text-success">+{{ $currencySymbol }}{{ number_format($mIn, 2) }}</span> /
                                 <span class="text-danger">-{{ $currencySymbol }}{{ number_format($mOut, 2) }}</span>
                             </div>
@@ -291,28 +332,40 @@
             </thead>
             <tbody>
                 <tr>
-                    <td style="vertical-align: top;">
+                    <td style="vertical-align: top; padding: 2px 6px;">
                         @if (!empty($categoryBreakdown['in']))
-                            @foreach ($categoryBreakdown['in'] as $cName => $cAmt)
-                                <div style="display: flex; justify-content: space-between; padding: 1px 0;">
-                                    <span>&bull; {{ __($cName) }}:</span>
-                                    <strong class="text-success">+{{ $currencySymbol }} {{ number_format($cAmt, 2) }}</strong>
-                                </div>
-                            @endforeach
+                            <table style="width: 100%; border-collapse: collapse; border: none;">
+                                @foreach ($categoryBreakdown['in'] as $cName => $cAmt)
+                                    <tr>
+                                        <td style="border: none; padding: 1px 0; text-align: left; font-size: 7.5px; color: #334155;">
+                                            &bull; {{ __($cName) }}:
+                                        </td>
+                                        <td style="border: none; padding: 1px 0; text-align: right; font-size: 7.5px; font-weight: bold;" class="text-success">
+                                            +{{ $currencySymbol }}{{ number_format($cAmt, 2) }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </table>
                         @else
-                            <span class="text-muted">{{ __('No cash in recorded') }}</span>
+                            <span class="text-muted" style="font-size: 7.5px;">{{ __('No cash in recorded') }}</span>
                         @endif
                     </td>
-                    <td style="vertical-align: top;">
+                    <td style="vertical-align: top; padding: 2px 6px;">
                         @if (!empty($categoryBreakdown['out']))
-                            @foreach ($categoryBreakdown['out'] as $cName => $cAmt)
-                                <div style="display: flex; justify-content: space-between; padding: 1px 0;">
-                                    <span>&bull; {{ __($cName) }}:</span>
-                                    <strong class="text-danger">-{{ $currencySymbol }} {{ number_format($cAmt, 2) }}</strong>
-                                </div>
-                            @endforeach
+                            <table style="width: 100%; border-collapse: collapse; border: none;">
+                                @foreach ($categoryBreakdown['out'] as $cName => $cAmt)
+                                    <tr>
+                                        <td style="border: none; padding: 1px 0; text-align: left; font-size: 7.5px; color: #334155;">
+                                            &bull; {{ __($cName) }}:
+                                        </td>
+                                        <td style="border: none; padding: 1px 0; text-align: right; font-size: 7.5px; font-weight: bold;" class="text-danger">
+                                            -{{ $currencySymbol }}{{ number_format($cAmt, 2) }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </table>
                         @else
-                            <span class="text-muted">{{ __('No cash out recorded') }}</span>
+                            <span class="text-muted" style="font-size: 7.5px;">{{ __('No cash out recorded') }}</span>
                         @endif
                     </td>
                 </tr>
@@ -352,14 +405,16 @@
                             <span class="badge-type-out">- {{ __('Out') }}</span>
                         @endif
                     </td>
-                    <td class="text-center" style="font-size: 7.5px; font-weight: bold; color: #0f2c59;">
-                        {{ $movement->method_label }}
+                    <td class="text-center">
+                        <span class="badge-method badge-method-{{ $movement->payment_method ?? 'cash' }}">
+                            {{ $movement->method_label }}
+                        </span>
                     </td>
                     <td class="text-start fw-bold">
                         {{ __($catName) }}
                     </td>
                     <td class="text-end fw-bold {{ $isIn ? 'text-success' : 'text-danger' }}">
-                        {{ $isIn ? '+' : '-' }}{{ $currencySymbol }} {{ number_format($movement->amount, 2) }}
+                        {{ $isIn ? '+' : '-' }}{{ $currencySymbol }}{{ number_format($movement->amount, 2) }}
                     </td>
                     <td class="text-start" style="color: #334155;">
                         {{ $movement->reason ?: '-' }}
@@ -381,17 +436,19 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="4" class="text-end fw-bold">{{ __('Totals for filtered period') }}:</td>
+                <td colspan="5" class="text-end fw-bold">{{ __('Totals for filtered period') }}:</td>
                 <td class="text-end fw-bold">
-                    <span class="text-success">+{{ $currencySymbol }} {{ number_format($totalIn, 2) }}</span><br>
-                    <span class="text-danger">-{{ $currencySymbol }} {{ number_format($totalOut, 2) }}</span>
+                    <span class="text-success">+{{ $currencySymbol }}{{ number_format($totalIn, 2) }}</span><br>
+                    <span class="text-danger">-{{ $currencySymbol }}{{ number_format($totalOut, 2) }}</span>
                 </td>
                 <td colspan="3" class="text-start fw-bold">
-                    {{ __('Net Flow') }}:
-                    <span class="{{ $netCash >= 0 ? 'text-primary' : 'text-danger' }}">
-                        {{ $netCash >= 0 ? '+' : '' }}{{ $currencySymbol }} {{ number_format($netCash, 2) }}
-                    </span>
-                    <span class="text-muted fw-normal" style="margin-left: 6px;">({{ $movements->count() }} {{ __('entries') }})</span>
+                    <div>
+                        {{ __('Net Flow') }}:
+                        <span class="{{ $netCash >= 0 ? 'text-primary' : 'text-danger' }}">
+                            {{ $netCash >= 0 ? '+' : '' }}{{ $currencySymbol }}{{ number_format($netCash, 2) }}
+                        </span>
+                        <span class="text-muted fw-normal" style="margin-left: 6px;">({{ $movements->count() }} {{ __('entries') }})</span>
+                    </div>
                 </td>
             </tr>
         </tfoot>

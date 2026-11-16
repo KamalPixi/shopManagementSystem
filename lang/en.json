@@ -519,5 +519,13 @@
     ":user took out :amount via :method. Reason: :reason": ":user took out :amount via :method. Reason: :reason",
     "Cash Sales": "Cash Sales",
     "Movements": "Movements",
-    "Mov": "Mov"
+    "Mov": "Mov",
+    "Type": "Type",
+    "Amount": "Amount",
+    "Reason / Remark": "Reason / Remark",
+    "Session #": "Session #",
+    "Money Movements Report (Cash In / Cash Out)": "Money Movements Report (Cash In / Cash Out)",
+    "Executive Summary": "Executive Summary",
+    "Total Inflow": "Total Inflow",
+    "Total Outflow": "Total Outflow"
 }
