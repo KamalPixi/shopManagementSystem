@@ -7,6 +7,16 @@
 
     @include('includes.alert')
 
+    <dialog id="pos_remove_item_dialog" wire:ignore class="border-0 rounded-3 shadow p-4" aria-labelledby="pos_remove_item_title">
+        <form method="dialog">
+            <h2 id="pos_remove_item_title" class="h5 mb-4">{{ __('Remove this item?') }}</h2>
+            <div class="d-flex justify-content-end gap-2">
+                <button type="submit" value="cancel" class="btn btn-outline-secondary" autofocus>{{ __('Cancel') }}</button>
+                <button type="submit" value="remove" class="btn btn-danger">{{ __('Delete') }}</button>
+            </div>
+        </form>
+    </dialog>
+
     {{-- ── SALE SUCCESS OVERLAY ──────────────────────────────────────── --}}
     {{-- Shown after every completed sale. Does NOT auto-close.           --}}
     {{-- Staff must click "Print Receipt" or "Close" manually.           --}}
@@ -125,6 +135,9 @@
                                         autocomplete="off"
                                         placeholder="{{ __('Scan barcode or enter SKU / Serial number') }}"
                                     >
+                                    <div id="pos_scan_error" wire:ignore class="small text-danger mt-2" role="status" hidden>
+                                        {{ __('Could not confirm the scan. Check the cart before scanning again.') }}
+                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -625,7 +638,7 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                                             <small class="text-success d-block" style="font-size: 0.7rem;">-€{{ number_format((float) $item['discount'], 2) }} {{ __('saved') }}</small>
                                         @endif
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 ms-1" wire:click="delete('{{ $itemKey }}')" wire:confirm="{{ __('Remove this item?') }}" title="{{ __('Remove item') }}">
+                                    <button type="button" class="btn btn-sm btn-outline-danger border-0 p-1 ms-1" data-pos-remove-item="{{ $itemKey }}" aria-haspopup="dialog" title="{{ __('Remove item') }}">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </div>
@@ -865,6 +878,9 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
     </div>
 
     <style>
+        #pos_remove_item_dialog::backdrop {
+            background-color: rgba(15, 23, 42, 0.65);
+        }
         table tbody tr td {
             padding-left: 0.5rem !important;
             padding-right: 0.5rem !important;
@@ -878,6 +894,12 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
     <script>
         document.addEventListener('livewire:initialized', function () {
             const barcodeInputId = 'pos_barcode_input';
+            const posRoot = getBarcodeInput().closest('[wire\\:id]');
+            const posId = posRoot.getAttribute('wire:id');
+            const pos = Livewire.find(posId);
+            const removeDialog = document.getElementById('pos_remove_item_dialog');
+            const scanError = document.getElementById('pos_scan_error');
+            let itemToRemove = null;
             let isSubmitting = false;
             let lastCharTime = 0;
             let charDeltas = [];
@@ -888,7 +910,7 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
             }
 
             function isModalOpen() {
-                return !!document.querySelector('.modal.show');
+                return removeDialog.open || !!document.querySelector('.modal.show, #livewire-error');
             }
 
             function isOtherInputFocused() {
@@ -915,13 +937,10 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                 }
             }
 
-            function submitBarcode(scannedValue) {
-                if (isSubmitting) return;
+            function submitBarcode(val) {
+                if (isSubmitting || isModalOpen() || !val) return;
 
-                const input = getBarcodeInput();
-                const val = (typeof scannedValue === 'string' ? scannedValue : (input ? input.value : '')).trim();
-                if (!val) return;
-
+                scanError.hidden = true;
                 isSubmitting = true;
                 if (scannerTimer) {
                     clearTimeout(scannerTimer);
@@ -929,71 +948,65 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                 }
                 charDeltas = [];
 
-                const lwEl = input ? input.closest('[wire\\:id]') : document.querySelector('[wire\\:id]');
-                if (lwEl && window.Livewire) {
-                    const comp = Livewire.find(lwEl.getAttribute('wire:id'));
-                    if (comp) {
-                        comp.call('add', val).then(function () {
-                            isSubmitting = false;
-                            setTimeout(focusBarcodeField, 50);
-                        }).catch(function () {
-                            isSubmitting = false;
-                            setTimeout(focusBarcodeField, 50);
-                        });
-                        if (input) input.value = '';
-                        return;
-                    }
-                }
-
-                // Fallback: trigger form submit event
-                const form = document.getElementById('pos_barcode_form');
-                if (form) {
-                    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-                }
-                setTimeout(function () {
-                    isSubmitting = false;
-                    focusBarcodeField();
-                }, 300);
+                pos.$call('add', val);
+                getBarcodeInput().value = '';
             }
+
+            removeDialog.querySelector('form').addEventListener('submit', function (event) {
+                if (event.submitter?.value === 'remove') {
+                    pos.$call('delete', itemToRemove);
+                }
+            });
+            removeDialog.addEventListener('close', function () {
+                itemToRemove = null;
+                focusBarcodeField();
+            });
 
             // 1. Initial focus
             setTimeout(focusBarcodeField, 120);
 
             // 2. Server-side focus event listener
             window.addEventListener('focus-barcode-input', function () {
-                isSubmitting = false;
                 setTimeout(function () {
                     focusBarcodeField(true);
                 }, 50);
             });
 
-            // 3. Keep focus after Livewire updates
-            if (window.Livewire && typeof window.Livewire.hook === 'function') {
-                window.Livewire.hook('commit', function (options) {
-                    if (options && typeof options.succeed === 'function') {
-                        options.succeed(function () {
-                            isSubmitting = false;
-                            setTimeout(focusBarcodeField, 60);
-                        });
-                    }
-                });
-                window.Livewire.hook('morphed', function () {
-                    isSubmitting = false;
-                    setTimeout(focusBarcodeField, 60);
-                });
-            }
+            Livewire.hook('commit', function ({ component, commit, succeed, fail }) {
+                if (component.id !== posId || !commit.calls.some(call => call.method === 'add')) return;
 
-            // 4. Clicking empty area returns focus to barcode input
+                succeed(function () {
+                    isSubmitting = false;
+                });
+                // Livewire does not settle the action promise when a request fails.
+                fail(function () {
+                    isSubmitting = false;
+                    scanError.hidden = false;
+                });
+            });
+            Livewire.hook('morphed', function ({ component }) {
+                if (component.id === posId) {
+                    setTimeout(focusBarcodeField, 60);
+                }
+            });
+
             document.addEventListener('click', function (e) {
                 if (isModalOpen()) return;
+                const removeButton = e.target.closest('[data-pos-remove-item]');
+                if (removeButton) {
+                    itemToRemove = removeButton.dataset.posRemoveItem;
+                    removeDialog.showModal();
+                    return;
+                }
                 const interactive = e.target.closest('a, button, input, select, textarea, label, [role="button"], .dropdown-menu');
                 if (!interactive) {
                     setTimeout(focusBarcodeField, 60);
                 }
             });
 
-            // 5. Handle keydown on barcode input: prevent Tab from escaping to sidebar logo, and handle Enter & auto-scans
+            // Keep scanner suffixes from moving focus or submitting a second time.
             document.addEventListener('keydown', function (e) {
+                if (isModalOpen()) return;
                 const barcodeInput = getBarcodeInput();
                 if (!barcodeInput) return;
 
@@ -1033,7 +1046,7 @@ $pendingProduct = \App\Models\Product::with('variations')->find($pendingVariatio
                 }
 
                 // Global scanner catch: if cashier scans while focus is not in any text input/modal
-                if (isModalOpen() || isOtherInputFocused()) return;
+                if (isOtherInputFocused()) return;
 
                 if (e.key === 'Enter' || e.keyCode === 13 || e.key === 'Tab' || e.keyCode === 9) {
                     const val = barcodeInput.value.trim();
